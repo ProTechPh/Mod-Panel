@@ -105,6 +105,14 @@ export function Hero() {
         </p>
 
         <div ref={ctaRef} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="https://release-assets.githubusercontent.com/github-production-release-asset/1214788990/d557441d-5035-40b1-b711-047af969261b"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ variant: 'default', size: 'lg' }), 'min-w-36 bg-purple-600 hover:bg-purple-700 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)]')}
+          >
+            Download App
+          </a>
           <Link
             href="/register"
             className={cn(buttonVariants({ size: 'lg' }), 'min-w-36')}

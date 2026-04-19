@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
@@ -54,6 +54,18 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
             </Link>
           ))}
         </nav>
+        
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/40">
+          <a
+            href="https://release-assets.githubusercontent.com/github-production-release-asset/1214788990/d557441d-5035-40b1-b711-047af969261b"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white shadow-[0_0_10px_rgba(147,51,234,0.3)] transition-colors hover:bg-purple-700"
+          >
+            <Smartphone className="h-4 w-4" />
+            Download App
+          </a>
+        </div>
       </aside>
     </>
   );
