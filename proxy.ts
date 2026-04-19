@@ -61,7 +61,7 @@ export async function proxy(request: NextRequest) {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(AUTH_SECRET));
 
     const ADMIN_OWNER_ONLY = ['/admin/users', '/admin/private-dashboard'];
-    const ADMIN_PLUS = ['/admin/referrals', '/admin/game-settings'];
+    const ADMIN_PLUS = ['/admin/game-settings'];
 
     if (pathname.includes('/admin')) {
       if (ADMIN_OWNER_ONLY.some(p => pathname === p || pathname.startsWith(p + '/')) && payload.level !== 1) {

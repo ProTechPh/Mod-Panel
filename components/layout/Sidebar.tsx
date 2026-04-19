@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gift, Gamepad2, Server, HardDrive, History, Shield, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
@@ -12,7 +12,6 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
   { href: '/history', label: 'History', icon: History, minLevel: 3 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
-  { href: '/admin/referrals', label: 'Referrals', icon: Gift, minLevel: 2 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 2 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
