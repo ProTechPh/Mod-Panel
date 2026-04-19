@@ -77,6 +77,9 @@ export interface GameSettingDoc {
   downloadLink: string;
   floatingTextStatus: string;
   floatingText: string;
+  modName: string;
+  telegramChannel: string;
+  telegramGroup: string;
   features: Features;
   registrator: string;
   createdAt: Date;

@@ -43,6 +43,9 @@ export async function addGameSetting(data: {
     downloadLink: '',
     floatingTextStatus: '',
     floatingText: '',
+    modName: '',
+    telegramChannel: '',
+    telegramGroup: '',
     features: { esp: false, item: false, silentAim: false, aim: false, bulletTrack: false, memory: false, floating: false, setting: false },
   });
   clearConfigCache();
@@ -58,15 +61,22 @@ export async function updateGameSetting(gameCode: string, data: {
   downloadLink?: string;
   floatingTextStatus?: string;
   floatingText?: string;
+  modName?: string;
+  telegramChannel?: string;
+  telegramGroup?: string;
   features?: Record<string, boolean>;
 }, registrator?: string) {
   await dbConnect();
   const filter: Record<string, unknown> = { gameCode: gameCode.toUpperCase() };
   if (registrator) filter.registrator = registrator;
+
+  // Strip non-schema fields before update
+  const { gameCode: _gc, registrator: _reg, _method: _m, ...updateData } = data as Record<string, unknown>;
+
   const game = await GameSetting.findOneAndUpdate(
     filter,
-    data,
-    { new: true }
+    { $set: updateData },
+    { new: true, strict: false }
   ).lean();
   clearConfigCache();
   return game ? { ...game, _id: game._id.toString() } : null;

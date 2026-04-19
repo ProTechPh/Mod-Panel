@@ -44,7 +44,9 @@ export function clearConfigCache() {
 
 const DEFAULT_CONTACT = '@CanKillYouForever';
 
-async function getTelegramContact(registrator: string): Promise<string> {
+async function getTelegramContact(registrator: string, gameSetting?: GameSettingDoc | null): Promise<string> {
+  // Prefer game-specific telegram channel from GameSetting
+  if (gameSetting?.telegramChannel) return gameSetting.telegramChannel;
   if (registrator === 'FreeKey') return DEFAULT_CONTACT;
   const admin = await User.findOne({ username: registrator }).lean();
   return admin?.telegramContact || DEFAULT_CONTACT;
@@ -114,10 +116,11 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: 'Incorrect Key' };
   }
 
-  const contact = await getTelegramContact(key.registrator);
-
   const games = await getGameSettings();
   const gameSetting = games.get(`${game.toUpperCase()}|${key.registrator}`);
+
+  const contact = await getTelegramContact(key.registrator, gameSetting);
+
   if (gameSetting && !gameSetting.connectEnabled) {
     return {
       status: false,
@@ -176,7 +179,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
     data: {
       real,
       token,
-      modname: config?.modName || '',
+      modname: gameSetting?.modName || config?.modName || '',
       mod_status: gameSetting?.floatingTextStatus || '',
       credit: gameSetting?.floatingText || '',
       ESP: gameSetting?.features.esp ?? false,
@@ -189,7 +192,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
       Setting: gameSetting?.features.setting ?? false,
       EXP: expiredStr,
       device: key.maxDevices,
-      MOD_NAME: config?.modName || '',
+      MOD_NAME: gameSetting?.modName || config?.modName || '',
       MOD_STATUS: gameSetting?.floatingTextStatus || '',
       FLOTING_TEST: gameSetting?.floatingText || '',
       BHATIA_EXP: expiredStr,

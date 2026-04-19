@@ -22,6 +22,9 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
   downloadLink: { type: String, default: '' },
   floatingTextStatus: { type: String, default: '' },
   floatingText: { type: String, default: '' },
+  modName: { type: String, default: '' },
+  telegramChannel: { type: String, default: '' },
+  telegramGroup: { type: String, default: '' },
   features: { type: FeaturesSchema, default: () => ({}) },
   registrator: { type: String, required: true },
 }, { timestamps: true, collection: 'game_settings' });

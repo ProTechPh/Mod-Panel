@@ -89,7 +89,7 @@ export default function DocsPage() {
   "data": {
     "real": "<game>-<userKey>-<serial>-<STATIC_WORDS>",
     "token": "<md5 hash of real>",
-    "modname": "Mod Name",
+    "modname": "<modName from GameSetting or ServerConfig fallback>",
     "mod_status": "Active",
     "credit": "VIP",
     "ESP": true,
@@ -102,7 +102,7 @@ export default function DocsPage() {
     "Setting": true,
     "EXP": "2025-06-15 12:30:00",
     "device": 2,
-    "MOD_NAME": "Mod Name",
+    "MOD_NAME": "<modName from GameSetting or ServerConfig fallback>",
     "MOD_STATUS": "Active",
     "FLOTING_TEST": "VIP",
     "BHATIA_EXP": "2025-06-15T12:30:00.000Z",

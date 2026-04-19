@@ -24,6 +24,9 @@ interface GameSetting {
   downloadLink: string;
   floatingTextStatus: string;
   floatingText: string;
+  modName: string;
+  telegramChannel: string;
+  telegramGroup: string;
   features: Record<string, boolean>;
   registrator: string;
 }
@@ -103,6 +106,9 @@ export default function GameSettingsPage() {
         downloadLink: editGame.downloadLink,
         floatingTextStatus: editGame.floatingTextStatus,
         floatingText: editGame.floatingText,
+        modName: editGame.modName,
+        telegramChannel: editGame.telegramChannel,
+        telegramGroup: editGame.telegramGroup,
         features: editGame.features,
       }),
     });
@@ -215,6 +221,32 @@ export default function GameSettingsPage() {
                   onChange={e => setEditGame({ ...editGame, downloadLink: e.target.value })}
                   placeholder="Mod download URL"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Mod Name</Label>
+                <Input
+                  value={editGame.modName || ''}
+                  onChange={e => setEditGame({ ...editGame, modName: e.target.value })}
+                  placeholder="e.g., Winter Mod, ProTech Mod"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Telegram Channel</Label>
+                  <Input
+                    value={editGame.telegramChannel || ''}
+                    onChange={e => setEditGame({ ...editGame, telegramChannel: e.target.value })}
+                    placeholder="https://t.me/channel"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telegram Group</Label>
+                  <Input
+                    value={editGame.telegramGroup || ''}
+                    onChange={e => setEditGame({ ...editGame, telegramGroup: e.target.value })}
+                    placeholder="https://t.me/group"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Floating Text Status</Label>
