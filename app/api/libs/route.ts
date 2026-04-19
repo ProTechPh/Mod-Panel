@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-    const webStream = file.stream();
-    const stream = Readable.fromWeb(webStream);
+    const stream = Readable.fromWeb(file.stream() as unknown as ReadableStream);
 
     const lib = await uploadLib(file.name, `${sizeMB} MB`, stream, user.username);
     return NextResponse.json(lib, { status: 201 });
