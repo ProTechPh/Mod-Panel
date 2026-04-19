@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/free-key', '/download'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/free-key', '/download', '/auth/telegram/callback'];
 const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key'];
 
 const AUTH_SECRET = process.env.AUTH_SECRET;
