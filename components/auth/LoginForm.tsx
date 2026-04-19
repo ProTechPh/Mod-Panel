@@ -116,7 +116,10 @@ export default function LoginForm() {
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
-        <CardTitle className="text-2xl font-bold">{APP_NAME}</CardTitle>
+        <div className="flex flex-col items-center gap-3 mb-2">
+          <img src="/logo.png" alt="Mod Panel Logo" className="w-16 h-16 object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]" />
+          <CardTitle className="text-2xl font-bold">{APP_NAME}</CardTitle>
+        </div>
         <CardDescription>Sign in to your account</CardDescription>
       </CardHeader>
       <CardContent>

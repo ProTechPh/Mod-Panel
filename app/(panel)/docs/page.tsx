@@ -74,7 +74,7 @@ export default function DocsPage() {
           <div>
             <h4 className="text-sm font-semibold mb-2">Example Request</h4>
             <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`curl -X POST ${baseUrl}/api/connect \\
+              {`curl -X POST ${baseUrl}/api/connect \\
   -F "game=PUBG" \\
   -F "user_key=abc123def456" \\
   -F "serial=device_serial_001"`}
@@ -84,7 +84,7 @@ export default function DocsPage() {
           <div>
             <h4 className="text-sm font-semibold mb-2">Success Response</h4>
             <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`{
+              {`{
   "status": true,
   "data": {
     "real": "<game>-<userKey>-<serial>-<STATIC_WORDS>",
@@ -188,15 +188,15 @@ export default function DocsPage() {
           <div>
             <h4 className="text-sm font-semibold mb-2">Example Request</h4>
             <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`curl ${baseUrl}/api/connect`}
+              {`curl ${baseUrl}/api/connect`}
             </pre>
           </div>
           <div>
             <h4 className="text-sm font-semibold mb-2">Response</h4>
             <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`{
+              {`{
   "web_info": {
-    "_client": "Winter Panel",
+    "_client": "Mod Panel",
     "license": "<LICENSE_KEY>",
     "version": "3.0.0"
   },
@@ -233,7 +233,7 @@ export default function DocsPage() {
             <div>
               <h4 className="text-sm font-semibold mb-2">Response</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`[
+                {`[
   {
     "_id": "objectId",
     "fileName": "libname_abc123.so",
@@ -284,7 +284,7 @@ export default function DocsPage() {
             <div>
               <h4 className="text-sm font-semibold mb-2">Example Request</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`curl -X POST ${baseUrl}/api/libs \\
+                {`curl -X POST ${baseUrl}/api/libs \\
   -H "Cookie: wp_access=<token>" \\
   -F "file=@libname.so"`}
               </pre>
@@ -292,7 +292,7 @@ export default function DocsPage() {
             <div>
               <h4 className="text-sm font-semibold mb-2">Success Response (201)</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`{
+                {`{
   "_id": "objectId",
   "fileName": "libname_abc123.so",
   "displayName": "libname.so",
@@ -316,7 +316,7 @@ export default function DocsPage() {
             <div>
               <h4 className="text-sm font-semibold mb-2">Example Request</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`curl -X DELETE "${baseUrl}/api/libs?id=<objectId>" \\
+                {`curl -X DELETE "${baseUrl}/api/libs?id=<objectId>" \\
   -H "Cookie: wp_access=<token>"`}
               </pre>
             </div>
@@ -337,13 +337,13 @@ export default function DocsPage() {
             <div>
               <h4 className="text-sm font-semibold mb-2">Example Request</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`curl -O "${baseUrl}/api/libs/serve/libname_abc123.so"`}
+                {`curl -O "${baseUrl}/api/libs/serve/libname_abc123.so"`}
               </pre>
             </div>
             <div>
               <h4 className="text-sm font-semibold mb-2">Response Headers</h4>
               <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
-{`Content-Type: application/octet-stream
+                {`Content-Type: application/octet-stream
 Content-Disposition: attachment; filename="libname_abc123.so"`}
               </pre>
             </div>

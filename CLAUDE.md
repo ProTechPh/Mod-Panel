@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Winter Panel (Mod Panel)** — a game mod license key management panel built with Next.js 16 App Router. Manages users, license keys, referrals, and game configurations for a mod distribution system.
+**Mod Panel** — a game mod license key management panel built with Next.js 16 App Router. Manages users, license keys, referrals, and game configurations for a mod distribution system.
 
 ## Commands
 

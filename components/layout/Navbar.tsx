@@ -25,7 +25,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="flex-1">
+        <div className="flex-1 flex items-center gap-2">
+          <img src="/logo.png" alt="Mod Panel Logo" className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
           <h1 className="text-lg font-semibold">{APP_NAME}</h1>
         </div>
         <div className="flex items-center gap-2">

@@ -67,7 +67,8 @@ export async function registerUser(data: {
 
   const hashedPassword = await hashPassword(data.password);
   const now = new Date();
-  const expirationDate = new Date(now.getTime() + referral.accExpiration.getTime());
+  const durationMs = referral.accExpiration.getTime() - referral.createdAt.getTime();
+  const expirationDate = new Date(now.getTime() + durationMs);
 
   const user = await User.create({
     username: data.username,
