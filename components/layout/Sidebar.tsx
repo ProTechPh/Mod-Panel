@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gift, Gamepad2, Server, HardDrive, History, Download, Shield } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gift, Gamepad2, Server, HardDrive, History, Shield, BookOpen } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
   { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
-  { href: '/download', label: 'Download', icon: Download, minLevel: 3 },
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
   { href: '/history', label: 'History', icon: History, minLevel: 3 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
@@ -17,6 +16,7 @@ const navItems = [
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 2 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
+  { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },
 ];
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {

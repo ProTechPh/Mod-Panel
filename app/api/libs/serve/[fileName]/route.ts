@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
 import { downloadFromFtp } from '@/lib/ftp/client';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ fileName: string }> }) {
-  const user = await authenticate(request);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const { fileName } = await params;
 
   if (!fileName.endsWith('.so')) {

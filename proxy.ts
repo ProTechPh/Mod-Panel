@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/free-key', '/download', '/auth/telegram/callback'];
-const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback'];
+const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve'];
+
+// Sub-paths of API_PUBLIC entries are also public (e.g., /api/free-key/games)
+function isApiPublic(pathname: string): boolean {
+  return API_PUBLIC.some(p => pathname === p || pathname.startsWith(p + '/'));
+}
+
+// Dynamic public paths: /<registrator>/free-key
+const PUBLIC_REGEX = [/^\/[^/]+\/free-key(?:\/)?$/];
 
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
@@ -13,16 +21,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+  if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/')) || PUBLIC_REGEX.some(r => r.test(pathname))) {
     return NextResponse.next();
   }
 
   if (pathname.startsWith('/api/')) {
-    if (API_PUBLIC.some(p => pathname === p)) {
+    if (isApiPublic(pathname)) {
       return NextResponse.next();
     }
     const token = request.cookies.get('wp_access')?.value;
-    if (!token && !API_PUBLIC.some(p => pathname === p)) {
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (token) {

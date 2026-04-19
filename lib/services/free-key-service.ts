@@ -32,12 +32,18 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
   }
 }
 
-export async function generateFreeKey(game: string, turnstileToken: string, ip: string) {
+export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string) {
   await dbConnect();
 
-  const gameSetting = await GameSetting.findOne({ gameCode: game.toUpperCase() }).lean();
-  if (!gameSetting || !gameSetting.isEnabled || !gameSetting.freeKeyEnabled) {
-    return { error: 'Free keys are not available for this game' };
+  const gameSetting = await GameSetting.findOne({
+    gameCode: game.toUpperCase(),
+    registrator,
+    isEnabled: true,
+    freeKeyEnabled: true,
+  }).lean();
+
+  if (!gameSetting) {
+    return { error: 'Free keys are not available for this game from this reseller' };
   }
 
   const turnstileValid = await verifyTurnstile(turnstileToken, ip);
@@ -89,7 +95,7 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     maxDevices: 1,
     devices: [],
     status: 1,
-    registrator: 'FreeKey',
+    registrator,
   });
 
   await IpTracker.create({

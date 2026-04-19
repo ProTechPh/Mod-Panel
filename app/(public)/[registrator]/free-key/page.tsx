@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/components/shared/ThemeProvider';
@@ -11,12 +11,27 @@ import { Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
 
+interface GameOption {
+  code: string;
+  name: string;
+}
+
 export default function FreeKeyPage() {
+  const { registrator } = useParams<{ registrator: string }>();
   const { theme, toggleTheme } = useTheme();
+  const [games, setGames] = useState<GameOption[]>([]);
   const [game, setGame] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
+      .then(res => res.json())
+      .then(data => setGames(Array.isArray(data) ? data : []))
+      .catch(() => setGames([]));
+  }, [registrator]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,18 +42,21 @@ export default function FreeKeyPage() {
       const res = await fetch('/api/free-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, turnstileToken }),
+        body: JSON.stringify({ game, turnstileToken, registrator }),
       });
       const data = await res.json();
 
       if (res.ok) {
         setResult(data.key);
+        setError(null);
         toast.success('Key generated!');
       } else {
-        toast.error(data.error || 'Failed to generate key');
+        setError(data.error || 'Failed to generate key');
+        setResult(null);
       }
     } catch {
-      toast.error('Network error');
+      setError('Network error');
+      setResult(null);
     } finally {
       setLoading(false);
       setTurnstileToken('');
@@ -55,32 +73,42 @@ export default function FreeKeyPage() {
             </Button>
           </div>
           <CardTitle className="text-2xl font-bold">Free Key Generator</CardTitle>
-          <CardDescription>Generate a free 1-hour key</CardDescription>
+          <CardDescription>Generate a free 1-hour key from {registrator}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Game</Label>
-              <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                <SelectTrigger><SelectValue placeholder="Select game" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CODM">CODM</SelectItem>
-                  <SelectItem value="PBS">PBS</SelectItem>
-                </SelectContent>
-              </Select>
+          {error && !result && (
+            <div className="mb-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md text-center">
+              {error}
             </div>
+          )}
+          {games.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No free keys available from this reseller</p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Game</Label>
+                <Select value={game} onValueChange={v => setGame(v ?? '')}>
+                  <SelectTrigger><SelectValue placeholder="Select game" /></SelectTrigger>
+                  <SelectContent>
+                    {games.map(g => (
+                      <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="flex justify-center">
-              <Turnstile
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
-                onSuccess={setTurnstileToken}
-              />
-            </div>
+              <div className="flex justify-center">
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
+                  onSuccess={setTurnstileToken}
+                />
+              </div>
 
-            <Button type="submit" className="w-full" disabled={loading || !game || !turnstileToken}>
-              {loading ? 'Generating...' : 'Get Free Key'}
-            </Button>
-          </form>
+              <Button type="submit" className="w-full" disabled={loading || !game || !turnstileToken}>
+                {loading ? 'Generating...' : 'Get Free Key'}
+              </Button>
+            </form>
+          )}
 
           {result && (
             <div className="mt-4 p-3 bg-muted rounded-md">

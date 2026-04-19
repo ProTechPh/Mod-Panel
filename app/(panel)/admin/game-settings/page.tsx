@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 
@@ -118,6 +118,12 @@ export default function GameSettingsPage() {
     setEditGame({ ...editGame, features: { ...editGame.features, [key]: !editGame.features[key] } });
   };
 
+  const copyFreeKeyLink = (registrator: string) => {
+    const url = `${window.location.origin}/${registrator}/free-key`;
+    navigator.clipboard.writeText(url);
+    toast.success('Free key link copied');
+  };
+
   const openEditGame = (game: GameSetting) => {
     setEditGame({ ...game });
     setExpandedGame(expandedGame === game._id ? null : game._id);
@@ -173,6 +179,15 @@ export default function GameSettingsPage() {
                     <Switch checked={g.freeKeyEnabled} onCheckedChange={v => handleToggle(g.gameCode, 'freeKeyEnabled', v, g.registrator)} />
                     <span className="text-muted-foreground">Free Key</span>
                   </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => copyFreeKeyLink(g.registrator)}
+                  >
+                    <Copy className="h-3 w-3" />
+                    Free Key Link
+                  </Button>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => openEditGame(g)}>
                   {expandedGame === g._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
