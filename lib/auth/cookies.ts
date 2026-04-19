@@ -32,7 +32,10 @@ export async function setAuthCookies(
 }
 
 export function clearAuthCookies(response: NextResponse): NextResponse {
-  response.cookies.set('wp_access', '', { ...COOKIE_OPTIONS, maxAge: 0 });
-  response.cookies.set('wp_refresh', '', { ...COOKIE_OPTIONS, maxAge: 0 });
+  // Use both maxAge: 0 and expires in the past for maximum browser compatibility (Vercel edge)
+  const expiredDate = new Date(0);
+
+  response.cookies.set('wp_access', '', { ...COOKIE_OPTIONS, maxAge: 0, expires: expiredDate });
+  response.cookies.set('wp_refresh', '', { ...COOKIE_OPTIONS, maxAge: 0, expires: expiredDate });
   return response;
 }

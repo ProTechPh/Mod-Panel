@@ -15,6 +15,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
+    sessionStorage.removeItem('telegram_auth_mode');
     router.push('/login');
   };
 

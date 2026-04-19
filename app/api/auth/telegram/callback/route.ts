@@ -3,6 +3,8 @@ import { loginWithTelegram } from '@/lib/services/user-service';
 import { setAuthCookies } from '@/lib/auth/cookies';
 import { verifyTelegramAuth, isAuthDateValid } from '@/lib/auth/telegram';
 import { telegramCallbackSchema } from '@/lib/validators/auth';
+import dbConnect from '@/lib/db/connection';
+import TelegramAuthLog from '@/lib/db/models/TelegramAuthLog';
 
 async function handleTelegramLogin(data: Record<string, string>) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -22,6 +24,15 @@ async function handleTelegramLogin(data: Record<string, string>) {
   if (!isAuthDateValid(parsed.data.auth_date)) {
     return NextResponse.json({ error: 'Telegram authentication data has expired' }, { status: 401 });
   }
+
+  // Prevent replay: reject already-used hashes
+  await dbConnect();
+  const existingLog = await TelegramAuthLog.findOne({ hash: parsed.data.hash }).lean();
+  if (existingLog) {
+    return NextResponse.json({ error: 'This Telegram login has already been used' }, { status: 401 });
+  }
+
+  await TelegramAuthLog.create({ hash: parsed.data.hash });
 
   const telegramId = parseInt(parsed.data.id, 10);
   const user = await loginWithTelegram(telegramId);

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRefreshToken, signAccessToken } from '@/lib/auth/jwt';
-import { setAuthCookies } from '@/lib/auth/cookies';
 import User from '@/lib/db/models/User';
+import dbConnect from '@/lib/db/connection';
 
 export async function POST(request: NextRequest) {
   const refreshToken = request.cookies.get('wp_refresh')?.value;
@@ -12,13 +12,16 @@ export async function POST(request: NextRequest) {
   try {
     const { userId } = await verifyRefreshToken(refreshToken);
 
-    // Verify user exists and is still active
-    const user = await User.findById(userId).select('status level');
+    await dbConnect();
+    const user = await User.findById(userId).select('status level username').lean();
     if (!user || user.status !== 1) {
-      return NextResponse.json({ error: 'User not found or account disabled' }, { status: 401 });
+      const response = NextResponse.json({ error: 'User not found or account disabled' }, { status: 401 });
+      response.cookies.set('wp_access', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
+      response.cookies.set('wp_refresh', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
+      return response;
     }
 
-    const accessToken = await signAccessToken(userId, '', 1);
+    const accessToken = await signAccessToken(userId, user.username, user.level);
     const response = NextResponse.json({ success: true });
     response.cookies.set('wp_access', accessToken, {
       httpOnly: true,
@@ -29,6 +32,9 @@ export async function POST(request: NextRequest) {
     });
     return response;
   } catch {
-    return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 });
+    const response = NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 });
+    response.cookies.set('wp_access', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
+    response.cookies.set('wp_refresh', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
+    return response;
   }
 }

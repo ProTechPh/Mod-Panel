@@ -8,16 +8,21 @@ import { useAuth } from '@/components/shared/AuthProvider';
 function TelegramCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    // If already authenticated, redirect away — no re-auth needed
+    if (user) {
+      router.replace('/dashboard');
+      return;
+    }
+
     const mode = sessionStorage.getItem('telegram_auth_mode') || 'login';
     sessionStorage.removeItem('telegram_auth_mode');
 
     // Telegram can send auth data via query params or as a hash fragment
-    // Hash fragment: #tgAuthResult=<base64-encoded JSON>
     let authParams: Record<string, string> | null = null;
 
     // Check query params first (direct redirect or onTelegramAuth POST)
@@ -104,7 +109,7 @@ function TelegramCallbackContent() {
     };
 
     processAuth();
-  }, [searchParams, router, refreshUser]);
+  }, [searchParams, router, refreshUser, user]);
 
   if (status === 'processing') {
     return (
