@@ -28,27 +28,35 @@ export function DownloadSection() {
 
   useGSAP(() => {
     const ctx = gsap.context(() => {
-      gsap.from(sectionRef.current!.querySelector('.section-title')!, {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current!,
-          start: 'top 80%',
-          toggleActions: 'play none none none',
-        },
-      });
+      const section = sectionRef.current;
+      if (!section) return;
 
-      const cards = sectionRef.current!.querySelectorAll('.download-card');
+      const title = section.querySelector('.section-title');
+      if (title) {
+        gsap.from(title, {
+          y: 30,
+          opacity: 0,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      const cards = section.querySelectorAll('.download-card');
+      if (cards.length === 0) return;
+
       gsap.from(cards, {
-        y: 40,
+        y: 30,
         opacity: 0,
         stagger: 0.1,
         duration: 0.5,
         ease: 'power2.out',
         scrollTrigger: {
-          trigger: sectionRef.current!,
+          trigger: section,
           start: 'top 75%',
           toggleActions: 'play none none none',
         },

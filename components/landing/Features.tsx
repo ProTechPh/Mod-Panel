@@ -97,13 +97,19 @@ export function Features() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useGSAP(() => {
-    gsap.from(sectionRef.current!.querySelector('.section-title')!, {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const title = section.querySelector('.section-title');
+    if (!title) return;
+
+    gsap.from(title, {
       y: 30,
       opacity: 0,
       duration: 0.6,
       ease: 'power2.out',
       scrollTrigger: {
-        trigger: sectionRef.current!,
+        trigger: section,
         start: 'top 80%',
         toggleActions: 'play none none none',
       },

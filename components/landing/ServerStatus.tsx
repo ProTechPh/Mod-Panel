@@ -28,13 +28,16 @@ function StatCard({ icon, label, value, accentColor, index }: {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    gsap.from(cardRef.current!, {
+    const card = cardRef.current;
+    if (!card) return;
+
+    gsap.from(card, {
       y: 40,
       opacity: 0,
       duration: 0.5,
       ease: 'power2.out',
       scrollTrigger: {
-        trigger: cardRef.current!,
+        trigger: card,
         start: 'top 88%',
         toggleActions: 'play none none none',
       },
@@ -80,7 +83,8 @@ export function ServerStatus() {
   const counterRef = useRef({ val: 0 });
 
   useGSAP(() => {
-    if (data.activePlayers === 0) return;
+    const section = sectionRef.current;
+    if (!section || data.activePlayers === 0) return;
 
     counterRef.current.val = 0;
     gsap.to(counterRef.current, {
@@ -88,7 +92,7 @@ export function ServerStatus() {
       duration: 1.5,
       ease: 'power2.out',
       scrollTrigger: {
-        trigger: sectionRef.current!,
+        trigger: section,
         start: 'top 80%',
         toggleActions: 'play none none none',
       },

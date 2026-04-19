@@ -17,7 +17,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="relative bg-[oklch(0.08_0_0)] text-white overflow-x-hidden">
+    <main className="relative bg-[oklch(0.08_0_0)] text-white min-h-screen overflow-x-clip">
       <GrainOverlay />
       <GradientOrbs />
       <div className="relative z-10">
