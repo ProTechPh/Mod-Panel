@@ -56,7 +56,8 @@ export async function generateKeys(
   game: string,
   duration: Duration,
   maxDevices: number,
-  count: number
+  count: number,
+  userLevel?: number
 ) {
   await dbConnect();
 
@@ -66,8 +67,10 @@ export async function generateKeys(
   const user = await User.findById(userId);
   if (!user) return { error: 'User not found' };
 
-  const newSaldo = deductSaldo(user.saldo, price);
-  if (newSaldo === false) return { error: 'Insufficient saldo' };
+  // Owner has unlimited saldo
+  const isOwner = userLevel === 1 || user.level === 1;
+  const newSaldo = isOwner ? user.saldo : deductSaldo(user.saldo, price);
+  if (!isOwner && newSaldo === false) return { error: 'Insufficient saldo' };
 
   const keys: string[] = [];
   const keyDocs: InstanceType<typeof Key>[] = [];
@@ -87,7 +90,7 @@ export async function generateKeys(
   }
 
   await Key.insertMany(keyDocs);
-  await User.updateOne({ _id: userId }, { saldo: newSaldo });
+  if (!isOwner) await User.updateOne({ _id: userId }, { saldo: newSaldo });
 
   await History.create({
     keyId: keys.join(','),
@@ -95,7 +98,7 @@ export async function generateKeys(
     info: `${game}|${keys[0]?.substring(0, 4)}...|${duration}|${maxDevices}`,
   });
 
-  return { keys, newSaldo };
+  return { keys, newSaldo: isOwner ? user.saldo : (newSaldo as number) };
 }
 
 export async function validateKey(game: string, userKey: string, serial: string, connectIp: string) {

@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       parsed.data.game,
       parseDuration(parsed.data.duration),
       parsed.data.maxDevices,
-      parsed.data.count
+      parsed.data.count,
+      user.level
     );
 
     if (result.error) {
