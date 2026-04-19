@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { generateKeys } from '@/lib/services/key-service';
 import { generateKeySchema, parseDuration } from '@/lib/validators/key';
+import User from '@/lib/db/models/User';
 
 export async function POST(request: NextRequest) {
   const user = await authenticate(request);
@@ -14,9 +15,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
     }
 
+    // Resellers generate keys under their uplink admin
+    let registrator = user.username;
+    if (user.level === 3) {
+      const dbUser = await User.findById(user.userId).select('uplink').lean();
+      registrator = dbUser?.uplink || user.username;
+    }
+
     const result = await generateKeys(
       user.userId,
-      user.username,
+      registrator,
       parsed.data.game,
       parseDuration(parsed.data.duration),
       parsed.data.maxDevices,

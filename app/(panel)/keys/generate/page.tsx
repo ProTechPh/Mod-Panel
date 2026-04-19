@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,12 @@ const DURATIONS = [
   { value: '90', label: '90 Days' },
 ];
 
+interface GameOption {
+  gameCode: string;
+  gameName: string;
+  registrator: string;
+}
+
 interface KeyGenForm {
   game: string;
   duration: string;
@@ -33,12 +39,21 @@ export default function KeyGeneratePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [generatedKeys, setGeneratedKeys] = useState<string[]>([]);
+  const [games, setGames] = useState<GameOption[]>([]);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<KeyGenForm>({
     defaultValues: { game: '', duration: '1', maxDevices: 1, count: 1 },
   });
 
   const duration = watch('duration');
+  const gameValue = watch('game');
+
+  useEffect(() => {
+    fetch('/api/game-settings?mine=true')
+      .then(res => res.json())
+      .then(data => setGames(Array.isArray(data) ? data : []))
+      .catch(() => setGames([]));
+  }, []);
 
   const onSubmit = async (data: KeyGenForm) => {
     setLoading(true);
@@ -63,6 +78,8 @@ export default function KeyGeneratePage() {
     }
   };
 
+  const selectedGame = games.find(g => g.gameCode === gameValue);
+
   return (
     <div className="space-y-4 max-w-2xl">
       <h2 className="text-2xl font-bold tracking-tight">Generate Keys</h2>
@@ -75,7 +92,16 @@ export default function KeyGeneratePage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label>Game</Label>
-              <Input {...register('game', { required: 'Game is required' })} placeholder="e.g., CODM" />
+              <Select value={gameValue} onValueChange={v => setValue('game', v ?? '')}>
+                <SelectTrigger><SelectValue placeholder="Select game" /></SelectTrigger>
+                <SelectContent>
+                  {games.map(g => (
+                    <SelectItem key={`${g.gameCode}-${g.registrator}`} value={g.gameCode}>
+                      {g.gameName} ({g.gameCode})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.game && <p className="text-sm text-destructive">{errors.game.message}</p>}
             </div>
             <div className="space-y-2">

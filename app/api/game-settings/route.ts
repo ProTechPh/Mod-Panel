@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { listGameSettings, addGameSetting, updateGameSetting } from '@/lib/services/game-settings-service';
+import User from '@/lib/db/models/User';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
-  if (!user || (user.level !== 1 && user.level !== 2)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const games = await listGameSettings(user.level === 1 ? undefined : user.username);
+  const mine = request.nextUrl.searchParams.get('mine') === 'true';
+
+  let registrator: string | undefined;
+  if (mine) {
+    if (user.level === 3) {
+      // Resellers see their uplink admin's games
+      const dbUser = await User.findById(user.userId).select('uplink').lean();
+      registrator = dbUser?.uplink || user.username;
+    } else {
+      registrator = user.username;
+    }
+  } else {
+    registrator = user.level === 1 ? undefined : user.username;
+  }
+
+  const games = await listGameSettings(registrator);
   return NextResponse.json(games);
 }
 
