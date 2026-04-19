@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
+import type { ReadableStream as NodeReadableStream } from 'stream/web';
 import { authenticate } from '@/lib/auth/middleware';
 import { listLibs, getLib, uploadLib, deleteLib } from '@/lib/services/lib-service';
 
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-    const stream = Readable.fromWeb(file.stream() as unknown as ReadableStream);
+    const stream = Readable.fromWeb(file.stream() as unknown as NodeReadableStream);
 
     const lib = await uploadLib(file.name, `${sizeMB} MB`, stream, user.username);
     return NextResponse.json(lib, { status: 201 });

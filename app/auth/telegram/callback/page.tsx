@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/shared/AuthProvider';
 
-export default function TelegramCallbackPage() {
+function TelegramCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
@@ -125,5 +125,19 @@ export default function TelegramCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TelegramCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Authenticating with Telegram...</p>
+        </div>
+      }
+    >
+      <TelegramCallbackContent />
+    </Suspense>
   );
 }
