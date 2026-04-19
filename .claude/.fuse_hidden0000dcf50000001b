@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm dlx *)",
+      "Bash(npx next *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
