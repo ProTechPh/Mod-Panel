@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useTheme } from '@/components/shared/ThemeProvider';
 import { Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { APP_NAME } from '@/lib/constants';
 
@@ -117,7 +118,7 @@ export default function LoginForm() {
           </Button>
         </div>
         <div className="flex flex-col items-center gap-3 mb-2">
-          <img src="/logo.png" alt="Mod Panel Logo" className="w-16 h-16 object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]" />
+          <Image src="/logo.jpg" alt="Mod Panel Logo" width={64} height={64} priority className="w-16 h-16 object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]" />
           <CardTitle className="text-2xl font-bold">{APP_NAME}</CardTitle>
         </div>
         <CardDescription>Sign in to your account</CardDescription>

@@ -19,6 +19,11 @@ import { APP_NAME } from '@/lib/constants';
 export const metadata: Metadata = {
   title: APP_NAME,
   description: "Game mod license key management panel",
+  icons: {
+    icon: '/logo.jpg',
+    shortcut: '/logo.jpg',
+    apple: '/logo.jpg',
+  }
 };
 
 export default function RootLayout({
