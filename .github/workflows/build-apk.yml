@@ -1,0 +1,126 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - "v*.*.*"       # triggers on version tags like v1.0.1, v2.0.0
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+    inputs:
+      version:
+        description: "Version tag (e.g. v1.0.1)"
+        required: true
+        default: "v1.0.0"
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Determine version ───────────────────────────────────────
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "version=$(echo '${{ github.event.inputs.version }}' | sed 's/^v//')" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "version=$(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_OUTPUT
+          fi
+
+      # ── 3. Java 17 (required by Gradle / React Native) ────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # ── 4. Node.js ─────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      # ── 5. Install dependencies ────────────────────────────────────
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # ── 6. Update version in app.config.ts ────────────────────────
+      - name: Bump version in app.config.ts
+        working-directory: mobile
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/version: \".*\"/version: \"${VERSION}\"/" app.config.ts
+          sed -i "s/appVersion: \".*\"/appVersion: \"${VERSION}\"/" app.config.ts
+          echo "Updated to version: ${VERSION}"
+          grep "version:" app.config.ts
+
+      # ── 7. Expo prebuild (generates android/ folder) ──────────────
+      - name: Expo prebuild
+        working-directory: mobile
+        run: npx expo prebuild --platform android --clean --no-install
+
+      # ── 8. Cache Gradle dependencies ──────────────────────────────
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('mobile/android/**/*.gradle*', 'mobile/android/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
+      # ── 9. Grant Gradle execute permission ────────────────────────
+      - name: Make gradlew executable
+        working-directory: mobile/android
+        run: chmod +x gradlew
+
+      # ── 10. Build release APK ──────────────────────────────────────
+      - name: Build release APK
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease --no-daemon -Pandroid.injected.signing.store.file="" 2>&1
+
+      # ── 11. Find the generated APK ────────────────────────────────
+      - name: Locate APK
+        id: apk
+        run: |
+          APK_PATH=$(find mobile/android -name "*.apk" | grep -i release | head -1)
+          echo "path=${APK_PATH}" >> $GITHUB_OUTPUT
+          echo "Found APK: ${APK_PATH}"
+
+      # ── 12. Rename APK to include version ─────────────────────────
+      - name: Rename APK
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cp "${{ steps.apk.outputs.path }}" "ModPanel-v${VERSION}.apk"
+
+      # ── 13. Create GitHub Release & upload APK ────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Mod Panel v${{ steps.version.outputs.version }}"
+          body: |
+            ## 📦 Mod Panel v${{ steps.version.outputs.version }}
+
+            ### Installation
+            1. Download the APK below
+            2. Enable **Install unknown apps** in Android settings
+            3. Install and open the app
+
+            ### What's New
+            - See commit history for changes
+          files: ModPanel-v${{ steps.version.outputs.version }}.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
