@@ -3,10 +3,9 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth/context";
-import { useAppUpdater } from "@/lib/useAppUpdater";
+import { AppUpdater } from "@/components/AppUpdater";
 
 export default function RootLayout() {
-  useAppUpdater();
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -22,6 +21,7 @@ export default function RootLayout() {
           <Stack.Screen name="register" />
           <Stack.Screen name="(panel)" />
         </Stack>
+        <AppUpdater />
       </AuthProvider>
     </ThemeProvider>
   );
