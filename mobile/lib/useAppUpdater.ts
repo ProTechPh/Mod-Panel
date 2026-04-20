@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Alert, Linking, Platform } from "react-native";
 import Constants from "expo-constants";
+import pkg from "../package.json";
 
-const GITHUB_REPO = Constants.expoConfig?.extra?.githubRepo as string;
-const CURRENT_VERSION = Constants.expoConfig?.extra?.appVersion as string ?? "1.0.0";
+const GITHUB_REPO = (Constants.expoConfig?.extra?.githubRepo as string) ?? "";
+const CURRENT_VERSION = (Constants.expoConfig?.extra?.appVersion as string) || pkg.version;
 
 function parseVersion(v: string): number[] {
   return v.replace(/^v/, "").split(".").map(Number);
