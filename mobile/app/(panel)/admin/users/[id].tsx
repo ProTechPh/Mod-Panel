@@ -14,6 +14,9 @@ export default function UserEditScreen() {
   const [level, setLevel] = useState<number>(3);
   const [saldo, setSaldo] = useState("");
   const [status, setStatus] = useState<number>(1);
+  const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -24,6 +27,13 @@ export default function UserEditScreen() {
         setLevel(data.level);
         setSaldo(String(data.saldo));
         setStatus(data.status);
+        setFullname(data.fullname || "");
+        setEmail(data.email || "");
+        setExpirationDate(
+          data.expirationDate
+            ? new Date(data.expirationDate).toISOString().slice(0, 16)
+            : ""
+        );
       })
       .catch((e: any) => Alert.alert("Error", e.message))
       .finally(() => setLoading(false));
@@ -34,11 +44,16 @@ export default function UserEditScreen() {
     setSaving(true);
     try {
       await api.put(`/api/users/${id}`, {
+        fullname,
+        email,
         level,
         saldo: Number(saldo),
         status,
+        expirationDate,
       });
-      Alert.alert("Success", "User updated", [{ text: "OK", onPress: () => router.back() }]);
+      Alert.alert("Success", "User updated", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
     } catch (e: any) {
       Alert.alert("Error", e.message);
     } finally {
@@ -54,18 +69,48 @@ export default function UserEditScreen() {
     );
   }
 
+  const inputClass =
+    "bg-background border border-border rounded-lg px-4 py-3 text-foreground text-sm";
+
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 16 }}>
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+    >
       <Stack.Screen options={{ title: "Edit User" }} />
+
+      <Text className="text-2xl font-bold text-foreground tracking-tight mb-4">
+        Edit User: {user?.username}
+      </Text>
 
       <View className="bg-card border border-border/50 rounded-xl p-4 gap-4">
         <View>
           <Text className="text-sm text-muted-foreground mb-1">Username</Text>
           <Text className="text-foreground font-semibold">{user?.username}</Text>
         </View>
+
         <View>
-          <Text className="text-sm text-muted-foreground mb-1">Email</Text>
-          <Text className="text-foreground text-sm">{user?.email}</Text>
+          <Text className="text-sm text-muted-foreground mb-1.5">Full Name</Text>
+          <TextInput
+            className={inputClass}
+            value={fullname}
+            onChangeText={setFullname}
+            placeholder="Full name"
+            placeholderTextColor="#71717a"
+          />
+        </View>
+
+        <View>
+          <Text className="text-sm text-muted-foreground mb-1.5">Email</Text>
+          <TextInput
+            className={inputClass}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            placeholderTextColor="#71717a"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
         </View>
 
         <View>
@@ -77,7 +122,9 @@ export default function UserEditScreen() {
                 onPress={() => setLevel(l)}
                 className={cn(
                   "flex-1 py-2.5 rounded-lg items-center border",
-                  level === l ? "bg-primary/20 border-primary/50" : "bg-card border-border"
+                  level === l
+                    ? "bg-primary/20 border-primary/50"
+                    : "bg-card border-border"
                 )}
               >
                 <Text
@@ -133,11 +180,27 @@ export default function UserEditScreen() {
         <View>
           <Text className="text-sm text-muted-foreground mb-1.5">Saldo</Text>
           <TextInput
-            className="bg-background border border-border rounded-lg px-4 py-3 text-foreground text-sm font-mono"
+            className={inputClass + " font-mono"}
             keyboardType="decimal-pad"
             value={saldo}
             onChangeText={setSaldo}
           />
+        </View>
+
+        <View>
+          <Text className="text-sm text-muted-foreground mb-1.5">
+            Expiration Date
+          </Text>
+          <TextInput
+            className={inputClass}
+            value={expirationDate}
+            onChangeText={setExpirationDate}
+            placeholder="YYYY-MM-DDTHH:MM"
+            placeholderTextColor="#71717a"
+          />
+          <Text className="text-xs text-muted-foreground mt-1">
+            Format: YYYY-MM-DDTHH:MM (e.g., 2025-12-31T23:59)
+          </Text>
         </View>
 
         <Pressable

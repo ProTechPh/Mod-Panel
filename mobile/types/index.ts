@@ -78,6 +78,7 @@ export interface GameSettingItem {
   freeKeyEnabled: boolean;
   maintenanceMessage: string;
   downloadLink: string;
+  floatingTextStatus: string;
   floatingText: string;
   modName: string;
   telegramChannel: string;
