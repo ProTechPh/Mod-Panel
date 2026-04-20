@@ -52,7 +52,7 @@ jobs:
       # ── 5. Install dependencies ────────────────────────────────────
       - name: Install mobile dependencies
         working-directory: mobile
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       # ── 6. Update version in package.json + package-lock.json ──────
       - name: Bump version
