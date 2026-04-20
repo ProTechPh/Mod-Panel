@@ -1,9 +1,10 @@
 import { ExpoConfig } from "expo/config";
+import pkg from "./package.json";
 
 const config: ExpoConfig = {
   name: "Mod Panel",
   slug: "mod-panel",
-  version: "1.0.0",
+  version: pkg.version,
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "dark",
@@ -35,7 +36,7 @@ const config: ExpoConfig = {
     router: {
       origin: false,
     },
-    appVersion: "1.0.0",
+    appVersion: pkg.version,
     githubRepo: "ProTechPh/Mod-Panel",
   },
 };

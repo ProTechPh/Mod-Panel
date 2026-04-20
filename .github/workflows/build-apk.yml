@@ -54,15 +54,20 @@ jobs:
         working-directory: mobile
         run: npm ci
 
-      # ── 6. Update version in app.config.ts ────────────────────────
-      - name: Bump version in app.config.ts
+      # ── 6. Update version in package.json (single source of truth) ──
+      - name: Bump version in package.json
         working-directory: mobile
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          sed -i "s/version: \".*\"/version: \"${VERSION}\"/" app.config.ts
-          sed -i "s/appVersion: \".*\"/appVersion: \"${VERSION}\"/" app.config.ts
-          echo "Updated to version: ${VERSION}"
-          grep "version:" app.config.ts
+          # Use node to safely update the JSON
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated package.json to version: ${VERSION}"
+          node -e "console.log(require('./package.json').version)"
 
       # ── 7. Expo prebuild (generates android/ folder) ──────────────
       - name: Expo prebuild
