@@ -17,7 +17,7 @@ const AUTH_SECRET = process.env.AUTH_SECRET;
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api/libs/serve')) {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api/libs/serve') || /\.(jpg|jpeg|png|gif|svg|ico|webp|woff2?|ttf|eot|css|js|json|mp4|webm)$/i.test(pathname)) {
     return NextResponse.next();
   }
 
