@@ -78,7 +78,7 @@ function TelegramCallbackContent() {
           if (res.ok) {
             toast.success('Telegram account connected');
             await refreshUser();
-            router.push('/settings');
+            router.replace('/settings');
             return;
           }
 
@@ -91,7 +91,7 @@ function TelegramCallbackContent() {
 
           if (res.ok) {
             toast.success('Login successful');
-            router.push('/dashboard');
+            router.replace('/dashboard');
             return;
           }
 

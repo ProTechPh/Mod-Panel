@@ -55,7 +55,7 @@ export default function EditUserPage() {
     });
     if (res.ok) {
       toast.success('User updated');
-      router.push('/admin/users');
+      router.replace('/admin/users');
     } else {
       toast.error('Failed to update user');
     }

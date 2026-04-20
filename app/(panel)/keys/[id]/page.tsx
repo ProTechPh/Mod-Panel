@@ -50,7 +50,7 @@ export default function EditKeyPage() {
     });
     if (res.ok) {
       toast.success('Key updated');
-      router.push('/keys');
+      router.replace('/keys');
     } else {
       toast.error('Failed to update key');
     }
