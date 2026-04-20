@@ -54,20 +54,14 @@ jobs:
         working-directory: mobile
         run: npm ci
 
-      # ── 6. Update version in package.json (single source of truth) ──
-      - name: Bump version in package.json
+      # ── 6. Update version in package.json + package-lock.json ──────
+      - name: Bump version
         working-directory: mobile
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # Use node to safely update the JSON
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '${VERSION}';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          echo "Updated package.json to version: ${VERSION}"
-          node -e "console.log(require('./package.json').version)"
+          # npm version updates both package.json AND package-lock.json
+          npm version "${VERSION}" --no-git-tag-version --allow-same-version
+          echo "Version set to: $(node -e "console.log(require('./package.json').version)")"
 
       # ── 7. Expo prebuild (generates android/ folder) ──────────────
       - name: Expo prebuild
