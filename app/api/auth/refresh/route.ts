@@ -4,7 +4,11 @@ import User from '@/lib/db/models/User';
 import dbConnect from '@/lib/db/connection';
 
 export async function POST(request: NextRequest) {
-  const refreshToken = request.cookies.get('wp_refresh')?.value;
+  const authHeader = request.headers.get('authorization');
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const cookieToken = request.cookies.get('wp_refresh')?.value;
+  const refreshToken = bearerToken || cookieToken;
+
   if (!refreshToken) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
@@ -22,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const accessToken = await signAccessToken(userId, user.username, user.level);
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true, accessToken });
     response.cookies.set('wp_access', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

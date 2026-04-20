@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { registerUser } from '@/lib/services/user-service';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 import { registerSchema } from '@/lib/validators/auth';
 
 export async function POST(request: NextRequest) {
@@ -16,8 +17,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or already used referral code, or username/email taken' }, { status: 400 });
     }
 
+    const accessToken = await signAccessToken(user.userId, user.username, user.level);
+    const refreshToken = await signRefreshToken(user.userId);
+
     const response = NextResponse.json({
       success: true,
+      accessToken,
+      refreshToken,
       user: { username: user.username, level: user.level },
     });
 
