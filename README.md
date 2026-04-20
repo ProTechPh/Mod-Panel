@@ -12,6 +12,13 @@ yarn dev
 pnpm dev
 # or
 bun dev
+git push origin main
+git tag v1.0.1
+git push origin main
+git push origin v1.0.1
+# Kasama na ang update ng package-lock.json
+npm version 1.0.1 --no-git-tag-version
+
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
