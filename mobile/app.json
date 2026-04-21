@@ -2,13 +2,15 @@
   "expo": {
     "name": "Mod Panel",
     "slug": "mod-panel",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "owner": "jericko",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "modpanel",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -44,7 +46,7 @@
       "router": {
         "origin": false
       },
-      "appVersion": "1.0.6",
+      "appVersion": "1.0.7",
       "githubRepo": "ProTechPh/Mod-Panel",
       "eas": {
         "projectId": "f3ebfcb1-316e-466f-be4c-358aeb7b3016"
