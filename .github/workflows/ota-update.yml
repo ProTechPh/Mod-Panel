@@ -17,11 +17,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
+          eas-version: latest
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
 
       - name: Publish OTA update
         working-directory: mobile
-        run: eas update --auto --non-interactive --channel production
+        run: npx eas update --auto --non-interactive --channel production
