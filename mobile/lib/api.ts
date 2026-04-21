@@ -8,6 +8,8 @@ import {
 } from "@/lib/auth/token";
 import { API_URL } from "@/lib/constants";
 
+const DEFAULT_ERROR_MESSAGE = "Request failed";
+
 class ApiClient {
   private baseUrl: string;
   private refreshing: Promise<boolean> | null = null;
@@ -58,12 +60,12 @@ class ApiClient {
       try {
         data = JSON.parse(text);
       } catch {
-        data = { error: text.trim() || "Request failed" };
+        data = { error: text.trim() || DEFAULT_ERROR_MESSAGE };
       }
     }
 
     if (!response.ok) {
-      throw new Error(this.getErrorMessage(data) || "Request failed");
+      throw new Error(this.getErrorMessage(data) || DEFAULT_ERROR_MESSAGE);
     }
     return data;
   }
@@ -74,6 +76,12 @@ class ApiClient {
     if (typeof record.error === "string") return record.error;
     if (typeof record.message === "string") return record.message;
     return null;
+  }
+
+  private getAccessToken(data: unknown): string | null {
+    if (!data || typeof data !== "object") return null;
+    const record = data as Record<string, unknown>;
+    return typeof record.accessToken === "string" ? record.accessToken : null;
   }
 
   private async tryRefresh(): Promise<boolean> {
@@ -100,8 +108,8 @@ class ApiClient {
           data = null;
         }
       }
-      if (data && typeof data === "object" && typeof (data as Record<string, unknown>).accessToken === "string") {
-        const accessToken = (data as Record<string, string>).accessToken;
+      const accessToken = this.getAccessToken(data);
+      if (accessToken) {
         await saveTokens(accessToken, refreshToken);
         // Save both cookie values so getHeaders() works correctly on retry
         await saveCookieValues(accessToken, refreshToken);
