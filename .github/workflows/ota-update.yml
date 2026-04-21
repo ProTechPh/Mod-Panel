@@ -39,6 +39,6 @@ jobs:
 
       - name: Publish OTA update
         working-directory: mobile
-        run: npx eas update --auto --non-interactive --channel production
+        run: eas update --auto --non-interactive --channel production
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
