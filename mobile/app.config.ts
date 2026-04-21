@@ -40,7 +40,7 @@ export default {
     router: {
       origin: false,
     },
-    appVersion: pkg.version,
+    appVersion: "1.0.6",
     githubRepo: "ProTechPh/Mod-Panel",
     eas: {
       projectId: "f3ebfcb1-316e-466f-be4c-358aeb7b3016",
