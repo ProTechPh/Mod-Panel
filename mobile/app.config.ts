@@ -1,9 +1,7 @@
-import pkg from "./package.json";
-
 export default {
   name: "Mod Panel",
   slug: "mod-panel",
-  version: pkg.version,
+  version: "1.0.6",
   owner: "jericko",
   orientation: "portrait",
   icon: "./assets/icon.png",
