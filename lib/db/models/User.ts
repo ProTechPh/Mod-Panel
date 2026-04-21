@@ -24,6 +24,6 @@ UserSchema.index({ level: 1 });
 UserSchema.index({ status: 1 });
 UserSchema.index({ uplink: 1 });
 UserSchema.index({ expirationDate: 1 });
-UserSchema.index({ telegramId: 1 }, { sparse: true, unique: true });
+UserSchema.index({ telegramId: 1 }, { unique: true, partialFilterExpression: { telegramId: { $exists: true, $ne: null } } });
 
 export default mongoose.models.User || mongoose.model<UserDoc & Document>('User', UserSchema);
