@@ -139,7 +139,7 @@ export default function RegisterScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable onPress={() => router.replaceace("/login")} className="items-center mt-2">
+              <Pressable onPress={() => router.replace("/login")} className="items-center mt-2">
                 <Text className="text-muted-foreground text-sm">
                   Already have an account?{" "}
                   <Text className="text-primary font-semibold">Sign in</Text>

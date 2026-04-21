@@ -198,7 +198,7 @@ export default function DocsPage() {
   "web_info": {
     "_client": "Mod Panel",
     "license": "<LICENSE_KEY>",
-    "version": "3.0.0"
+    "version": "3.0.5"
   },
   "web__dev": {
     "author": "ProTech Dev",

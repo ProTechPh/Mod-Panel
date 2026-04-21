@@ -2,31 +2,42 @@ import { View, Text, ScrollView, RefreshControl } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
-import { formatDuration, levelName } from "@/lib/utils";
-import type { KeyStats } from "@/types";
+import { levelName } from "@/lib/utils";
 import { Key, CheckCircle, XCircle, Clock } from "lucide-react-native";
+import { KeyTrendsChart } from "@/components/dashboard/KeyTrendsChart";
+import { StatusPieChart } from "@/components/dashboard/StatusPieChart";
+import { GameDistChart } from "@/components/dashboard/GameDistChart";
+import { ActivityChart } from "@/components/dashboard/ActivityChart";
+
+interface AnalyticsData {
+  keyStats: { total: number; active: number; expired: number; blocked: number; unused: number };
+  keyTrends: { date: string; count: number }[];
+  gameDistribution: { game: string; count: number }[];
+  statusDistribution: { status: string; count: number }[];
+  recentActivity: { date: string; created: number; expired: number }[];
+}
 
 export default function DashboardScreen() {
   const { user, refreshUser, loading: authLoading } = useAuth();
-  const [stats, setStats] = useState<KeyStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStats = useCallback(async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
-      const data = await api.get("/api/keys/stats");
-      setStats(data);
+      const data = await api.get("/api/analytics");
+      setAnalytics(data);
     } catch {}
   }, []);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refreshUser(), fetchStats()]);
+    await Promise.all([refreshUser(), fetchAnalytics()]);
     setRefreshing(false);
-  }, [refreshUser, fetchStats]);
+  }, [refreshUser, fetchAnalytics]);
 
   if (authLoading) {
     return (
@@ -36,6 +47,7 @@ export default function DashboardScreen() {
     );
   }
 
+  const stats = analytics?.keyStats;
   const cards = [
     { label: "Total", value: stats?.total ?? 0, icon: Key, color: "#3b82f6" },
     { label: "Active", value: stats?.active ?? 0, icon: CheckCircle, color: "#22c55e" },
@@ -69,6 +81,13 @@ export default function DashboardScreen() {
             <Text className="text-2xl font-bold text-foreground">{card.value}</Text>
           </View>
         ))}
+      </View>
+
+      <View className="mt-4 gap-4">
+        <KeyTrendsChart data={analytics?.keyTrends ?? []} />
+        <StatusPieChart data={analytics?.statusDistribution ?? []} />
+        <ActivityChart data={analytics?.recentActivity ?? []} />
+        <GameDistChart data={analytics?.gameDistribution ?? []} />
       </View>
 
       <View className="bg-card border border-border/50 rounded-xl p-4 mt-4">

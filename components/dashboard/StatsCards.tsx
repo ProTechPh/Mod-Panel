@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/components/shared/AuthProvider';
 import { Key, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface KeyStats {
@@ -13,17 +11,11 @@ interface KeyStats {
   unused: number;
 }
 
-export default function StatsCards() {
-  const { user } = useAuth();
-  const [stats, setStats] = useState<KeyStats | null>(null);
+interface StatsCardsProps {
+  stats?: KeyStats;
+}
 
-  useEffect(() => {
-    fetch('/api/keys/stats')
-      .then(res => res.json())
-      .then(setStats)
-      .catch(() => {});
-  }, []);
-
+export default function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     { label: 'Total Keys', value: stats?.total ?? 0, icon: Key, color: 'text-blue-500' },
     { label: 'Active', value: stats?.active ?? 0, icon: CheckCircle, color: 'text-green-500' },

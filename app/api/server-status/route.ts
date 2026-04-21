@@ -24,7 +24,7 @@ export async function GET() {
         maintenanceMessage: config.maintenanceMessage || '',
         activePlayers: activeKeys,
         totalSlots: 500,
-        version: enabledGames[0]?.modName || '3.0.0',
+        version: enabledGames[0]?.modName || '3.0.5',
         modName: config.modName || '',
       },
     });
@@ -37,7 +37,7 @@ export async function GET() {
         maintenanceMessage: '',
         activePlayers: 0,
         totalSlots: 500,
-        version: '3.0.0',
+        version: '3.0.5',
         modName: '',
       },
     });
