@@ -1,7 +1,6 @@
-import { ExpoConfig } from "expo/config";
-import pkg from "./package.json";
+const pkg = require("./package.json");
 
-const config: ExpoConfig = {
+export default {
   name: "Mod Panel",
   slug: "mod-panel",
   version: pkg.version,
@@ -50,5 +49,3 @@ const config: ExpoConfig = {
     },
   },
 };
-
-export default config;
