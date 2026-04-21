@@ -127,6 +127,45 @@ class ApiClient {
   async delete(path: string): Promise<any> {
     return this.request("DELETE", path);
   }
+
+  async upload(path: string, formData: FormData): Promise<any> {
+    const cookie = await getCookieHeader();
+    const headers: Record<string, string> = {};
+    if (cookie) {
+      headers["Cookie"] = cookie;
+    } else {
+      const refreshToken = await getRefreshToken();
+      if (refreshToken) headers["Cookie"] = `wp_refresh=${refreshToken}`;
+    }
+
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    try {
+      return await this.handleResponse(response);
+    } catch (e: any) {
+      if (e.message === "RETRY") {
+        const freshCookie = await getCookieHeader();
+        const retryHeaders: Record<string, string> = {};
+        if (freshCookie) {
+          retryHeaders["Cookie"] = freshCookie;
+        } else {
+          const rt = await getRefreshToken();
+          if (rt) retryHeaders["Cookie"] = `wp_refresh=${rt}`;
+        }
+        const retryResponse = await fetch(`${this.baseUrl}${path}`, {
+          method: "POST",
+          headers: retryHeaders,
+          body: formData,
+        });
+        return this.handleResponse(retryResponse);
+      }
+      throw e;
+    }
+  }
 }
 
 export const api = new ApiClient();

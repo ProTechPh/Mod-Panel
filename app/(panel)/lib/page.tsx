@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Upload, Trash2, Download } from 'lucide-react';
+import { Upload, Trash2, Download, Link } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lib {
@@ -53,7 +53,8 @@ export default function LibPage() {
         toast.success('File uploaded');
         fetchLibs();
       } else {
-        toast.error('Upload failed');
+        const data = await res.json();
+        toast.error(data.error || 'Upload failed');
       }
     } catch {
       toast.error('Upload failed');
@@ -110,13 +111,16 @@ export default function LibPage() {
                   <TableCell className="text-xs">{lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : ''}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-1 justify-end">
-                      <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
-                        <Button variant="ghost" size="sm"><Download className="h-3 w-3" /></Button>
-                      </a>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(lib._id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
-                    </div>
+                       <Button variant="ghost" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}>
+                         <Link className="h-3 w-3" />
+                       </Button>
+                       <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
+                         <Button variant="ghost" size="sm"><Download className="h-3 w-3" /></Button>
+                       </a>
+                       <Button variant="ghost" size="sm" onClick={() => handleDelete(lib._id)}>
+                         <Trash2 className="h-3 w-3 text-destructive" />
+                       </Button>
+                     </div>
                   </TableCell>
                 </TableRow>
               ))}

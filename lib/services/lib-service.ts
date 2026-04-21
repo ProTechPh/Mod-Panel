@@ -2,18 +2,10 @@ import dbConnect from '@/lib/db/connection';
 import Lib from '@/lib/db/models/Lib';
 import { uploadToFtp, deleteFromFtp } from '@/lib/ftp/client';
 import { Readable } from 'stream';
-import { randomBytes } from 'crypto';
 
 function sanitize(lib: any) {
   const { ftpUrl, ...rest } = lib.toObject ? lib.toObject() : lib;
   return { ...rest, _id: rest._id.toString(), uploadedAt: rest.uploadedAt?.toISOString() };
-}
-
-function makeUniqueName(fileName: string): string {
-  const suffix = randomBytes(4).toString('hex');
-  const dotIndex = fileName.lastIndexOf('.');
-  if (dotIndex === -1) return `${fileName}_${suffix}`;
-  return `${fileName.slice(0, dotIndex)}_${suffix}${fileName.slice(dotIndex)}`;
 }
 
 export async function listLibs(registrator?: string) {
@@ -33,15 +25,16 @@ export async function getLib(id: string) {
 export async function uploadLib(fileName: string, fileSize: string, stream: Readable, uploadedBy: string) {
   await dbConnect();
 
-  let storedName = fileName;
-  const existing = await Lib.findOne({ fileName: storedName }).lean();
+  const existing = await Lib.findOne({ fileName }).lean();
   if (existing) {
-    storedName = makeUniqueName(fileName);
+    const error: any = new Error('A file with this name already exists. Please rename your file and try again.');
+    error.code = 'DUPLICATE_FILENAME';
+    throw error;
   }
 
-  const ftpUrl = await uploadToFtp(storedName, stream);
+  const ftpUrl = await uploadToFtp(fileName, stream);
   const lib = await Lib.create({
-    fileName: storedName,
+    fileName,
     displayName: fileName,
     ftpUrl,
     fileSize,

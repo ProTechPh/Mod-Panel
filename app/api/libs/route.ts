@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
 
     const lib = await uploadLib(file.name, `${sizeMB} MB`, stream, user.username);
     return NextResponse.json(lib, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 'DUPLICATE_FILENAME') {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     console.error('Lib upload error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
