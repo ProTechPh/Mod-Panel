@@ -8,6 +8,8 @@ import {
 } from "@/lib/auth/token";
 import { API_URL } from "@/lib/constants";
 
+const DEFAULT_ERROR_MESSAGE = "Request failed";
+
 class ApiClient {
   private baseUrl: string;
   private refreshing: Promise<boolean> | null = null;
@@ -53,11 +55,33 @@ class ApiClient {
       throw new Error("Unauthorized");
     }
 
-    const data = text ? JSON.parse(text) : null;
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { error: text.trim() || DEFAULT_ERROR_MESSAGE };
+      }
+    }
+
     if (!response.ok) {
-      throw new Error(data?.error || "Request failed");
+      throw new Error(this.getErrorMessage(data) || DEFAULT_ERROR_MESSAGE);
     }
     return data;
+  }
+
+  private getErrorMessage(data: unknown): string | null {
+    if (!data || typeof data !== "object") return null;
+    const record = data as Record<string, unknown>;
+    if (typeof record.error === "string") return record.error;
+    if (typeof record.message === "string") return record.message;
+    return null;
+  }
+
+  private getAccessToken(data: unknown): string | null {
+    if (!data || typeof data !== "object") return null;
+    const record = data as Record<string, unknown>;
+    return typeof record.accessToken === "string" ? record.accessToken : null;
   }
 
   private async tryRefresh(): Promise<boolean> {
@@ -76,11 +100,19 @@ class ApiClient {
       if (!response.ok) return false;
 
       const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-      if (data?.accessToken) {
-        await saveTokens(data.accessToken, refreshToken);
+      let data: unknown = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = null;
+        }
+      }
+      const accessToken = this.getAccessToken(data);
+      if (accessToken) {
+        await saveTokens(accessToken, refreshToken);
         // Save both cookie values so getHeaders() works correctly on retry
-        await saveCookieValues(data.accessToken, refreshToken);
+        await saveCookieValues(accessToken, refreshToken);
         return true;
       }
       return false;
