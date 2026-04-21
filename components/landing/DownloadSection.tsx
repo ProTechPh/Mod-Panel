@@ -81,7 +81,7 @@ export function DownloadSection() {
             <div key={link._id} className="download-card glass-card rounded-xl p-6 flex flex-col items-center gap-4">
               <Smartphone className="size-8 text-muted-foreground" />
               <h3 className="font-semibold">{link.appName}</h3>
-              <Button className="w-full" render={<a href={link.downloadUrl} target="_blank" rel="noopener noreferrer" />}>
+              <Button className="w-full" nativeButton={false} render={<a href={link.downloadUrl} target="_blank" rel="noopener noreferrer" />}>
                 <Download className="size-4 mr-2" />
                 Download
               </Button>

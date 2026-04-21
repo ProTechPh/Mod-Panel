@@ -66,6 +66,8 @@ export interface UserItem {
   saldo: number;
   status: UserStatus;
   expirationDate: string;
+  telegramId: number | null;
+  telegramUsername: string;
   createdAt: string;
 }
 

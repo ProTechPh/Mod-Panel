@@ -1,11 +1,13 @@
-import { View, Text, TextInput, Pressable, Switch, Alert, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, Switch, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import type { ServerConfig } from "@/types";
 
 export default function ServerScreen() {
   const { user } = useAuth();
+  const toast = useToast();
   const [config, setConfig] = useState<ServerConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -14,7 +16,7 @@ export default function ServerScreen() {
     api
       .get("/api/server-config")
       .then((data) => setConfig(data))
-      .catch(() => Alert.alert("Error", "Failed to load config"))
+      .catch(() => toast.error("Error", "Failed to load config"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -38,9 +40,9 @@ export default function ServerScreen() {
     setSaving(true);
     try {
       await api.put("/api/server-config", config);
-      Alert.alert("Success", "Config saved");
+      toast.success("Saved", "Config saved successfully");
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setSaving(false);
     }

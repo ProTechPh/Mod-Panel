@@ -1,12 +1,16 @@
-import { View, Text, FlatList, Pressable, Alert, RefreshControl } from "react-native";
+import { View, Text, FlatList, Pressable, RefreshControl } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
+import { formatDuration } from "@/lib/utils";
+import { levelName } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
 import type { HistoryEntry } from "@/types";
 import { Trash2 } from "lucide-react-native";
 
 export default function HistoryScreen() {
   const { user } = useAuth();
+  const toast = useToast();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -15,7 +19,7 @@ export default function HistoryScreen() {
       const data = await api.get("/api/history");
       setHistory(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     }
   }, []);
 
@@ -29,34 +33,20 @@ export default function HistoryScreen() {
     setRefreshing(false);
   }, [fetchHistory]);
 
-  const handleClear = async () => {
-    Alert.alert("Clear History", "Clear all your history?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear",
-        style: "destructive",
-        onPress: async () => {
-          await api.delete("/api/history");
-          Alert.alert("Success", "History cleared");
-          fetchHistory();
-        },
-      },
-    ]);
+  const handleClear = () => {
+    toast.confirm("Clear History", "Clear all your history?", async () => {
+      await api.delete("/api/history");
+      toast.success("Cleared", "History cleared");
+      fetchHistory();
+    });
   };
 
-  const handleClearAll = async () => {
-    Alert.alert("Clear ALL History", "This cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear All",
-        style: "destructive",
-        onPress: async () => {
-          await api.delete("/api/history?all=true");
-          Alert.alert("Success", "All history cleared");
-          fetchHistory();
-        },
-      },
-    ]);
+  const handleClearAll = () => {
+    toast.confirm("Clear ALL History", "This cannot be undone.", async () => {
+      await api.delete("/api/history?all=true");
+      toast.success("Cleared", "All history cleared");
+      fetchHistory();
+    });
   };
 
   const renderItem = ({ item }: { item: HistoryEntry }) => (

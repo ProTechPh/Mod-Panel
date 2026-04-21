@@ -1,13 +1,15 @@
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { api } from "@/lib/api";
 import { levelName, cn } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
 import type { UserItem } from "@/types";
 
 export default function UserEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const toast = useToast();
   const [user, setUser] = useState<UserItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,7 +37,7 @@ export default function UserEditScreen() {
             : ""
         );
       })
-      .catch((e: any) => Alert.alert("Error", e.message))
+      .catch((e: any) => toast.error("Error", e.message))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -51,11 +53,10 @@ export default function UserEditScreen() {
         status,
         expirationDate,
       });
-      Alert.alert("Success", "User updated", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      toast.success("Updated", "User updated");
+      router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setSaving(false);
     }

@@ -1,13 +1,15 @@
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { api } from "@/lib/api";
 import { formatDuration, cn } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
 import type { KeyItem } from "@/types";
 
 export default function KeyEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const toast = useToast();
   const [key, setKey] = useState<KeyItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,7 +27,7 @@ export default function KeyEditScreen() {
         setGame(data.game);
         setMaxDevices(String(data.maxDevices));
       })
-      .catch((e: any) => Alert.alert("Error", e.message))
+      .catch((e: any) => toast.error("Error", e.message))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -38,11 +40,10 @@ export default function KeyEditScreen() {
         maxDevices: Number(maxDevices),
         status,
       });
-      Alert.alert("Success", "Key updated", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      toast.success("Updated", "Key updated");
+      router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setSaving(false);
     }

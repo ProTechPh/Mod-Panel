@@ -22,6 +22,8 @@ interface User {
   saldo: number;
   status: number;
   expirationDate: string;
+  telegramId: number | null;
+  telegramUsername: string;
 }
 
 interface Referral {
@@ -112,6 +114,7 @@ export default function UsersPage() {
                     <TableHead>Level</TableHead>
                     <TableHead>Saldo</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Telegram</TableHead>
                     <TableHead>Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -124,6 +127,15 @@ export default function UsersPage() {
                       <TableCell><Badge variant="outline">{levelLabel(u.level)}</Badge></TableCell>
                       <TableCell className="font-mono">${u.saldo?.toFixed(2)}</TableCell>
                       <TableCell><Badge variant={u.status === 1 ? 'default' : 'destructive'}>{statusLabel(u.status)}</Badge></TableCell>
+                      <TableCell>
+                        {u.telegramId ? (
+                          <Badge variant="default" className="gap-1 bg-blue-600 hover:bg-blue-700">
+                            @ {u.telegramUsername || u.telegramId}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-muted-foreground">Not linked</Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-xs">{u.expirationDate ? new Date(u.expirationDate).toLocaleDateString() : ''}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">

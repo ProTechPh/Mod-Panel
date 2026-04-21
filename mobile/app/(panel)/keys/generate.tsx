@@ -1,8 +1,9 @@
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import type { GameOption } from "@/types";
 
 const DURATIONS = [
@@ -19,6 +20,7 @@ const DURATIONS = [
 
 export default function KeyGenerateScreen() {
   const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [generatedKeys, setGeneratedKeys] = useState<string[]>([]);
   const [games, setGames] = useState<GameOption[]>([]);
@@ -38,7 +40,7 @@ export default function KeyGenerateScreen() {
 
   const onSubmit = async () => {
     if (!game) {
-      Alert.alert("Error", "Please select a game");
+      toast.error("No Game", "Please select a game");
       return;
     }
     setLoading(true);
@@ -50,9 +52,9 @@ export default function KeyGenerateScreen() {
         count: Number(count),
       });
       setGeneratedKeys(result.keys || []);
-      Alert.alert("Success", `Generated ${result.keys?.length || 0} key(s)`);
+      toast.success("Generated", `Generated ${result.keys?.length || 0} key(s)`);
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to generate keys");
+      toast.error("Error", e.message || "Failed to generate keys");
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function KeyGenerateScreen() {
     if (generatedKeys.length === 0) return;
     const text = generatedKeys.join("\n");
     await Clipboard.setStringAsync(text);
-    Alert.alert("Copied", "Keys copied to clipboard");
+    toast.info("Copied", "Keys copied to clipboard");
   };
 
   return (

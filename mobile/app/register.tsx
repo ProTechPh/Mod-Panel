@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, Image, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/lib/api";
 import { saveTokens } from "@/lib/auth/token";
 import { useAuth } from "@/lib/auth/context";
+import { useToast } from "@/components/Toast";
 import { APP_NAME } from "@/lib/constants";
 
 const registerSchema = z
@@ -33,6 +34,7 @@ type RegisterInput = z.infer<typeof registerSchema>;
 export default function RegisterScreen() {
   const router = useRouter();
   const { refreshUser } = useAuth();
+  const toast = useToast();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +66,7 @@ export default function RegisterScreen() {
         router.replace("/(panel)/dashboard");
       }
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Registration failed");
+      toast.error("Registration Failed", e.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

@@ -1,11 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Modal, View, Text, TouchableOpacity, Linking, Platform, ActivityIndicator } from "react-native";
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 import pkg from "../package.json";
-import { Rocket, ArrowRight, Download } from "lucide-react-native";
+import { Rocket, ArrowRight, Download, RefreshCw } from "lucide-react-native";
 
 const GITHUB_REPO = (Constants.expoConfig?.extra?.githubRepo as string) ?? "";
 const CURRENT_VERSION = (Constants.expoConfig?.extra?.appVersion as string) || pkg.version;
+
+const IS_DEV = __DEV__;
 
 function parseVersion(v: string): number[] {
   return v.replace(/^v/, "").split(".").map(Number);
@@ -23,48 +26,93 @@ function isNewer(latest: string, current: string): boolean {
   return false;
 }
 
+type UpdateType = "ota" | "apk";
+
 export function AppUpdater() {
   const [showUpdate, setShowUpdate] = useState(false);
+  const [updateType, setUpdateType] = useState<UpdateType>("ota");
   const [latestVersion, setLatestVersion] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [applying, setApplying] = useState(false);
   const checked = useRef(false);
 
+  const checkOtaUpdate = useCallback(async (): Promise<boolean> => {
+    if (IS_DEV) return false;
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      if (update.isAvailable) {
+        setUpdateType("ota");
+        setLatestVersion(update.manifest?.extra?.appVersion ?? "new");
+        setShowUpdate(true);
+        return true;
+      }
+    } catch {
+      // OTA check failed, fall through to GitHub check
+    }
+    return false;
+  }, []);
+
+  const checkGithubUpdate = useCallback(async () => {
+    if (!GITHUB_REPO || Platform.OS !== "android") return;
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+        { headers: { Accept: "application/vnd.github+json" } }
+      );
+      if (!res.ok) return;
+
+      const release = await res.json();
+      const latestTag: string = release.tag_name ?? "";
+      const version = latestTag.replace(/^v/, "");
+
+      if (!version || !isNewer(version, CURRENT_VERSION)) return;
+
+      const apkAsset = (release.assets as any[]).find(
+        (a: any) => a.name?.endsWith(".apk")
+      );
+      const url: string = apkAsset?.browser_download_url ?? release.html_url;
+
+      setUpdateType("apk");
+      setLatestVersion(version);
+      setDownloadUrl(url);
+      setShowUpdate(true);
+    } catch {
+      // Silently ignore network errors
+    }
+  }, []);
+
   useEffect(() => {
-    if (checked.current || !GITHUB_REPO || Platform.OS !== "android") return;
+    if (checked.current) return;
     checked.current = true;
 
-    const checkUpdate = async () => {
-      try {
-        const res = await fetch(
-          `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
-          { headers: { Accept: "application/vnd.github+json" } }
-        );
-        if (!res.ok) return;
-
-        const release = await res.json();
-        const latestTag: string = release.tag_name ?? "";
-        const version = latestTag.replace(/^v/, "");
-
-        if (!version || !isNewer(version, CURRENT_VERSION)) return;
-
-        // Find the APK asset in the release
-        const apkAsset = (release.assets as any[]).find(
-          (a: any) => a.name?.endsWith(".apk")
-        );
-        const url: string = apkAsset?.browser_download_url ?? release.html_url;
-
-        setLatestVersion(version);
-        setDownloadUrl(url);
-        setShowUpdate(true);
-      } catch {
-        // Silently ignore network errors
+    const check = async () => {
+      const hasOta = await checkOtaUpdate();
+      if (!hasOta) {
+        await checkGithubUpdate();
       }
     };
 
-    // Delay check slightly so it doesn't block app startup
-    const timer = setTimeout(checkUpdate, 3000);
+    const timer = setTimeout(check, 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [checkOtaUpdate, checkGithubUpdate]);
+
+  const handleApplyOta = async () => {
+    if (applying) return;
+    setApplying(true);
+    try {
+      const result = await Updates.fetchUpdateAsync();
+      if (result.isNew) {
+        await Updates.reloadAsync();
+      }
+    } catch {
+      setApplying(false);
+    }
+  };
+
+  const handleClose = () => {
+    setShowUpdate(false);
+    setApplying(false);
+  };
 
   if (!showUpdate) return null;
 
@@ -74,11 +122,19 @@ export function AppUpdater() {
         <View className="bg-card w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-border">
           <View className="items-center mb-6">
             <View className="w-16 h-16 bg-purple-600/20 rounded-full items-center justify-center mb-4">
-              <Rocket size={32} color="#a855f7" />
+              {updateType === "ota" ? (
+                <RefreshCw size={32} color="#a855f7" />
+              ) : (
+                <Rocket size={32} color="#a855f7" />
+              )}
             </View>
-            <Text className="text-2xl font-bold text-foreground mb-2">Update Available</Text>
+            <Text className="text-2xl font-bold text-foreground mb-2">
+              {updateType === "ota" ? "Update Ready" : "Update Available"}
+            </Text>
             <Text className="text-muted-foreground text-center text-base">
-              A new version of Mod Panel is ready to install.
+              {updateType === "ota"
+                ? "A quick update is ready. No download needed — just restart."
+                : "A new version of Mod Panel is ready to install."}
             </Text>
           </View>
 
@@ -92,22 +148,42 @@ export function AppUpdater() {
             </View>
             <View className="items-end">
               <Text className="text-purple-400 text-xs font-medium uppercase tracking-wider mb-1">New</Text>
-              <Text className="text-purple-400 font-bold">v{latestVersion}</Text>
+              <Text className="text-purple-400 font-bold">
+                {updateType === "ota" ? "Latest" : `v${latestVersion}`}
+              </Text>
             </View>
           </View>
 
           <View className="flex-col gap-3">
-            <TouchableOpacity
-              onPress={() => Linking.openURL(downloadUrl)}
-              className="w-full bg-purple-600 py-4 rounded-xl items-center flex-row justify-center"
-              activeOpacity={0.8}
-            >
-              <Download size={20} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text className="text-white font-bold text-base">Download Update</Text>
-            </TouchableOpacity>
+            {updateType === "ota" ? (
+              <TouchableOpacity
+                onPress={handleApplyOta}
+                disabled={applying}
+                className="w-full bg-purple-600 py-4 rounded-xl items-center flex-row justify-center"
+                activeOpacity={0.8}
+              >
+                {applying ? (
+                  <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 8 }} />
+                ) : (
+                  <RefreshCw size={20} color="#ffffff" style={{ marginRight: 8 }} />
+                )}
+                <Text className="text-white font-bold text-base">
+                  {applying ? "Applying..." : "Restart & Update"}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(downloadUrl)}
+                className="w-full bg-purple-600 py-4 rounded-xl items-center flex-row justify-center"
+                activeOpacity={0.8}
+              >
+                <Download size={20} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text className="text-white font-bold text-base">Download Update</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
-              onPress={() => setShowUpdate(false)}
+              onPress={handleClose}
               className="w-full py-4 rounded-xl items-center"
               activeOpacity={0.6}
             >

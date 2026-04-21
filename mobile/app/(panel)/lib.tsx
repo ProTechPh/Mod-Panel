@@ -1,15 +1,17 @@
-import { View, Text, FlatList, Pressable, Alert, RefreshControl } from "react-native";
+import { View, Text, FlatList, Pressable, RefreshControl } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import * as Clipboard from "expo-clipboard";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
 import { API_URL } from "@/lib/constants";
+import { useToast } from "@/components/Toast";
 import type { LibDoc } from "@/types";
 import { Trash2, Upload, Link } from "lucide-react-native";
 
 export default function LibScreen() {
   const { user } = useAuth();
+  const toast = useToast();
   const [libs, setLibs] = useState<LibDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -21,7 +23,7 @@ export default function LibScreen() {
       const data = await api.get("/api/libs");
       setLibs(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ export default function LibScreen() {
 
     const file = result.assets[0];
     if (!file.name?.endsWith(".so")) {
-      Alert.alert("Error", "Only .so files are allowed");
+      toast.error("Invalid File", "Only .so files are allowed");
       return;
     }
 
@@ -63,11 +65,10 @@ export default function LibScreen() {
 
     try {
       await api.upload("/api/libs", formData);
-      Alert.alert("Success", "File uploaded");
+      toast.success("Uploaded", "File uploaded successfully");
       fetchLibs();
     } catch (e: any) {
-      const msg = e.message === "RETRY" ? "Upload failed" : e.message || "Upload failed";
-      Alert.alert("Upload Failed", msg);
+      toast.error("Upload Failed", e.message === "RETRY" ? "Upload failed" : (e.message || "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -75,26 +76,19 @@ export default function LibScreen() {
 
   const handleCopyLink = async (fileName: string) => {
     await Clipboard.setStringAsync(`${API_URL}/api/libs/serve/${fileName}`);
-    Alert.alert("Copied", "Download link copied to clipboard");
+    toast.info("Copied", "Download link copied to clipboard");
   };
 
   const handleDelete = (item: LibDoc) => {
-    Alert.alert("Delete File", `Delete ${item.fileName}?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete(`/api/libs?id=${item._id}`);
-            Alert.alert("Success", "File deleted");
-            fetchLibs();
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          }
-        },
-      },
-    ]);
+    toast.confirm("Delete File", `Delete ${item.fileName}?`, async () => {
+      try {
+        await api.delete(`/api/libs?id=${item._id}`);
+        toast.success("Deleted", "File deleted successfully");
+        fetchLibs();
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      }
+    });
   };
 
   const renderItem = ({ item }: { item: LibDoc }) => (

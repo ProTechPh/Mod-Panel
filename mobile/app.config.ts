@@ -5,6 +5,7 @@ const config: ExpoConfig = {
   name: "Mod Panel",
   slug: "mod-panel",
   version: pkg.version,
+  owner: "jericko",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "dark",
@@ -31,13 +32,22 @@ const config: ExpoConfig = {
   web: {
     favicon: "./assets/favicon.png",
   },
-  plugins: ["expo-router", "expo-secure-store", "expo-font"],
+  plugins: ["expo-router", "expo-secure-store", "expo-font", "expo-updates"],
+  updates: {
+    url: "https://u.expo.dev/f3ebfcb1-316e-466f-be4c-358aeb7b3016",
+    runtimeVersion: {
+      policy: "fingerprint",
+    },
+  },
   extra: {
     router: {
       origin: false,
     },
     appVersion: pkg.version,
     githubRepo: "ProTechPh/Mod-Panel",
+    eas: {
+      projectId: "f3ebfcb1-316e-466f-be4c-358aeb7b3016",
+    },
   },
 };
 

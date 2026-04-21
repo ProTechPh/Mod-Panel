@@ -5,13 +5,13 @@ import {
   Pressable,
   Switch,
   FlatList,
-  Alert,
   RefreshControl,
   ScrollView,
 } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 import type { GameSettingItem } from "@/types";
 import { Edit3, Trash2, Plus, X, Copy } from "lucide-react-native";
 
@@ -28,6 +28,7 @@ const FEATURE_LABELS: Record<string, string> = {
 
 export default function GameSettingsScreen() {
   const { user } = useAuth();
+  const toast = useToast();
   const [settings, setSettings] = useState<GameSettingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +43,7 @@ export default function GameSettingsScreen() {
       const data = await api.get("/api/game-settings");
       setSettings(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setLoading(false);
     }
@@ -80,42 +81,35 @@ export default function GameSettingsScreen() {
       });
       fetchSettings();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     }
   };
 
-  const handleDelete = async (gameCode: string, registrator?: string) => {
-    Alert.alert("Delete Game", `Delete game ${gameCode}?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.post("/api/game-settings", {
-              _method: "DELETE",
-              gameCode,
-              registrator,
-            });
-            Alert.alert("Success", "Game deleted");
-            fetchSettings();
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          }
-        },
-      },
-    ]);
+  const handleDelete = (gameCode: string, registrator?: string) => {
+    toast.confirm("Delete Game", `Delete game ${gameCode}?`, async () => {
+      try {
+        await api.post("/api/game-settings", {
+          _method: "DELETE",
+          gameCode,
+          registrator,
+        });
+        toast.success("Deleted", "Game deleted");
+        fetchSettings();
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      }
+    });
   };
 
   const handleAdd = async () => {
     try {
       await api.post("/api/game-settings", addForm);
-      Alert.alert("Success", "Game added");
+      toast.success("Added", "Game added");
       setAddModal(false);
       setAddForm({ gameCode: "", gameName: "" });
       fetchSettings();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     }
   };
 
@@ -134,12 +128,12 @@ export default function GameSettingsScreen() {
         telegramGroup: editGame.telegramGroup,
         features: editGame.features,
       });
-      Alert.alert("Success", "Game settings saved");
+      toast.success("Saved", "Game settings saved");
       setEditGame(null);
       setExpandedId(null);
       fetchSettings();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     }
   };
 
@@ -165,7 +159,7 @@ export default function GameSettingsScreen() {
   };
 
   const copyFreeKeyLink = (registrator: string) => {
-    Alert.alert("Copied", `Free key link: /${registrator}/free-key`);
+    toast.info("Copied", `Free key link: /${registrator}/free-key`);
   };
 
   const inputClass =

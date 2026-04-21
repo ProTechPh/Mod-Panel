@@ -1,9 +1,10 @@
-import { View, Text, TextInput, FlatList, Pressable, Alert, RefreshControl } from "react-native";
+import { View, Text, TextInput, FlatList, Pressable, RefreshControl } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
 import { levelName, cn } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
 import type { UserItem, ReferralItem } from "@/types";
 import { Search, Edit3, Trash2, Users, Gift, Plus } from "lucide-react-native";
 
@@ -12,6 +13,7 @@ type Tab = "users" | "referrals";
 export default function UsersScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
   const [tab, setTab] = useState<Tab>("users");
   const [users, setUsers] = useState<UserItem[]>([]);
   const [search, setSearch] = useState("");
@@ -32,7 +34,7 @@ export default function UsersScreen() {
       const data = await api.get(`/api/users?${params.toString()}`);
       setUsers(data.data || []);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,7 @@ export default function UsersScreen() {
       const data = await api.get("/api/referrals");
       setReferrals(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setRefLoading(false);
     }
@@ -72,42 +74,28 @@ export default function UsersScreen() {
     );
   }
 
-  const handleDeleteUser = async (id: string) => {
-    Alert.alert("Delete User", "Delete this user?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete(`/api/users/${id}`);
-            Alert.alert("Success", "User deleted");
-            fetchUsers(search);
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          }
-        },
-      },
-    ]);
+  const handleDeleteUser = (id: string) => {
+    toast.confirm("Delete User", "Delete this user?", async () => {
+      try {
+        await api.delete(`/api/users/${id}`);
+        toast.success("Deleted", "User deleted");
+        fetchUsers(search);
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      }
+    });
   };
 
-  const handleDeleteReferral = async (id: string) => {
-    Alert.alert("Delete Referral", "Delete this referral?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete(`/admin/referrals?id=${id}`);
-            Alert.alert("Success", "Referral deleted");
-            fetchReferrals();
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          }
-        },
-      },
-    ]);
+  const handleDeleteReferral = (id: string) => {
+    toast.confirm("Delete Referral", "Delete this referral?", async () => {
+      try {
+        await api.delete(`/admin/referrals?id=${id}`);
+        toast.success("Deleted", "Referral deleted");
+        fetchReferrals();
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      }
+    });
   };
 
   const [addRefModal, setAddRefModal] = useState(false);
@@ -122,12 +110,12 @@ export default function UsersScreen() {
         setSaldo: Number(refForm.setSaldo),
         accExpirationDays: Number(refForm.accExpirationDays),
       });
-      Alert.alert("Success", "Referral created");
+      toast.success("Created", "Referral created");
       setAddRefModal(false);
       setRefForm({ level: "3", setSaldo: "0", accExpirationDays: "30" });
       fetchReferrals();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setCreatingRef(false);
     }
@@ -185,6 +173,9 @@ export default function UsersScreen() {
         <Text className="text-xs text-muted-foreground">Email: {item.email}</Text>
         <Text className="text-xs text-muted-foreground">Level: {levelName(item.level)}</Text>
         <Text className="text-xs text-muted-foreground">Saldo: ${item.saldo?.toFixed(2)}</Text>
+        <Text className="text-xs text-muted-foreground">
+          Telegram: {item.telegramId ? (item.telegramUsername ? `@${item.telegramUsername}` : String(item.telegramId)) : "Not linked"}
+        </Text>
         {item.expirationDate ? (
           <Text className="text-xs text-muted-foreground">
             Expires: {new Date(item.expirationDate).toLocaleDateString()}

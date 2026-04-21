@@ -1,15 +1,17 @@
-import { View, Text, TextInput, Pressable, FlatList, Alert, RefreshControl } from "react-native";
+import { View, Text, TextInput, Pressable, FlatList, RefreshControl } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth/context";
 import { formatDuration, cn } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
 import type { KeyItem } from "@/types";
 import { Plus, Search, Trash2, RotateCcw, Edit3 } from "lucide-react-native";
 
 export default function KeysScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
   const [keys, setKeys] = useState<KeyItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ export default function KeysScreen() {
       const data = await api.get(`/api/keys?draw=1&start=0&length=100&search%5Bvalue%5D=${searchParam}`);
       setKeys(data.data || []);
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to load keys");
+      toast.error("Error", e.message || "Failed to load keys");
     } finally {
       setLoading(false);
     }
@@ -38,31 +40,24 @@ export default function KeysScreen() {
     setRefreshing(false);
   }, [fetchKeys, search]);
 
-  const handleDelete = async (id: string) => {
-    Alert.alert("Delete Key", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete(`/api/keys/${id}`);
-            fetchKeys(search);
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          }
-        },
-      },
-    ]);
+  const handleDelete = (id: string) => {
+    toast.confirm("Delete Key", "Are you sure?", async () => {
+      try {
+        await api.delete(`/api/keys/${id}`);
+        fetchKeys(search);
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      }
+    });
   };
 
   const handleReset = async (id: string) => {
     try {
       await api.get(`/api/keys/reset?id=${id}`);
-      Alert.alert("Success", "Devices reset");
+      toast.success("Reset", "Devices reset");
       fetchKeys(search);
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     }
   };
 

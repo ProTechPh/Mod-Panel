@@ -4,7 +4,6 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  Alert,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -12,6 +11,7 @@ import { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/lib/auth/context";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 
 const passwordSchema = z
   .object({
@@ -30,6 +30,7 @@ const fullnameSchema = z.object({
 
 export default function SettingsScreen() {
   const { user, refreshUser } = useAuth();
+  const toast = useToast();
   const [pwLoading, setPwLoading] = useState(false);
   const [fnLoading, setFnLoading] = useState(false);
   const [tgLoading, setTgLoading] = useState(false);
@@ -63,10 +64,10 @@ export default function SettingsScreen() {
     setPwLoading(true);
     try {
       await api.post("/api/auth/change-password", data);
-      Alert.alert("Success", "Password changed");
+      toast.success("Success", "Password changed");
       resetPw();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setPwLoading(false);
     }
@@ -76,10 +77,10 @@ export default function SettingsScreen() {
     setFnLoading(true);
     try {
       await api.post("/api/users/update-fullname", data);
-      Alert.alert("Success", "Fullname updated");
+      toast.success("Success", "Fullname updated");
       refreshUser();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setFnLoading(false);
     }
@@ -89,35 +90,28 @@ export default function SettingsScreen() {
     setTgLoading(true);
     try {
       await api.post("/api/users/update-telegram", { telegramContact });
-      Alert.alert("Success", "Telegram contact updated");
+      toast.success("Success", "Telegram contact updated");
       refreshUser();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      toast.error("Error", e.message);
     } finally {
       setTgLoading(false);
     }
   };
 
   const onDisconnectTelegram = async () => {
-    Alert.alert("Disconnect Telegram", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Disconnect",
-        style: "destructive",
-        onPress: async () => {
-          setDcLoading(true);
-          try {
-            await api.post("/api/auth/telegram/disconnect");
-            Alert.alert("Success", "Telegram disconnected");
-            refreshUser();
-          } catch (e: any) {
-            Alert.alert("Error", e.message);
-          } finally {
-            setDcLoading(false);
-          }
-        },
-      },
-    ]);
+    toast.confirm("Disconnect Telegram", "Are you sure?", async () => {
+      setDcLoading(true);
+      try {
+        await api.post("/api/auth/telegram/disconnect");
+        toast.success("Success", "Telegram disconnected");
+        refreshUser();
+      } catch (e: any) {
+        toast.error("Error", e.message);
+      } finally {
+        setDcLoading(false);
+      }
+    });
   };
 
   const { logout } = useAuth();

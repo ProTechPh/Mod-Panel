@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, Image, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, Image, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/lib/api";
 import { saveTokens, saveCookieValues } from "@/lib/auth/token";
 import { useAuth } from "@/lib/auth/context";
+import { useToast } from "@/components/Toast";
 import { APP_NAME } from "@/lib/constants";
 
 const loginSchema = z.object({
@@ -20,6 +21,7 @@ type LoginInput = z.infer<typeof loginSchema>;
 export default function LoginScreen() {
   const router = useRouter();
   const { refreshUser } = useAuth();
+  const toast = useToast();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
@@ -43,14 +45,14 @@ export default function LoginScreen() {
       }
       if (result.accessToken || result.success) {
         const user = await refreshUser();
-        if (user) {
-          router.replace("/(panel)/dashboard");
-        } else {
-          Alert.alert("Error", "Could not load user profile.");
+          if (user) {
+            router.replace("/(panel)/dashboard");
+          } else {
+            toast.error("Error", "Could not load user profile.");
+          }
         }
-      }
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Login failed");
+      } catch (e: any) {
+        toast.error("Login Failed", e.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
