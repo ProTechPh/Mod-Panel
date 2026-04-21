@@ -52,6 +52,9 @@ jobs:
           cache: "npm"
           cache-dependency-path: mobile/package-lock.json
 
+      - name: Increase system watchers
+        run: sudo sysctl fs.inotify.max_user_watches=524288 && sudo sysctl fs.inotify.max_user_instances=512 && sudo sysctl -p
+
       # ── 5. Install dependencies ────────────────────────────────────
       - name: Install mobile dependencies
         working-directory: mobile

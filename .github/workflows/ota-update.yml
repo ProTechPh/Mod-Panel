@@ -20,7 +20,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
 
       - name: Setup Expo
         uses: expo/expo-github-action@v8
@@ -28,10 +30,15 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           eas-version: latest
 
+      - name: Increase system watchers
+        run: sudo sysctl fs.inotify.max_user_watches=524288 && sudo sysctl fs.inotify.max_user_instances=512 && sudo sysctl -p
+
       - name: Install dependencies
         working-directory: mobile
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Publish OTA update
         working-directory: mobile
         run: npx eas update --auto --non-interactive --channel production
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
