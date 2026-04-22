@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mod Panel",
     "slug": "mod-panel",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "owner": "jericko",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -49,7 +49,7 @@
       "router": {
         "origin": false
       },
-      "appVersion": "1.0.7",
+      "appVersion": "1.0.8",
       "githubRepo": "ProTechPh/Mod-Panel",
       "eas": {
         "projectId": "f3ebfcb1-316e-466f-be4c-358aeb7b3016"
