@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
 const ChunkSchema = new mongoose.Schema({
   sessionId: { type: String, required: true, index: true },
   chunkIndex: { type: Number, required: true },
-  data: { type: Buffer, required: true },
+  data: { type: mongoose.Schema.Types.Buffer, required: true },
   createdAt: { type: Date, default: Date.now, expires: 600 }, // Auto-delete after 10 min
 });
 
@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
     const sessionId = `${user.username}_${safeFileName}`;
 
     // Save chunk to MongoDB
-    const buffer = Buffer.from(await chunk.arrayBuffer());
+    const arrayBuffer = await chunk.arrayBuffer();
+    const buffer = Buffer.from(new Uint8Array(arrayBuffer));
     await TempChunk.findOneAndUpdate(
       { sessionId, chunkIndex },
       { sessionId, chunkIndex, data: buffer, createdAt: new Date() },
@@ -59,7 +60,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const fullBuffer = Buffer.concat(chunks.map((c: any) => c.data));
+      const buffers = chunks.map((c: any) => {
+        // .lean() returns MongoDB Binary; ensure we have a proper Node Buffer
+        if (c.data.buffer) return Buffer.from(c.data.buffer);
+        return Buffer.from(c.data);
+      });
+      const fullBuffer = Buffer.concat(buffers);
       const sizeMB = (fullBuffer.length / (1024 * 1024)).toFixed(2);
       const stream = Readable.from(fullBuffer);
 
