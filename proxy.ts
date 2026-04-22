@@ -77,10 +77,13 @@ export async function proxy(request: NextRequest) {
   // Body size limit for mutation requests
   if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
     const contentLength = request.headers.get('content-length');
+    const MAX_UPLOAD_BODY_SIZE = 5 * 1024 * 1024; // 5MB — covers 3MB chunks + FormData overhead
     const maxSize =
       pathname.startsWith('/api/auth') || pathname === '/api/free-key'
         ? MAX_AUTH_BODY_SIZE
-        : MAX_BODY_SIZE;
+        : pathname.startsWith('/api/libs/upload')
+          ? MAX_UPLOAD_BODY_SIZE
+          : MAX_BODY_SIZE;
     if (contentLength && parseInt(contentLength, 10) > maxSize) {
       const response = NextResponse.json({ error: 'Request body too large' }, { status: 413 });
       addSecurityHeaders(response);
