@@ -3,8 +3,11 @@ import { loginUser } from '@/lib/services/user-service';
 import { setAuthCookies } from '@/lib/auth/cookies';
 import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 import { loginSchema } from '@/lib/validators/auth';
+import { recordFailedAttempt, clearFailedAttempts } from '@/lib/auth/brute-force';
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-client-ip') || 'unknown';
+
   try {
     const body = await request.json();
     const parsed = loginSchema.safeParse(body);
@@ -14,6 +17,8 @@ export async function POST(request: NextRequest) {
 
     const user = await loginUser(parsed.data.identifier, parsed.data.password);
     if (!user) {
+      const { delayMs } = recordFailedAttempt(ip);
+      await new Promise(r => setTimeout(r, delayMs));
       return NextResponse.json({ error: 'Invalid username/email or password' }, { status: 401 });
     }
 
@@ -24,6 +29,8 @@ export async function POST(request: NextRequest) {
     if (new Date(user.expirationDate) < new Date()) {
       return NextResponse.json({ error: 'Account has expired' }, { status: 403 });
     }
+
+    clearFailedAttempts(ip);
 
     const accessToken = await signAccessToken(user.userId, user.username, user.level);
     const refreshToken = await signRefreshToken(user.userId);

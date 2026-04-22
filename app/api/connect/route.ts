@@ -43,9 +43,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const connectIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')
-      || 'unknown';
+    const connectIp = request.headers.get('x-client-ip') || 'unknown';
 
     const result = await validateKey(body.game, body.user_key, body.serial, connectIp);
     return NextResponse.json(result);

@@ -6,20 +6,35 @@ import GameSetting from '@/lib/db/models/GameSetting';
 
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
+  if (!secret) {
+    console.warn('TURNSTILE_SECRET_KEY is not set. Free key requests will be rejected.');
+    return false;
+  }
 
   const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `secret=${secret}&response=${token}&remoteip=${ip}`,
+    signal: AbortSignal.timeout(5000),
   });
   const data = await res.json();
   return data.success === true;
 }
 
 async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean; isp: string; org: string }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=isp,org,proxy,hosting`);
+    const res = await fetch(`https://ip-api.com/json/${ip}?fields=isp,org,proxy,hosting`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      return { isVpn: true, isProxy: true, isp: '', org: '' };
+    }
+
     const data = await res.json();
     return {
       isVpn: data.hosting === true,
@@ -28,7 +43,8 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
       org: data.org || '',
     };
   } catch {
-    return { isVpn: false, isProxy: false, isp: '', org: '' };
+    clearTimeout(timeoutId);
+    return { isVpn: true, isProxy: true, isp: '', org: '' };
   }
 }
 

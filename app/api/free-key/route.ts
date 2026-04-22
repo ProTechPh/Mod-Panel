@@ -16,9 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
     }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')
-      || 'unknown';
+    const ip = request.headers.get('x-client-ip') || 'unknown';
 
     const result = await generateFreeKey(parsed.data.game, parsed.data.turnstileToken, ip, parsed.data.registrator);
     if (result.error) {

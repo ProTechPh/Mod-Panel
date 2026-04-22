@@ -3,9 +3,18 @@ import Referral from '@/lib/db/models/Referral';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const charLen = chars.length;
+  const maxByte = Math.floor(256 / charLen) * charLen;
+  const randomValues = new Uint8Array(12);
+  crypto.getRandomValues(randomValues);
   let result = '';
+  let byteIndex = 0;
   for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    let byte: number;
+    do {
+      byte = randomValues[byteIndex++]!;
+    } while (byte >= maxByte);
+    result += chars.charAt(byte % charLen);
   }
   return result;
 }
