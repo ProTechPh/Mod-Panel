@@ -12,11 +12,16 @@ const REMOTE_PATH = process.env.FTP_REMOTE_PATH || '/htdocs/onlinelibs/';
 const BASE_URL = process.env.FTP_BASE_URL || 'https://winterph.unaux.com/onlinelibs';
 
 export async function uploadToFtp(fileName: string, stream: Readable | string): Promise<string> {
-  const client = new ftp.Client(15000);
+  const client = new ftp.Client(60000); // 60s timeout for large uploads
+  client.ftp.socket.setKeepAlive(true);
   try {
     await client.access(FTP_CONFIG);
     await client.ensureDir(REMOTE_PATH);
+    client.trackProgress(info => {
+      // Keep connection alive by tracking progress
+    });
     await client.uploadFrom(stream, `${REMOTE_PATH}${fileName}`);
+    client.trackProgress(); // Stop tracking
     return `${BASE_URL}/${fileName}`;
   } finally {
     client.close();
