@@ -42,20 +42,36 @@ export function AppUpdater() {
       return false;
     }
     try {
+      console.log("[AppUpdater] Current version:", CURRENT_VERSION);
       console.log("[AppUpdater] Checking for OTA update...");
       const update = await Updates.checkForUpdateAsync();
       console.log("[AppUpdater] OTA check result:", JSON.stringify(update));
       if (update.isAvailable) {
         // EAS Update manifest stores extras under expoClient.extra
         const manifest = update.manifest as any;
+
+        // Try multiple paths to extract version from EAS Update manifest
         const version =
+          manifest?.extra?.expoClient?.version ??
           manifest?.extra?.expoClient?.extra?.appVersion ??
           manifest?.extra?.appVersion ??
           manifest?.metadata?.appVersion ??
-          "new";
-        console.log("[AppUpdater] OTA update available, version:", version);
+          manifest?.runtimeVersion ??
+          null;
+
+        console.log("[AppUpdater] OTA update manifest version:", version);
+        console.log("[AppUpdater] Full manifest keys:", JSON.stringify(Object.keys(manifest ?? {})));
+        console.log("[AppUpdater] manifest.extra keys:", JSON.stringify(Object.keys(manifest?.extra ?? {})));
+        console.log("[AppUpdater] manifest.extra.expoClient keys:", JSON.stringify(Object.keys(manifest?.extra?.expoClient ?? {})));
+
+        // If we can determine the version and it's not newer, skip the update prompt
+        if (version && version !== "new" && !isNewer(version, CURRENT_VERSION)) {
+          console.log("[AppUpdater] OTA version", version, "is not newer than current", CURRENT_VERSION, "- skipping");
+          return false;
+        }
+
         setUpdateType("ota");
-        setLatestVersion(version);
+        setLatestVersion(version ?? "new");
         setShowUpdate(true);
         return true;
       }
