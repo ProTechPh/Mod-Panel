@@ -83,7 +83,10 @@ jobs:
           echo "android.enablePngCrunchInReleaseBuilds=false" >> gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
-          cat gradle.properties | tail -5
+          # Increase JVM heap/metaspace to avoid lint/build OOM on CI
+          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx2g" >> gradle.properties
+          echo "org.gradle.workers.max=2" >> gradle.properties
+          cat gradle.properties | tail -7
 
       # ── 9. Cache Gradle dependencies ──────────────────────────────
       - name: Cache Gradle
