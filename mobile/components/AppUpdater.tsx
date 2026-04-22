@@ -37,16 +37,31 @@ export function AppUpdater() {
   const checked = useRef(false);
 
   const checkOtaUpdate = useCallback(async (): Promise<boolean> => {
-    if (IS_DEV) return false;
+    if (IS_DEV) {
+      console.log("[AppUpdater] Skipping OTA check in dev mode");
+      return false;
+    }
     try {
+      console.log("[AppUpdater] Checking for OTA update...");
       const update = await Updates.checkForUpdateAsync();
+      console.log("[AppUpdater] OTA check result:", JSON.stringify(update));
       if (update.isAvailable) {
+        // EAS Update manifest stores extras under expoClient.extra
+        const manifest = update.manifest as any;
+        const version =
+          manifest?.extra?.expoClient?.extra?.appVersion ??
+          manifest?.extra?.appVersion ??
+          manifest?.metadata?.appVersion ??
+          "new";
+        console.log("[AppUpdater] OTA update available, version:", version);
         setUpdateType("ota");
-        setLatestVersion(update.manifest?.extra?.appVersion ?? "new");
+        setLatestVersion(version);
         setShowUpdate(true);
         return true;
       }
-    } catch {
+      console.log("[AppUpdater] No OTA update available");
+    } catch (e) {
+      console.log("[AppUpdater] OTA check error:", e);
       // OTA check failed, fall through to GitHub check
     }
     return false;
@@ -100,11 +115,18 @@ export function AppUpdater() {
     if (applying) return;
     setApplying(true);
     try {
+      console.log("[AppUpdater] Fetching OTA update...");
       const result = await Updates.fetchUpdateAsync();
+      console.log("[AppUpdater] Fetch result:", JSON.stringify(result));
       if (result.isNew) {
+        console.log("[AppUpdater] Reloading app with new update...");
+        await Updates.reloadAsync();
+      } else {
+        console.log("[AppUpdater] Update fetched but not new, reloading anyway...");
         await Updates.reloadAsync();
       }
-    } catch {
+    } catch (e) {
+      console.log("[AppUpdater] Error applying OTA update:", e);
       setApplying(false);
     }
   };
