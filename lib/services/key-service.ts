@@ -81,7 +81,7 @@ export async function generateKeys(
     const keyString = generateKeyString(16);
     keys.push(keyString);
     keyDocs.push(new Key({
-      game,
+      game: game.toUpperCase(),
       userKey: keyString,
       duration,
       maxDevices,
@@ -111,7 +111,9 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: config.maintenanceMessage || 'Under maintenance.' };
   }
 
-  const key = await Key.findOne({ game, userKey }).lean() as KeyDoc | null;
+  // Normalize game to uppercase — keys are stored uppercase
+  const normalizedGame = game.toUpperCase();
+  const key = await Key.findOne({ game: normalizedGame, userKey }).lean() as KeyDoc | null;
   if (!key) {
     return { status: false, reason: 'Incorrect Key' };
   }
@@ -162,7 +164,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: `Expired Key, Contact: ${contact}` };
   }
 
-  const { allowed, shouldAdd } = checkDeviceSlot(key.devices, serial, key.maxDevices);
+  const { allowed, shouldAdd } = checkDeviceSlot(key.devices || [], serial, key.maxDevices);
   if (!allowed) {
     return { status: false, reason: `Max Device Reached, Contact: ${contact}` };
   }
