@@ -32,19 +32,23 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      return { isVpn: true, isProxy: true, isp: '', org: '' };
+      // API failure should NOT result in banning — fail open
+      return { isVpn: false, isProxy: false, isp: '', org: '' };
     }
 
     const data = await res.json();
     return {
-      isVpn: data.hosting === true,
+      // Only treat as VPN if BOTH hosting AND proxy are true to avoid
+      // false positives from ISPs using CGNAT or shared datacenter ranges
+      isVpn: data.hosting === true && data.proxy === true,
       isProxy: data.proxy === true,
       isp: data.isp || '',
       org: data.org || '',
     };
   } catch {
     clearTimeout(timeoutId);
-    return { isVpn: true, isProxy: true, isp: '', org: '' };
+    // API failure should NOT result in banning — fail open
+    return { isVpn: false, isProxy: false, isp: '', org: '' };
   }
 }
 

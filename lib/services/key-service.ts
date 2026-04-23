@@ -135,11 +135,10 @@ export async function validateKey(game: string, userKey: string, serial: string,
   if (key.registrator === 'FreeKey') {
     const tracker = await IpTracker.findOne({ keyId: key._id }).lean();
     if (tracker && tracker.generatorIp !== connectIp) {
+      // Invalidate the key but do NOT ban the generator IP.
+      // IP changes are common (WiFi→mobile data, ISP rotation, router restart)
+      // and CGNAT means one public IP is shared by many users.
       await Key.updateOne({ _id: key._id }, { status: 0 });
-      await IpTracker.updateOne(
-        { ipAddress: tracker.generatorIp },
-        { isBanned: true, banReason: 'IP mismatch on connect - possible key sharing' }
-      );
       return { status: false, reason: `Key invalidated - IP mismatch detected. Contact: ${contact}` };
     }
   }
