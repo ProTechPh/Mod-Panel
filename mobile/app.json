@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mod Panel",
     "slug": "mod-panel",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "owner": "jericko",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -49,7 +49,7 @@
       "router": {
         "origin": false
       },
-      "appVersion": "1.0.9",
+      "appVersion": "1.0.10",
       "eas": {
         "projectId": "f3ebfcb1-316e-466f-be4c-358aeb7b3016"
       }
