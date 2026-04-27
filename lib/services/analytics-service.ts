@@ -12,6 +12,14 @@ interface GameDistEntry {
   count: number;
 }
 
+export interface TopPerformer {
+  username: string;
+  fullname: string;
+  keysUsed: number;
+  totalKeys: number;
+  rank: number;
+}
+
 interface UserLevelDist {
   owners: number;
   admins: number;
@@ -33,6 +41,7 @@ export interface DashboardAnalytics {
   statusDistribution: { status: string; count: number }[];
   userLevelDistribution: UserLevelDist;
   recentActivity: { date: string; created: number; expired: number }[];
+  topPerformers: TopPerformer[];
 }
 
 type CountEntry = { _id: string; count: number };
@@ -120,13 +129,49 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
       },
     ]) as Promise<UserLevelFacetResult[]>;
 
-  const [keyTrends, gameDistribution, statusDist, recentActivity, userLevelDist] = await Promise.all([
+  const topPerformersPromise = Key.aggregate<{ _id: string; keysUsed: number; totalKeys: number }>([
+    { $match: filter },
+    {
+      $group: {
+        _id: '$registrator',
+        keysUsed: { $sum: { $cond: [{ $ne: ['$expiredDate', null] }, 1, 0] } },
+        totalKeys: { $sum: 1 },
+      },
+    },
+    { $sort: { keysUsed: -1 } },
+    { $limit: 10 },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: 'username',
+        as: 'userInfo',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        username: '$_id',
+        fullname: { $ifNull: [{ $arrayElemAt: ['$userInfo.fullname', 0] }, ''] },
+        keysUsed: 1,
+        totalKeys: 1,
+      },
+    },
+  ]);
+
+  const [keyTrends, gameDistribution, statusDist, recentActivity, userLevelDist, topPerformersRaw] = await Promise.all([
     keyTrendsPromise,
     gameDistributionPromise,
     statusDistPromise,
     recentActivityPromise,
     userLevelPromise,
+    topPerformersPromise,
   ]);
+
+  const topPerformers: TopPerformer[] = topPerformersRaw.map((p, i) => ({
+    ...p,
+    rank: i + 1,
+  }));
 
   const statusResult: StatusFacetResult = statusDist[0] || { active: [], expired: [], blocked: [], unused: [] };
   const statusDistribution = [
@@ -177,5 +222,6 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
     statusDistribution,
     userLevelDistribution,
     recentActivity: recentActivityFormatted,
+    topPerformers,
   };
 }

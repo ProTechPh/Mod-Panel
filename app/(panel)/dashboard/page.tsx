@@ -6,6 +6,7 @@ import KeyTrendsChart from '@/components/dashboard/KeyTrendsChart';
 import StatusPieChart from '@/components/dashboard/StatusPieChart';
 import GameDistChart from '@/components/dashboard/GameDistChart';
 import ActivityChart from '@/components/dashboard/ActivityChart';
+import TopPerformers from '@/components/dashboard/TopPerformers';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -16,6 +17,7 @@ interface DashboardAnalytics {
   statusDistribution: { status: string; count: number }[];
   userLevelDistribution: { owners: number; admins: number; resellers: number };
   recentActivity: { date: string; created: number; expired: number }[];
+  topPerformers: { username: string; fullname: string; keysUsed: number; totalKeys: number; rank: number }[];
 }
 
 export default function DashboardPage() {
@@ -49,6 +51,8 @@ export default function DashboardPage() {
         <ActivityChart data={analytics?.recentActivity ?? []} />
         <GameDistChart data={analytics?.gameDistribution ?? []} />
       </div>
+
+      <TopPerformers data={analytics?.topPerformers ?? []} />
 
       <Card className="border-border/50">
         <CardHeader>
