@@ -15,7 +15,15 @@ interface RateLimitEntry {
 }
 
 export const RATE_LIMIT_TIERS = {
-  auth: { windowMs: 15 * 60 * 1000, maxRequests: 10, blockDurationMs: 30 * 60 * 1000 },
+  // auth: login/register — already backed by per-IP brute-force lockout (isLockedOut),
+  // so this tier only guards against IP-level flooding. Kept moderate to avoid blocking
+  // shared-IP users (NAT / carrier / school WiFi).
+  auth: { windowMs: 15 * 60 * 1000, maxRequests: 20, blockDurationMs: 15 * 60 * 1000 },
+  // connect: high-frequency machine-driven endpoint — shared IPs (NAT/carrier) can easily
+  // have many simultaneous legitimate users, so we use a very generous limit.
+  connect: { windowMs: 60 * 1000, maxRequests: 300, blockDurationMs: 2 * 60 * 1000 },
+  // free-key: public page, not security-critical — allow reasonable browsing traffic.
+  freeKey: { windowMs: 60 * 1000, maxRequests: 30, blockDurationMs: 5 * 60 * 1000 },
   public: { windowMs: 60 * 1000, maxRequests: 60, blockDurationMs: 5 * 60 * 1000 },
   authenticated: { windowMs: 60 * 1000, maxRequests: 120, blockDurationMs: 2 * 60 * 1000 },
 } as const;
@@ -30,8 +38,7 @@ function cleanup(now: number) {
   for (const [key, entry] of store) {
     if (
       entry.blockedUntil < now &&
-      entry.timestamps.length === 0 &&
-      entry.timestamps[entry.timestamps.length - 1]! < now - maxWindow
+      (entry.timestamps.length === 0 || entry.timestamps[entry.timestamps.length - 1]! < now - maxWindow)
     ) {
       store.delete(key);
     }
@@ -72,13 +79,17 @@ export function getRateLimitTier(pathname: string): RateLimitConfig {
   if (
     pathname === '/api/auth/login' ||
     pathname === '/api/auth/register' ||
-    pathname === '/api/free-key' ||
     pathname.startsWith('/api/auth/telegram/callback')
   ) {
     return RATE_LIMIT_TIERS.auth;
   }
+  if (pathname === '/api/free-key' || pathname.startsWith('/api/free-key/')) {
+    return RATE_LIMIT_TIERS.freeKey;
+  }
+  if (pathname === '/api/connect') {
+    return RATE_LIMIT_TIERS.connect;
+  }
   if (
-    pathname === '/api/connect' ||
     pathname === '/api/server-status' ||
     pathname === '/api/download' ||
     pathname === '/api/auth/refresh' ||
