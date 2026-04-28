@@ -75,13 +75,12 @@ export default function FreeKeyPage() {
   const [game, setGame] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [generating, setGenerating] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null); // stores the key string that was copied
-
+  const [copied, setCopied] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('key');
 
-  // Current key state
+  // Per-game key state
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
-  const [lookupLoading, setLookupLoading] = useState(true);
+  const [keyLoading, setKeyLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [countdown, setCountdown] = useState('');
@@ -90,22 +89,26 @@ export default function FreeKeyPage() {
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  // Fetch current key by IP
-  const fetchMyKey = useCallback(async (silent = false) => {
+  // Fetch key for the selected game
+  const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
+    if (!selectedGame) return;
     if (!silent) setStatusLoading(true);
+    setKeyLoading(true);
     try {
-      const res = await fetch(`/api/free-key/my-key?registrator=${encodeURIComponent(registrator)}`);
+      const res = await fetch(
+        `/api/free-key/my-key?registrator=${encodeURIComponent(registrator)}&game=${encodeURIComponent(selectedGame)}`
+      );
       const data = await res.json();
       setKeyStatus(res.ok ? data : null);
     } catch {
       setKeyStatus(null);
     } finally {
       setStatusLoading(false);
-      setLookupLoading(false);
+      setKeyLoading(false);
     }
   }, [registrator]);
 
-  // Fetch history by IP
+  // Fetch history
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
@@ -119,21 +122,31 @@ export default function FreeKeyPage() {
     }
   }, [registrator]);
 
-  // On mount
-  useEffect(() => {
-    fetchMyKey(true);
-  }, [fetchMyKey]);
-
-  // Fetch history when tab is switched to history
+  // Fetch history when tab switches to history
   useEffect(() => {
     if (tab === 'history') fetchHistory();
   }, [tab, fetchHistory]);
+
+  // When game changes, fetch key for that game
+  useEffect(() => {
+    if (game) {
+      setKeyStatus(null);
+      fetchMyKey(game, true);
+    } else {
+      setKeyStatus(null);
+    }
+  }, [game, fetchMyKey]);
 
   // Fetch games list
   useEffect(() => {
     fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
       .then(res => res.json())
-      .then(data => setGames(Array.isArray(data) ? data : []))
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        setGames(list);
+        // Auto-select if only one game
+        if (list.length === 1) setGame(list[0].code);
+      })
       .catch(() => setGames([]));
   }, [registrator]);
 
@@ -161,7 +174,7 @@ export default function FreeKeyPage() {
 
       if (res.ok) {
         toast.success('Free key generated!');
-        await fetchMyKey(true);
+        await fetchMyKey(game, true);
       } else {
         toast.error(data.error || 'Failed to generate key');
       }
@@ -192,7 +205,7 @@ export default function FreeKeyPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success(`Devices reset! ${data.resetsRemaining} reset(s) remaining.`);
-        await fetchMyKey(true);
+        await fetchMyKey(game, true);
       } else {
         toast.error(data.error || 'Failed to reset devices');
       }
@@ -218,9 +231,9 @@ export default function FreeKeyPage() {
     return 'Unused – grace period (1 day)';
   };
 
+  // Active = has key for this game, not expired, not suspended
   const hasActiveKey = keyStatus && !keyStatus.isExpired && keyStatus.status === 1;
 
-  // Tab labels — show count badge on history if loaded
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'key', label: 'My Key', icon: <KeyRound className="h-3.5 w-3.5" /> },
     {
@@ -269,15 +282,41 @@ export default function FreeKeyPage() {
           {/* ══ MY KEY TAB ══════════════════════════════════════════ */}
           {tab === 'key' && (
             <>
-              {/* Initial spinner */}
-              {lookupLoading && (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              {/* Game selector — always visible */}
+              {games.length === 0 ? (
+                <p className="text-center text-muted-foreground py-6">No free keys available from this reseller.</p>
+              ) : (
+                <div className="flex flex-col items-center space-y-2">
+                  <Label>Select Game</Label>
+                  <Select value={game} onValueChange={v => setGame(v ?? '')}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Select game" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {games.map(g => (
+                        <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
-              {/* Key panel */}
-              {!lookupLoading && keyStatus && (
+              {/* No game selected prompt */}
+              {!game && games.length > 0 && (
+                <p className="text-center text-sm text-muted-foreground py-2">
+                  Select a game to see your key or generate a new one.
+                </p>
+              )}
+
+              {/* Key lookup spinner */}
+              {game && keyLoading && (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {/* Current key panel for selected game */}
+              {game && !keyLoading && keyStatus && (
                 <div className="space-y-3">
                   <div className="rounded-lg border border-border/50 bg-muted/40 p-4 space-y-3">
                     <div className="flex items-center justify-between">
@@ -297,7 +336,7 @@ export default function FreeKeyPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Status</span>
                       <button
-                        onClick={() => fetchMyKey()}
+                        onClick={() => fetchMyKey(game)}
                         disabled={statusLoading}
                         className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                       >
@@ -358,51 +397,40 @@ export default function FreeKeyPage() {
                 </div>
               )}
 
-              {/* Generate form — only when no active key */}
-              {!lookupLoading && !hasActiveKey && (
+              {/* Generate form — shown when game selected and no active key for that game */}
+              {game && !keyLoading && !hasActiveKey && games.length > 0 && (
                 <>
                   {keyStatus?.isExpired && (
                     <p className="text-xs text-muted-foreground text-center">
-                      Your key has expired. Generate a new one below.
+                      Your {game} key has expired. Generate a new one below.
                     </p>
                   )}
-                  {games.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-6">No free keys available from this reseller.</p>
-                  ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2 flex flex-col items-center">
-                        <Label>Game</Label>
-                        <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                          <SelectTrigger className="w-48"><SelectValue placeholder="Select game" /></SelectTrigger>
-                          <SelectContent>
-                            {games.map(g => (
-                              <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex justify-center">
-                        <Turnstile
-                          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
-                          onSuccess={setTurnstileToken}
-                        />
-                      </div>
-
-                      <Button type="submit" className="w-full" disabled={generating || !game || !turnstileToken}>
-                        {generating
-                          ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
-                          : 'Get Free Key'
-                        }
-                      </Button>
-                    </form>
+                  {!keyStatus && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      No active {game} key found. Generate one below.
+                    </p>
                   )}
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex justify-center">
+                      <Turnstile
+                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
+                        onSuccess={setTurnstileToken}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={generating || !turnstileToken}>
+                      {generating
+                        ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
+                        : `Get Free ${game} Key`
+                      }
+                    </Button>
+                  </form>
                 </>
               )}
 
-              {!lookupLoading && hasActiveKey && (
+              {game && !keyLoading && hasActiveKey && (
                 <p className="text-xs text-center text-muted-foreground pb-1">
-                  You already have an active free key. Come back after it expires to generate a new one.
+                  Come back after your key expires to generate a new one.
                 </p>
               )}
             </>
@@ -412,7 +440,7 @@ export default function FreeKeyPage() {
           {tab === 'history' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-muted-foreground">Keys generated from your IP</p>
+                <p className="text-xs text-muted-foreground">All keys generated from your IP</p>
                 <button
                   onClick={fetchHistory}
                   disabled={historyLoading}

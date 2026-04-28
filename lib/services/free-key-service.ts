@@ -76,20 +76,25 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'Your IP has been banned' };
   }
 
-  // Block generation only if the IP already has a non-expired free key.
-  // Once the key expires (1-hour active timer done), they can generate a new one.
-  const existingTracker = await IpTracker.findOne({ ipAddress: ip, isBanned: false })
+  // Block only if the IP already has a non-expired free key FOR THIS SPECIFIC GAME.
+  // Different games are independent — an active CODM key doesn't block an MLBB key.
+  const existingTrackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
     .sort({ createdAt: -1 })
     .lean();
-  if (existingTracker) {
-    const existingKey = await Key.findOne({ _id: existingTracker.keyId, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
+  if (existingTrackers.length) {
+    const keyIds = existingTrackers.map(t => t.keyId);
+    const existingKey = await Key.findOne({
+      _id: { $in: keyIds },
+      isFreeKey: true,
+      game: game.toUpperCase(),
+      status: 1,
+    }).lean() as import('@/types').KeyDoc | null;
     const now = new Date();
     const isStillActive = existingKey &&
-      existingKey.status === 1 &&
       existingKey.expiredDate &&
       new Date(existingKey.expiredDate) > now;
     if (isStillActive) {
-      return { error: 'You still have an active free key. Please wait for it to expire before generating a new one.' };
+      return { error: 'You still have an active free key for this game. Wait for it to expire before generating a new one.' };
     }
   }
 
@@ -147,25 +152,28 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
 }
 
 /**
- * Get the current user's free key for a given registrator, identified by IP.
- * The IpTracker record links the generator IP to the key — no localStorage needed.
+ * Get the current user's free key for a given registrator + game, identified by IP.
+ * Each game is independent — a user can have one active free key per game.
  */
-export async function getMyFreeKey(ip: string, registrator: string) {
+export async function getMyFreeKey(ip: string, registrator: string, game: string) {
   await dbConnect();
 
-  // Find the most recent non-banned IpTracker entry for this IP
-  const tracker = await IpTracker.findOne({
-    ipAddress: ip,
-    isBanned: false,
-  }).sort({ createdAt: -1 }).lean();
+  // Collect all tracker keyIds for this IP
+  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+    .sort({ createdAt: -1 })
+    .lean();
 
-  if (!tracker) return { error: 'No free key found for your IP' };
+  if (!trackers.length) return { error: 'No free key found for your IP' };
 
+  const keyIds = trackers.map(t => t.keyId);
+
+  // Find the most recent free key for this IP + registrator + game
   const key = await Key.findOne({
-    _id: tracker.keyId,
+    _id: { $in: keyIds },
     isFreeKey: true,
     registrator,
-  }).lean() as import('@/types').KeyDoc | null;
+    game: game.toUpperCase(),
+  }).sort({ createdAt: -1 }).lean() as import('@/types').KeyDoc | null;
 
   if (!key) return { error: 'No free key found for your IP' };
 
