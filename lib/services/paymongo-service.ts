@@ -79,7 +79,6 @@ export async function createCheckoutSession(
               currency: item.currency,
               description: item.description || '',
             })),
-            payment_method_types: ['gcash', 'paymaya', 'card', 'billease', 'dob', 'grab_pay'],
             success_url: params.successUrl,
             cancel_url: params.cancelUrl,
             reference_number: params.referenceNumber,

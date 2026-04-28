@@ -3,6 +3,7 @@ import { getOrderBySessionId, markOrderPaid } from '@/lib/services/store-service
 import { verifyWebhookSignature, getPayMongoWebhookSecret } from '@/lib/services/paymongo-service';
 import { generateKeyString } from '@/lib/utils/device';
 import Key from '@/lib/db/models/Key';
+import User from '@/lib/db/models/User';
 import dbConnect from '@/lib/db/connection';
 
 export const dynamic = 'force-dynamic';
@@ -77,6 +78,12 @@ export async function POST(request: NextRequest) {
 
     // Mark order paid
     await markOrderPaid(order._id, keyString, paymentIntentId);
+
+    // Deduct saldo based on the order price
+    await User.findOneAndUpdate(
+      { username: order.registrator },
+      { $inc: { saldo: -order.price } }
+    );
 
     console.log(`PayMongo webhook: order ${order._id} paid ✓ key generated`);
     return NextResponse.json({ received: true });
