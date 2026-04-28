@@ -305,10 +305,10 @@ export default function FreeKeyPage() {
                 </p>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 flex flex-col items-center">
                     <Label>Game</Label>
                     <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                      <SelectTrigger><SelectValue placeholder="Select game" /></SelectTrigger>
+                      <SelectTrigger className="w-48"><SelectValue placeholder="Select game" /></SelectTrigger>
                       <SelectContent>
                         {games.map(g => (
                           <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
