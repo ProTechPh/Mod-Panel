@@ -27,18 +27,21 @@ export default function KeyTrendsChart({ data }: KeyTrendsChartProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: '#cbd5e1' }}
                 stroke="hsl(var(--muted-foreground))"
                 tickFormatter={(v: string) => v.substring(5)}
               />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 12, fill: '#cbd5e1' }} stroke="hsl(var(--muted-foreground))" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
                   fontSize: 12,
+                  color: '#f1f5f9',
                 }}
+                labelStyle={{ color: '#94a3b8' }}
+                itemStyle={{ color: '#f1f5f9' }}
               />
               <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={false} name="Keys Created" />
             </LineChart>

@@ -42,16 +42,19 @@ export default function StatusPieChart({ data }: StatusPieChartProps) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
                   fontSize: 12,
+                  color: '#f1f5f9',
                 }}
+                labelStyle={{ color: '#94a3b8' }}
+                itemStyle={{ color: '#f1f5f9' }}
               />
               <Legend
                 verticalAlign="bottom"
                 height={36}
-                formatter={(value: string) => <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 12 }}>{value}</span>}
+                formatter={(value: string) => <span style={{ color: '#cbd5e1', fontSize: 12 }}>{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>

@@ -38,18 +38,21 @@ export default function ActivityChart({ data }: ActivityChartProps) {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: '#cbd5e1' }}
                 stroke="hsl(var(--muted-foreground))"
                 tickFormatter={(v: string) => v.substring(5)}
               />
-              <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 12, fill: '#cbd5e1' }} stroke="hsl(var(--muted-foreground))" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
                   borderRadius: '8px',
                   fontSize: 12,
+                  color: '#f1f5f9',
                 }}
+                labelStyle={{ color: '#94a3b8' }}
+                itemStyle={{ color: '#f1f5f9' }}
               />
               <Area type="monotone" dataKey="created" stroke="#3b82f6" fill="url(#createdGrad)" strokeWidth={2} name="Created" />
               <Area type="monotone" dataKey="expired" stroke="#eab308" fill="url(#expiredGrad)" strokeWidth={2} name="Expired" />
