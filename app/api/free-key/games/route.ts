@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAvailableGames } from '@/lib/services/free-key-service';
+import GameSetting from '@/lib/db/models/GameSetting';
+import dbConnect from '@/lib/db/connection';
 
 export async function GET(request: NextRequest) {
   const registrator = request.nextUrl.searchParams.get('registrator');
@@ -7,8 +8,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing registrator' }, { status: 400 });
   }
 
-  const ip = request.headers.get('x-client-ip') || 'unknown';
-  const games = await getAvailableGames(ip, registrator);
+  await dbConnect();
+  const games = await GameSetting.find({
+    registrator,
+    isEnabled: true,
+    freeKeyEnabled: true,
+  }).select('gameCode gameName -_id').lean();
 
-  return NextResponse.json(games);
+  return NextResponse.json(games.map(g => ({ code: g.gameCode, name: g.gameName })));
 }
