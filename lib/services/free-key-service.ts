@@ -76,14 +76,23 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'Your IP has been banned' };
   }
 
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const recentKey = await IpTracker.findOne({
-    ipAddress: ip,
-    createdAt: { $gt: oneDayAgo },
-  }).lean();
-  if (recentKey) {
-    return { error: 'You can only generate one free key per day' };
+  // Block generation only if the IP already has a non-expired free key.
+  // Once the key expires (1-hour active timer done), they can generate a new one.
+  const existingTracker = await IpTracker.findOne({ ipAddress: ip, isBanned: false })
+    .sort({ createdAt: -1 })
+    .lean();
+  if (existingTracker) {
+    const existingKey = await Key.findOne({ _id: existingTracker.keyId, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
+    const now = new Date();
+    const isStillActive = existingKey &&
+      existingKey.status === 1 &&
+      existingKey.expiredDate &&
+      new Date(existingKey.expiredDate) > now;
+    if (isStillActive) {
+      return { error: 'You still have an active free key. Please wait for it to expire before generating a new one.' };
+    }
   }
+
 
   const vpnCheck = await checkVpn(ip);
   if (vpnCheck.isVpn || vpnCheck.isProxy) {
