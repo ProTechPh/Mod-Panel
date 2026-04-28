@@ -186,8 +186,47 @@ export async function getMyFreeKey(ip: string, registrator: string) {
   };
 }
 
+export async function getMyFreeKeyHistory(ip: string, registrator: string) {
+  await dbConnect();
+
+  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (!trackers.length) return [];
+
+  const now = new Date();
+  const results = await Promise.all(
+    trackers.map(async (tracker) => {
+      const key = await Key.findOne({
+        _id: tracker.keyId,
+        isFreeKey: true,
+        registrator,
+      }).lean() as import('@/types').KeyDoc | null;
+
+      if (!key) return null;
+
+      const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
+      const isActivated = (key.devices?.length ?? 0) > 0;
+
+      return {
+        key: key.userKey,
+        game: key.game,
+        generatedAt: tracker.createdAt ? new Date(tracker.createdAt).toISOString() : null,
+        expiredDate: key.expiredDate ? new Date(key.expiredDate).toISOString() : null,
+        status: key.status,
+        isActivated,
+        isExpired,
+      };
+    })
+  );
+
+  return results.filter(Boolean);
+}
+
 export async function resetFreeKeyDevices(userKey: string, ip: string) {
   await dbConnect();
+
 
   const key = await Key.findOne({ userKey, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
   if (!key) return { error: 'Key not found' };
