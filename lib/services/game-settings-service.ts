@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db/connection';
 import GameSetting from '@/lib/db/models/GameSetting';
+import Key from '@/lib/db/models/Key';
 import { clearConfigCache } from './key-service';
 
 export async function listGameSettings(registrator?: string) {
@@ -72,6 +73,42 @@ export async function updateGameSetting(gameCode: string, data: {
 
   // Strip non-schema fields before update
   const { gameCode: _gc, registrator: _reg, _method: _m, ...updateData } = data as Record<string, unknown>;
+
+  // ── Per-game maintenance timer pause / resume ─────────────────────────────
+  if (data.connectEnabled !== undefined) {
+    if (data.connectEnabled === false) {
+      // Maintenance starting — record the timestamp
+      updateData.maintenanceStartedAt = new Date();
+    } else {
+      // Maintenance ending — extend affected keys by elapsed duration
+      const current = await GameSetting.findOne(filter).lean();
+      const startedAt = current?.maintenanceStartedAt;
+
+      if (startedAt) {
+        const now = new Date();
+        const elapsedMs = now.getTime() - new Date(startedAt).getTime();
+
+        if (elapsedMs > 0) {
+          // Only extend keys for this exact game code + registrator
+          // that were active (not yet expired) when maintenance started
+          const keyFilter: Record<string, unknown> = {
+            game: gameCode.toUpperCase(),
+            expiredDate: { $ne: null, $gte: new Date(startedAt) },
+          };
+          if (registrator) keyFilter.registrator = registrator;
+
+          await Key.updateMany(
+            keyFilter,
+            [{ $set: { expiredDate: { $add: ['$expiredDate', elapsedMs] } } }]
+          );
+        }
+      }
+
+      // Clear the recorded start time
+      updateData.maintenanceStartedAt = null;
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   const game = await GameSetting.findOneAndUpdate(
     filter,

@@ -19,6 +19,7 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
   connectEnabled: { type: Boolean, default: true },
   freeKeyEnabled: { type: Boolean, default: true },
   maintenanceMessage: { type: String, default: '' },
+  maintenanceStartedAt: { type: Date, default: null },
   downloadLink: { type: String, default: '' },
   floatingTextStatus: { type: String, default: '' },
   floatingText: { type: String, default: '' },

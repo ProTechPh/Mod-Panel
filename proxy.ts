@@ -4,7 +4,7 @@ import { checkRateLimit, getRateLimitTier } from '@/lib/rate-limit';
 import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback', '/store-terms'];
 const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);

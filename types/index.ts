@@ -76,6 +76,7 @@ export interface GameSettingDoc {
   connectEnabled: boolean;
   freeKeyEnabled: boolean;
   maintenanceMessage: string;
+  maintenanceStartedAt: Date | null;
   downloadLink: string;
   floatingTextStatus: string;
   floatingText: string;
@@ -93,6 +94,7 @@ export interface ServerConfigDoc {
   modName: string;
   maintenanceStatus: MaintenanceStatus;
   maintenanceMessage: string;
+  maintenanceStartedAt: Date | null;
   telegramChannel: string;
   telegramGroup: string;
   updatedAt: Date;

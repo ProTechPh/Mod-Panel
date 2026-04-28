@@ -229,10 +229,19 @@ export default function StorePage() {
         )}
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground pb-4">
-          Payments are processed securely via PayMongo.
-          Keys are delivered instantly after payment confirmation.
-        </p>
+        <div className="text-center pb-4 space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Payments are processed securely via PayMongo.
+            Keys are delivered instantly after payment confirmation.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            By purchasing, you agree to our{' '}
+            <a href="/store-terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              Terms of Service
+            </a>
+            .
+          </p>
+        </div>
       </main>
 
       {/* Buy Dialog */}
