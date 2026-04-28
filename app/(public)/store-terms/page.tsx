@@ -33,7 +33,7 @@ const STORE_TERMS = [
   {
     title: '4. Delivery & Payments',
     content: [
-      'Payments are processed securely via PayMongo.',
+      'Payments are processed securely via our payment gateway.',
       'Keys are delivered digitally and instantly upon successful payment confirmation. Please copy and save your key immediately after purchase.',
       'In rare cases of network delay, the key delivery may take a few minutes. Please retain your transaction reference.',
     ],

@@ -231,7 +231,7 @@ export default function StorePage() {
         {/* Footer */}
         <div className="text-center pb-4 space-y-2">
           <p className="text-xs text-muted-foreground">
-            Payments are processed securely via PayMongo.
+            Payments are processed securely.
             Keys are delivered instantly after payment confirmation.
           </p>
           <p className="text-xs text-muted-foreground">
@@ -287,7 +287,7 @@ export default function StorePage() {
                 }
               </Button>
               <p className="text-xs text-center text-muted-foreground">
-                You will be redirected to a secure PayMongo checkout page.
+                You will be redirected to a secure payment checkout page.
               </p>
             </div>
           )}

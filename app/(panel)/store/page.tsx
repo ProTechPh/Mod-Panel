@@ -101,7 +101,7 @@ export default function StorePage() {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // PayMongo (info only — keys are set via env vars)
+  // Payment Gateway (info only — keys are set via env vars)
   // PAYMONGO_SECRET_KEY, PAYMONGO_PUBLIC_KEY, PAYMONGO_WEBHOOK_SECRET
 
   useEffect(() => {
@@ -424,7 +424,7 @@ export default function StorePage() {
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Minimum price is ₱20 (PayMongo requirement)</p>
+                  <p className="text-xs text-muted-foreground">Minimum price is ₱20 (payment processor requirement)</p>
                   <Button onClick={saveProduct} disabled={productSaving} className="w-full gap-2">
                     {productSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     {editProduct ? 'Save Changes' : 'Add Product'}

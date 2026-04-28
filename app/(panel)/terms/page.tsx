@@ -50,7 +50,7 @@ const GENERAL_TERMS: Section[] = [
   {
     title: '6. Privacy & Data',
     content: [
-      'Your username, IP address, and activity logs may be recorded for security and abuse prevention purposes. This data is not shared with third parties outside of payment processing via PayMongo (for store purchases) and Cloudflare Turnstile (for free key generation).',
+      'Your username, IP address, and activity logs may be recorded for security and abuse prevention purposes. This data is not shared with third parties outside of our secure payment gateway (for store purchases) and Cloudflare Turnstile (for free key generation).',
       'By using the Service, you consent to this data collection as described above.',
     ],
   },
@@ -76,7 +76,7 @@ const ROLE_TERMS: Record<
         content: [
           'As Owner, you have full administrative control over the platform including user management, server configuration, and global settings. You are solely responsible for maintaining the integrity of the platform and ensuring all users under your management comply with these Terms.',
           'You are responsible for the actions taken by Admins and Resellers you have granted access to. Misuse by any managed user reflects on your account.',
-          'You must keep your credentials and server configuration secrets (e.g., AUTH_SECRET, MongoDB URI, PayMongo keys) strictly confidential. Exposure of these credentials is your liability.',
+          'You must keep your credentials and server configuration secrets (e.g., AUTH_SECRET, MongoDB URI, payment gateway keys) strictly confidential. Exposure of these credentials is your liability.',
         ],
       },
       {
@@ -141,14 +141,14 @@ const STORE_TERMS: Section[] = [
   {
     title: 'Store Operations',
     content: [
-      'Owners and Admins may configure a personal store to sell license keys to buyers. Payments are processed via PayMongo. Store operators are responsible for ensuring their store is accurately described and products are correctly priced.',
-      'Minimum product price is ₱20.00 as required by the PayMongo payment processor.',
+      'Owners and Admins may configure a personal store to sell license keys to buyers. Payments are processed securely. Store operators are responsible for ensuring their store is accurately described and products are correctly priced.',
+      'Minimum product price is ₱20.00 as required by our payment processor.',
     ],
   },
   {
     title: 'Key Delivery',
     content: [
-      'License keys are generated and delivered automatically upon payment confirmation from PayMongo. Store operators acknowledge that key delivery depends on webhook processing and may be delayed in cases of webhook failure or server downtime.',
+      'License keys are generated and delivered automatically upon successful payment confirmation. Store operators acknowledge that key delivery depends on webhook processing and may be delayed in cases of webhook failure or server downtime.',
       'In cases of payment failure or chargeback, generated keys may be revoked.',
     ],
   },
