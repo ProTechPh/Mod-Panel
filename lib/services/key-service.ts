@@ -147,7 +147,20 @@ export async function validateKey(game: string, userKey: string, serial: string,
 
   const now = new Date();
 
-  if (!key.expiredDate) {
+  if (key.isFreeKey) {
+    // Free key dual-expiry logic:
+    // - Before first use: expiredDate is set to now+1day (unused grace period)
+    // - On first connect: replace expiredDate with now+1hour (active timer starts)
+    const isFirstUse = !key.devices || key.devices.length === 0;
+    if (isFirstUse) {
+      // First use — start the 1-hour active timer now
+      const activeExpiry = new Date(now.getTime() + 60 * 60 * 1000);
+      await Key.updateOne({ _id: key._id }, { expiredDate: activeExpiry });
+      key.expiredDate = activeExpiry;
+    }
+    // If not first use, expiredDate is already the 1-hour active timer — leave it alone
+  } else if (!key.expiredDate) {
+    // Standard paid key: set expiry on first connect
     let expiredDate: Date;
     if (key.duration === '1h') {
       expiredDate = new Date(now.getTime() + 60 * 60 * 1000);

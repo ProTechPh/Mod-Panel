@@ -17,6 +17,8 @@ const KeySchema = new Schema<KeyDoc & Document>({
   devices: { type: [String], default: [] },
   status: { type: Number, required: true, enum: [0, 1] as KeyStatus[], default: 1 },
   registrator: { type: String, required: true, trim: true },
+  isFreeKey: { type: Boolean, default: false },
+  deviceResetCount: { type: Number, default: 0 },
 }, { timestamps: true, collection: 'keys' });
 
 KeySchema.index({ game: 1, userKey: 1 }, { unique: true });

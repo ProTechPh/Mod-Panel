@@ -49,6 +49,8 @@ export interface KeyDoc {
   devices: string[];
   status: KeyStatus;
   registrator: string;
+  isFreeKey: boolean;
+  deviceResetCount: number;
   createdAt: Date;
   updatedAt: Date;
 }

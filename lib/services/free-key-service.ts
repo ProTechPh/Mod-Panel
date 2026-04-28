@@ -76,13 +76,13 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'Your IP has been banned' };
   }
 
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const recentKey = await IpTracker.findOne({
     ipAddress: ip,
-    createdAt: { $gt: oneHourAgo },
+    createdAt: { $gt: oneDayAgo },
   }).lean();
   if (recentKey) {
-    return { error: 'You can only generate one free key per hour' };
+    return { error: 'You can only generate one free key per day' };
   }
 
   const vpnCheck = await checkVpn(ip);
@@ -108,6 +108,9 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   }
 
   const keyString = generateKeyString(16);
+  // Set a 1-day "pending" expiry so unused keys auto-expire.
+  // On first use (connect), this will be replaced with now + 1 hour.
+  const pendingExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const key = await Key.create({
     game: game.toUpperCase(),
     userKey: keyString,
@@ -116,6 +119,8 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     devices: [],
     status: 1,
     registrator,
+    isFreeKey: true,
+    expiredDate: pendingExpiry,
   });
 
   await IpTracker.create({
@@ -130,4 +135,66 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   });
 
   return { key: keyString };
+}
+
+/**
+ * Get the current user's free key for a given registrator, identified by IP.
+ * The IpTracker record links the generator IP to the key — no localStorage needed.
+ */
+export async function getMyFreeKey(ip: string, registrator: string) {
+  await dbConnect();
+
+  // Find the most recent non-banned IpTracker entry for this IP
+  const tracker = await IpTracker.findOne({
+    ipAddress: ip,
+    isBanned: false,
+  }).sort({ createdAt: -1 }).lean();
+
+  if (!tracker) return { error: 'No free key found for your IP' };
+
+  const key = await Key.findOne({
+    _id: tracker.keyId,
+    isFreeKey: true,
+    registrator,
+  }).lean() as import('@/types').KeyDoc | null;
+
+  if (!key) return { error: 'No free key found for your IP' };
+
+  const now = new Date();
+  const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
+  const isActivated = (key.devices?.length ?? 0) > 0;
+  const resetsRemaining = Math.max(0, 2 - (key.deviceResetCount ?? 0));
+
+  return {
+    key: key.userKey,
+    game: key.game,
+    status: key.status,
+    isActivated,
+    isExpired,
+    expiredDate: key.expiredDate ? new Date(key.expiredDate).toISOString() : null,
+    deviceCount: key.devices?.length ?? 0,
+    resetsRemaining,
+  };
+}
+
+export async function resetFreeKeyDevices(userKey: string, ip: string) {
+  await dbConnect();
+
+  const key = await Key.findOne({ userKey, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
+  if (!key) return { error: 'Key not found' };
+
+  // Verify IP ownership via IpTracker
+  const tracker = await IpTracker.findOne({ keyId: key._id, isBanned: false }).lean();
+  if (!tracker || tracker.generatorIp !== ip) {
+    return { error: 'You can only reset devices from the same IP that generated this key' };
+  }
+
+  const resetsDone = key.deviceResetCount ?? 0;
+  if (resetsDone >= 2) {
+    return { error: 'Device reset limit reached (max 2 resets per free key)' };
+  }
+
+  await Key.updateOne({ _id: key._id }, { devices: [], $inc: { deviceResetCount: 1 } });
+
+  return { success: true, resetsRemaining: 2 - (resetsDone + 1) };
 }
