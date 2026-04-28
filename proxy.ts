@@ -5,7 +5,7 @@ import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
 const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback'];
-const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve', '/api/server-status'];
+const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -17,8 +17,12 @@ function isApiPublic(pathname: string): boolean {
   return API_PUBLIC.some(p => pathname === p || pathname.startsWith(p + '/'));
 }
 
-// Dynamic public paths: /<registrator>/free-key
-const PUBLIC_REGEX = [/^\/[^/]+\/free-key(?:\/)?$/];
+// Dynamic public paths: /<registrator>/free-key, /<registrator>/store, /<registrator>/store/success
+const PUBLIC_REGEX = [
+  /^\/[^/]+\/free-key(?:\/)?$/,
+  /^\/[^/]+\/store(?:\/)?$/,
+  /^\/[^/]+\/store\/success(?:\/.*)?$/,
+];
 
 function addSecurityHeaders(response: NextResponse): void {
   response.headers.set('X-Content-Type-Options', 'nosniff');

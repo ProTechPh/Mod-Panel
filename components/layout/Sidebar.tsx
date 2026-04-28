@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone, ShoppingCart } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
   { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
   { href: '/history', label: 'History', icon: History, minLevel: 3 },
+  { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 2 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
