@@ -129,7 +129,7 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
       },
     ]) as Promise<UserLevelFacetResult[]>;
 
-  const topPerformersPromise = Key.aggregate<{ _id: string; keysUsed: number; totalKeys: number }>([
+  const topPerformersPromise = Key.aggregate<{ username: string; fullname: string; keysUsed: number; totalKeys: number }>([
     { $match: filter },
     {
       $group: {
