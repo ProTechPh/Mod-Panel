@@ -28,9 +28,10 @@ export async function GET(request: NextRequest) {
   }
 
   const registrator = request.nextUrl.searchParams.get('registrator');
-  // Level 1 owners can see any registrator's orders; others see only their own
-  const target = (user.level === 1 && registrator) ? registrator : user.username;
+  // Level 1 owners see all orders when no registrator is specified; or filter by registrator param
+  // Other levels always see only their own orders
+  const target = user.level === 1 ? (registrator || null) : user.username;
 
-  const orders = await listOrders(target, 100);
+  const orders = await listOrders(target, 200);
   return NextResponse.json(orders);
 }

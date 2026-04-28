@@ -44,6 +44,7 @@ interface Order {
   status: string;
   generatedKey: string | null;
   buyerName: string;
+  registrator: string;
   createdAt: string;
 }
 
@@ -488,48 +489,101 @@ export default function StorePage() {
             const revenue = paid.reduce((sum, o) => sum + o.price, 0);
             const convRate = orders.length > 0 ? Math.round((paid.length / orders.length) * 100) : 0;
             return (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Card className="border-border/50 bg-gradient-to-br from-primary/10 to-primary/5">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-muted-foreground">Total Revenue</p>
-                      <PhilippinePeso className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <p className="text-2xl font-bold text-primary">₱{revenue.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-border/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-muted-foreground">Total Orders</p>
-                      <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                    <p className="text-2xl font-bold">{orders.length}</p>
-                    <p className="text-xs text-muted-foreground mt-1">All time</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-border/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-muted-foreground">Pending</p>
-                      <KeyRound className="h-3.5 w-3.5 text-amber-500" />
-                    </div>
-                    <p className="text-2xl font-bold text-amber-500">{orders.filter(o => o.status === 'pending').length}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-border/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-muted-foreground">Conversion</p>
-                      <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                    </div>
-                    <p className="text-2xl font-bold text-green-500">{convRate}%</p>
-                    <p className="text-xs text-muted-foreground mt-1">Paid vs total</p>
-                  </CardContent>
-                </Card>
-              </div>
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <Card className="border-border/50 bg-gradient-to-br from-primary/10 to-primary/5">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-muted-foreground">Total Revenue</p>
+                        <PhilippinePeso className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <p className="text-2xl font-bold text-primary">₱{revenue.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-muted-foreground">Total Orders</p>
+                        <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                      <p className="text-2xl font-bold">{orders.length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">All time</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-muted-foreground">Pending</p>
+                        <KeyRound className="h-3.5 w-3.5 text-amber-500" />
+                      </div>
+                      <p className="text-2xl font-bold text-amber-500">{orders.filter(o => o.status === 'pending').length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-muted-foreground">Conversion</p>
+                        <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                      </div>
+                      <p className="text-2xl font-bold text-green-500">{convRate}%</p>
+                      <p className="text-xs text-muted-foreground mt-1">Paid vs total</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Per-reseller breakdown — Owner only */}
+                {user.level === 1 && (() => {
+                  const byRegistrator = orders.reduce<Record<string, { revenue: number; total: number; paid: number }>>((acc, o) => {
+                    const r = o.registrator || 'Unknown';
+                    if (!acc[r]) acc[r] = { revenue: 0, total: 0, paid: 0 };
+                    acc[r].total++;
+                    if (o.status === 'paid') { acc[r].paid++; acc[r].revenue += o.price; }
+                    return acc;
+                  }, {});
+                  const rows = Object.entries(byRegistrator).sort((a, b) => b[1].revenue - a[1].revenue);
+                  if (rows.length <= 1) return null;
+                  return (
+                    <Card className="border-border/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-primary" />
+                          Sales by Reseller
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-border/50">
+                                <th className="text-left px-4 py-2 text-muted-foreground font-medium">#</th>
+                                <th className="text-left px-4 py-2 text-muted-foreground font-medium">Reseller</th>
+                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Revenue</th>
+                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Paid</th>
+                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Total</th>
+                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Conv.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {rows.map(([reg, s], i) => (
+                                <tr key={reg} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                                  <td className="px-4 py-2 text-muted-foreground">{i + 1}</td>
+                                  <td className="px-4 py-2 font-mono font-medium">{reg}</td>
+                                  <td className="px-4 py-2 text-right text-primary font-semibold">₱{s.revenue.toLocaleString()}</td>
+                                  <td className="px-4 py-2 text-right text-green-500">{s.paid}</td>
+                                  <td className="px-4 py-2 text-right">{s.total}</td>
+                                  <td className="px-4 py-2 text-right text-muted-foreground">{s.total > 0 ? Math.round((s.paid / s.total) * 100) : 0}%</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+              </>
             );
           })()}
 
@@ -548,10 +602,13 @@ export default function StorePage() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {statusBadge(o.status)}
                         <Badge variant="outline" className="font-mono text-xs">{o.game}</Badge>
                         <span className="text-sm font-medium">{o.label}</span>
+                        {user.level === 1 && o.registrator && (
+                          <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">{o.registrator}</span>
+                        )}
                       </div>
                       {o.buyerName && (
                         <p className="text-xs text-muted-foreground">Buyer: {o.buyerName}</p>

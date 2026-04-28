@@ -179,9 +179,11 @@ export async function markOrderFailed(orderId: string) {
   await Order.findByIdAndUpdate(orderId, { status: 'failed' });
 }
 
-export async function listOrders(registrator: string, limit = 50) {
+export async function listOrders(registrator: string | null, limit = 50) {
   await dbConnect();
-  const orders = await Order.find({ registrator })
+  const filter: Record<string, unknown> = {};
+  if (registrator) filter.registrator = registrator;
+  const orders = await Order.find(filter)
     .sort({ createdAt: -1 })
     .limit(limit)
     .lean();
