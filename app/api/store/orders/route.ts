@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       generatedKey: order.status === 'paid' ? order.generatedKey : null,
       game: order.game,
       label: order.label,
+      price: order.price,
       registrator: order.registrator,
       createdAt: order.createdAt,
     });

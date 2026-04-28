@@ -1,12 +1,13 @@
 'use client';
 
-import { Suspense, useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { toPng } from 'html-to-image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  CheckCircle2, Copy, Check, Loader2, XCircle, Clock, KeyRound, ShoppingCart, RefreshCw,
+  CheckCircle2, Copy, Check, Loader2, XCircle, Clock, KeyRound, ShoppingCart, RefreshCw, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -19,6 +20,7 @@ interface OrderData {
   generatedKey: string | null;
   game: string;
   label: string;
+  price?: number;
   registrator: string;
   createdAt: string;
 }
@@ -36,6 +38,7 @@ function SuccessContent({ registrator }: { registrator: string }) {
   const [polling, setPolling] = useState(false);
   const [pollCount, setPollCount] = useState(0);
   const [copied, setCopied] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   const fetchOrder = useCallback(async (): Promise<OrderData | null> => {
     if (!orderId) return null;
@@ -82,6 +85,25 @@ function SuccessContent({ registrator }: { registrator: string }) {
     setCopied(true);
     toast.success('Key copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!receiptRef.current || !order) return;
+    
+    try {
+      const dataUrl = await toPng(receiptRef.current, {
+        backgroundColor: '#ffffff', // White background for the receipt
+        pixelRatio: 2, // High resolution
+      });
+
+      const link = document.createElement('a');
+      link.download = `receipt-${order._id.slice(-8)}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Receipt image downloaded!');
+    } catch (error) {
+      toast.error('Failed to download image.');
+    }
   };
 
   const handleManualRefresh = async () => {
@@ -181,12 +203,17 @@ function SuccessContent({ registrator }: { registrator: string }) {
                   {order.generatedKey}
                 </p>
               </div>
-              <Button onClick={handleCopy} className="w-full gap-2" variant={copied ? 'outline' : 'default'}>
-                {copied
-                  ? <><Check className="h-4 w-4 text-green-500" />Copied!</>
-                  : <><Copy className="h-4 w-4" />Copy Key</>
-                }
-              </Button>
+              <div id="receipt-buttons" className="flex gap-2 w-full">
+                <Button onClick={handleCopy} className="flex-1 gap-2" variant={copied ? 'outline' : 'default'}>
+                  {copied
+                    ? <><Check className="h-4 w-4 text-green-500" />Copied!</>
+                    : <><Copy className="h-4 w-4" />Copy Key</>
+                  }
+                </Button>
+                <Button onClick={handleDownloadReceipt} className="flex-1 gap-2" variant="outline">
+                  <Download className="h-4 w-4" />Receipt
+                </Button>
+              </div>
               <p className="text-xs text-center text-muted-foreground">
                 ⚠️ Save this key now — it won&apos;t be shown again after you leave.
               </p>
@@ -221,14 +248,71 @@ function SuccessContent({ registrator }: { registrator: string }) {
             </p>
           )}
 
-          <Link href={`/${registrator}/store`}>
-            <Button variant={order.status === 'paid' ? 'outline' : 'default'} className="w-full gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              {order.status === 'paid' ? 'Back to Store' : 'Try Again'}
-            </Button>
-          </Link>
+          <div id="back-button-container">
+            <Link href={`/${registrator}/store`}>
+              <Button variant={order.status === 'paid' ? 'outline' : 'default'} className="w-full gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                {order.status === 'paid' ? 'Back to Store' : 'Try Again'}
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Hidden GCash-style Receipt Template */}
+      <div className="fixed left-[-9999px] top-[-9999px]">
+        <div ref={receiptRef} className="w-[380px] bg-white text-black p-8 rounded-2xl shadow-xl font-sans relative overflow-hidden" style={{ minHeight: '550px' }}>
+          {/* Header */}
+          <div className="text-center space-y-2 mb-8 relative z-10">
+            <div className="mx-auto w-16 h-16 bg-[#0051e5] rounded-full flex items-center justify-center mb-4 shadow-md">
+              <Check className="h-8 w-8 text-white" strokeWidth={3} />
+            </div>
+            <h2 className="text-[22px] font-bold text-[#0051e5]">Transaction Receipt</h2>
+            <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</p>
+          </div>
+
+          {/* Amount & Status */}
+          <div className="text-center mb-8 relative z-10">
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Amount Paid</p>
+            <p className="text-[40px] font-extrabold text-gray-900 tracking-tight leading-none">₱{order.price?.toFixed(2) || '0.00'}</p>
+            <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-100">
+              <CheckCircle2 className="h-4 w-4" /> Successful
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="space-y-4 border-t-2 border-dashed border-gray-200 pt-6 relative z-10">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Store Name</span>
+              <span className="font-semibold text-gray-900">{registrator}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Product</span>
+              <span className="font-semibold text-gray-900">{order.label}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Game</span>
+              <span className="font-semibold text-gray-900">{order.game}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Order ID</span>
+              <span className="font-mono text-sm font-medium text-gray-700">{order._id.slice(-8).toUpperCase()}</span>
+            </div>
+          </div>
+
+
+
+          {/* Footer */}
+          <div className="mt-10 text-center relative z-10">
+            <p className="text-[13px] text-gray-500 font-medium">Thank you for your purchase!</p>
+            <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+          </div>
+
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0051e5 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        </div>
+      </div>
+
     </div>
   );
 }

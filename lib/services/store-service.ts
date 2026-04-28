@@ -32,7 +32,7 @@ export async function upsertStore(registrator: string, data: {
       storeDescription: data.storeDescription ?? '',
       isActive: data.isActive ?? true,
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   ).lean();
   return store ? { ...store, _id: store._id.toString() } : null;
 }
@@ -92,7 +92,7 @@ export async function updateProduct(id: string, registrator: string, data: {
   const product = await StoreProduct.findOneAndUpdate(
     { _id: id, registrator },
     update,
-    { new: true }
+    { returnDocument: 'after' }
   ).lean();
   return product ? { ...product, _id: product._id.toString() } : null;
 }
@@ -170,7 +170,7 @@ export async function markOrderPaid(orderId: string, generatedKey: string, payme
   await dbConnect();
   const update: Record<string, unknown> = { status: 'paid', generatedKey };
   if (paymentIntentId) update.paymongoPaymentIntentId = paymentIntentId;
-  const order = await Order.findByIdAndUpdate(orderId, update, { new: true }).lean();
+  const order = await Order.findByIdAndUpdate(orderId, update, { returnDocument: 'after' }).lean();
   return order ? { ...order, _id: order._id.toString() } : null;
 }
 

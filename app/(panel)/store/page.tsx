@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toPng } from 'html-to-image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import {
-  ShoppingCart, Plus, Trash2, Pencil, Copy, Check,
-  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso,
+  ShoppingCart, Plus, Trash2, Pencil, Copy, Check, CheckCircle2,
+  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download,
 } from 'lucide-react';
 import type { Duration } from '@/types';
 
@@ -246,6 +247,26 @@ export default function StorePage() {
     setCopiedKey(key);
     toast.success('Key copied');
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const downloadReceipt = async (o: Order) => {
+    const cardEl = document.getElementById(`receipt-template-${o._id}`);
+    if (!cardEl) return;
+    
+    try {
+      const dataUrl = await toPng(cardEl, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+      });
+
+      const link = document.createElement('a');
+      link.download = `receipt-${o._id.slice(-8)}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Receipt image downloaded!');
+    } catch (err) {
+      toast.error('Failed to download receipt image');
+    }
   };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -598,7 +619,8 @@ export default function StorePage() {
             </Card>
           ) : (
             orders.map(o => (
-              <Card key={o._id} className="border-border/50">
+              <div key={o._id}>
+              <Card className="border-border/50">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
@@ -617,9 +639,14 @@ export default function StorePage() {
                         <div className="flex items-center gap-2 mt-1">
                           <KeyRound className="h-3.5 w-3.5 text-primary shrink-0" />
                           <code className="text-xs font-mono break-all text-muted-foreground">{o.generatedKey}</code>
-                          <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 text-muted-foreground hover:text-foreground">
-                            {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                          </button>
+                          <div className="receipt-actions flex items-center gap-2">
+                            <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Copy Key">
+                              {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                            <button onClick={() => downloadReceipt(o)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Download Receipt">
+                              <Download className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -630,6 +657,56 @@ export default function StorePage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Hidden GCash-style Receipt Template */}
+              <div className="fixed left-[-9999px] top-[-9999px]">
+                <div id={`receipt-template-${o._id}`} className="w-[380px] bg-white text-black p-8 rounded-2xl shadow-xl font-sans relative overflow-hidden" style={{ minHeight: '550px' }}>
+                  <div className="text-center space-y-2 mb-8 relative z-10">
+                    <div className="mx-auto w-16 h-16 bg-[#0051e5] rounded-full flex items-center justify-center mb-4 shadow-md">
+                      <Check className="h-8 w-8 text-white" strokeWidth={3} />
+                    </div>
+                    <h2 className="text-[22px] font-bold text-[#0051e5]">Transaction Receipt</h2>
+                    <p className="text-sm text-gray-500">{new Date(o.createdAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                  </div>
+
+                  <div className="text-center mb-8 relative z-10">
+                    <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Amount Paid</p>
+                    <p className="text-[40px] font-extrabold text-gray-900 tracking-tight leading-none">₱{o.price?.toFixed(2) || '0.00'}</p>
+                    <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-100">
+                      <CheckCircle2 className="h-4 w-4" /> Successful
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 border-t-2 border-dashed border-gray-200 pt-6 relative z-10">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-sm">Store Name</span>
+                      <span className="font-semibold text-gray-900">{o.registrator || store?.storeName || 'Store'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-sm">Product</span>
+                      <span className="font-semibold text-gray-900">{o.label}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-sm">Game</span>
+                      <span className="font-semibold text-gray-900">{o.game}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-sm">Order ID</span>
+                      <span className="font-mono text-sm font-medium text-gray-700">{o._id.slice(-8).toUpperCase()}</span>
+                    </div>
+                  </div>
+
+
+
+                  <div className="mt-10 text-center relative z-10">
+                    <p className="text-[13px] text-gray-500 font-medium">Thank you for your purchase!</p>
+                    <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+                  </div>
+
+                  <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0051e5 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                </div>
+              </div>
+              </div>
             ))
           )}
         </div>

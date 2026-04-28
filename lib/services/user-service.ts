@@ -22,7 +22,7 @@ export async function loginUser(identifier: string, password: string) {
     const result = await User.findOneAndUpdate(
       { _id: user._id, password: { $ne: user.password } },
       { $set: { password: await hashPassword(password) } },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean();
     // Only update if password hasn't changed since we read it
     if (!result) {
@@ -164,7 +164,7 @@ export async function updateUser(id: string, data: {
   if (data.expirationDate !== undefined) update.expirationDate = new Date(data.expirationDate);
   if (data.telegramContact !== undefined) update.telegramContact = data.telegramContact;
 
-  const user = await User.findByIdAndUpdate(id, update, { new: true }).select('-password').lean();
+  const user = await User.findByIdAndUpdate(id, update, { returnDocument: 'after' }).select('-password').lean();
   return user ? { ...user, _id: user._id.toString() } : null;
 }
 
@@ -226,7 +226,7 @@ export async function connectTelegram(userId: string, telegramId: number, telegr
   const user = await User.findByIdAndUpdate(
     userId,
     { telegramId, telegramUsername },
-    { new: true }
+    { returnDocument: 'after' }
   ).select('-password').lean();
 
   return user ? { ...user, _id: user._id.toString() } : null;
@@ -237,7 +237,7 @@ export async function disconnectTelegram(userId: string) {
   const user = await User.findByIdAndUpdate(
     userId,
     { telegramId: null, telegramUsername: '' },
-    { new: true }
+    { returnDocument: 'after' }
   ).select('-password').lean();
 
   return user ? { ...user, _id: user._id.toString() } : null;
