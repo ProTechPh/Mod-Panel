@@ -122,6 +122,23 @@ export default function FreeKeyPage() {
     }
   }, [registrator]);
 
+  const fetchGames = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`);
+      const data = await res.json();
+      const list: GameOption[] = Array.isArray(data) ? data : [];
+      setGames(list);
+      // Auto-select if only one available
+      if (list.length === 1) setGame(list[0].code);
+      // Clear selection if current game is no longer available
+      setGame(prev => (list.some(g => g.code === prev) ? prev : ''));
+      return list;
+    } catch {
+      setGames([]);
+      return [];
+    }
+  }, [registrator]);
+
   // Fetch history when tab switches to history
   useEffect(() => {
     if (tab === 'history') fetchHistory();
@@ -137,18 +154,10 @@ export default function FreeKeyPage() {
     }
   }, [game, fetchMyKey]);
 
-  // Fetch games list
+  // Fetch games list on mount
   useEffect(() => {
-    fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
-      .then(res => res.json())
-      .then(data => {
-        const list = Array.isArray(data) ? data : [];
-        setGames(list);
-        // Auto-select if only one game
-        if (list.length === 1) setGame(list[0].code);
-      })
-      .catch(() => setGames([]));
-  }, [registrator]);
+    fetchGames();
+  }, [fetchGames]);
 
   // Live countdown
   useEffect(() => {
@@ -174,7 +183,15 @@ export default function FreeKeyPage() {
 
       if (res.ok) {
         toast.success('Free key generated!');
+        // Re-fetch key status for this game
         await fetchMyKey(game, true);
+        // Re-fetch available games — the just-generated game will disappear from the list
+        const remaining = await fetchGames();
+        // If no games left or the current game is now occupied, clear selection
+        if (!remaining.some(g => g.code === game)) {
+          setGame('');
+          setKeyStatus(null);
+        }
       } else {
         toast.error(data.error || 'Failed to generate key');
       }
