@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMyFreeKey } from '@/lib/services/free-key-service';
+import { extractClientIp } from '@/lib/utils/ip';
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get('x-client-ip') || 'unknown';
+  const ip = extractClientIp(request, []);
   const registrator = request.nextUrl.searchParams.get('registrator');
   const game = request.nextUrl.searchParams.get('game');
 

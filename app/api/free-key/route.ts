@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateFreeKey } from '@/lib/services/free-key-service';
+import { extractClientIp } from '@/lib/utils/ip';
 import { z } from 'zod/v4';
 
 const freeKeySchema = z.object({
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
     }
 
-    const ip = request.headers.get('x-client-ip') || 'unknown';
+    const ip = extractClientIp(request, []);
 
     const result = await generateFreeKey(parsed.data.game, parsed.data.turnstileToken, ip, parsed.data.registrator);
     if (result.error) {

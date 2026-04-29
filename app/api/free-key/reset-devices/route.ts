@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resetFreeKeyDevices } from '@/lib/services/free-key-service';
+import { extractClientIp } from '@/lib/utils/ip';
 import { z } from 'zod/v4';
 
 const schema = z.object({
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    const ip = request.headers.get('x-client-ip') || 'unknown';
+    const ip = extractClientIp(request, []);
     const result = await resetFreeKeyDevices(parsed.data.key, ip);
 
     if ('error' in result) {
