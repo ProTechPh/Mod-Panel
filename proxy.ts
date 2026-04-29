@@ -52,7 +52,8 @@ export async function proxy(request: NextRequest) {
 
   // Rate limiting
   const tier = getRateLimitTier(pathname);
-  const rateResult = checkRateLimit(clientIp, tier);
+  const rateKey = `${clientIp}_${tier.maxRequests}_${tier.windowMs}`;
+  const rateResult = checkRateLimit(rateKey, tier);
   if (!rateResult.allowed) {
     const response = NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

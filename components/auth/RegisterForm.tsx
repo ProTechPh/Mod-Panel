@@ -17,16 +17,23 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { APP_NAME } from '@/lib/constants';
 
+import { Turnstile } from '@marsidev/react-turnstile';
+
 export default function RegisterForm() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterInput) => {
+    if (siteKey && !data.turnstileToken) {
+      toast.error('Please complete the captcha');
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch('/api/auth/register', {
@@ -96,6 +103,15 @@ export default function RegisterForm() {
             <Input id="referralCode" {...register('referralCode')} placeholder="Enter referral code" />
             {errors.referralCode && <p className="text-sm text-destructive">{errors.referralCode.message}</p>}
           </div>
+          {siteKey && (
+            <div className="flex justify-center my-4">
+              <Turnstile
+                siteKey={siteKey}
+                onSuccess={(token) => setValue('turnstileToken', token)}
+                options={{ theme: theme === 'dark' ? 'dark' : 'light' }}
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating account...' : 'Create Account'}
           </Button>

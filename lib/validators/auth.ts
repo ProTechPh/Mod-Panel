@@ -3,6 +3,7 @@ import { z } from 'zod/v4';
 export const loginSchema = z.object({
   identifier: z.string().min(1, 'Username or email is required'),
   password: z.string().min(1, 'Password is required'),
+  turnstileToken: z.string().optional(),
 });
 
 export const registerSchema = z.object({
@@ -12,6 +13,7 @@ export const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
   referralCode: z.string().min(1, 'Referral code is required'),
+  turnstileToken: z.string().optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],

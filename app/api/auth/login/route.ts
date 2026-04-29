@@ -4,6 +4,7 @@ import { setAuthCookies } from '@/lib/auth/cookies';
 import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 import { loginSchema } from '@/lib/validators/auth';
 import { recordFailedAttempt, clearFailedAttempts } from '@/lib/auth/brute-force';
+import { verifyTurnstile } from '@/lib/auth/turnstile';
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-client-ip') || 'unknown';
@@ -13,6 +14,11 @@ export async function POST(request: NextRequest) {
     const parsed = loginSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
+    }
+
+    const isHuman = await verifyTurnstile(parsed.data.turnstileToken, ip);
+    if (!isHuman) {
+      return NextResponse.json({ error: 'Captcha verification failed. Please try again.' }, { status: 400 });
     }
 
     const user = await loginUser(parsed.data.identifier, parsed.data.password);

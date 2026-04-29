@@ -16,13 +16,16 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { APP_NAME } from '@/lib/constants';
 
+import { Turnstile } from '@marsidev/react-turnstile';
+
 export default function LoginForm() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [tgLoading, setTgLoading] = useState(false);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -79,6 +82,10 @@ export default function LoginForm() {
   };
 
   const onSubmit = async (data: LoginInput) => {
+    if (siteKey && !data.turnstileToken) {
+      toast.error('Please complete the captcha');
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
@@ -135,6 +142,15 @@ export default function LoginForm() {
             <Input id="password" type="password" {...register('password')} placeholder="Enter password" />
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
+          {siteKey && (
+            <div className="flex justify-center my-4">
+              <Turnstile
+                siteKey={siteKey}
+                onSuccess={(token) => setValue('turnstileToken', token)}
+                options={{ theme: theme === 'dark' ? 'dark' : 'light' }}
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
