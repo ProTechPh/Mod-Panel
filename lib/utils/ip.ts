@@ -32,7 +32,6 @@ export function extractClientIp(request: NextRequest, trustedProxies: string[]):
   const cfIp = request.headers.get('cf-connecting-ip');
   if (cfIp) return cfIp;
 
-  if (request.ip) return request.ip;
 
   // Generate a random ID if 'unknown' to avoid punishing all users for one IP parsing failure
   return 'unknown-' + Math.random().toString(36).substring(2, 9);
