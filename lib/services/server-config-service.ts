@@ -80,7 +80,7 @@ export async function updateServerConfig(data: {
   }
   // ─────────────────────────────────────────────────────────────────────────
 
-  const config = await ServerConfig.findByIdAndUpdate(SingletonId, update, { new: true }).lean();
+  const config = await ServerConfig.findByIdAndUpdate(SingletonId, update, { returnDocument: 'after' }).lean();
   clearConfigCache();
   return config ? { ...config, _id: config._id.toString() } : null;
 }

@@ -99,7 +99,8 @@ export async function updateGameSetting(gameCode: string, data: {
 
           await Key.updateMany(
             keyFilter,
-            [{ $set: { expiredDate: { $add: ['$expiredDate', elapsedMs] } } }]
+            [{ $set: { expiredDate: { $add: ['$expiredDate', elapsedMs] } } }],
+            { updatePipeline: true } as any
           );
         }
       }
@@ -113,7 +114,7 @@ export async function updateGameSetting(gameCode: string, data: {
   const game = await GameSetting.findOneAndUpdate(
     filter,
     { $set: updateData },
-    { new: true, strict: false }
+    { returnDocument: 'after', strict: false }
   ).lean();
   clearConfigCache();
   return game ? { ...game, _id: game._id.toString() } : null;

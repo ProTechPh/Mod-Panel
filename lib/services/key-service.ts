@@ -274,7 +274,7 @@ export async function updateKey(id: string, data: Partial<KeyDoc>) {
   if (data.maxDevices !== undefined) update.maxDevices = data.maxDevices;
   if (data.status !== undefined) update.status = data.status;
 
-  const key = await Key.findByIdAndUpdate(id, update, { new: true }).lean();
+  const key = await Key.findByIdAndUpdate(id, update, { returnDocument: 'after' }).lean();
   return key ? { ...key, _id: key._id.toString() } : null;
 }
 
@@ -286,7 +286,7 @@ export async function deleteKey(id: string) {
 
 export async function resetDevices(id: string) {
   await dbConnect();
-  const key = await Key.findByIdAndUpdate(id, { devices: [] }, { new: true }).lean();
+  const key = await Key.findByIdAndUpdate(id, { devices: [] }, { returnDocument: 'after' }).lean();
   return key ? { ...key, _id: key._id.toString() } : null;
 }
 
@@ -349,7 +349,7 @@ export async function extendKeyDuration(keyId: string, additionalDays: number, u
   const update: Record<string, unknown> = { expiredDate: newExpiredDate };
   if (key.status !== 1) update.status = 1;
 
-  const result = await Key.findByIdAndUpdate(keyId, update, { new: true }).lean();
+  const result = await Key.findByIdAndUpdate(keyId, update, { returnDocument: 'after' }).lean();
   if (!result) return null;
 
   // Log history

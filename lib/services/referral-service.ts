@@ -80,7 +80,7 @@ export async function updateReferral(id: string, data: {
     update.accExpiration = new Date(currentAccExpiration.getTime() + data.accExpirationDays * 24 * 60 * 60 * 1000);
   }
 
-  const updated = await Referral.findByIdAndUpdate(id, update, { new: true }).lean();
+  const updated = await Referral.findByIdAndUpdate(id, update, { returnDocument: 'after' }).lean();
   return updated ? { ...updated, _id: updated._id.toString() } : null;
 }
 

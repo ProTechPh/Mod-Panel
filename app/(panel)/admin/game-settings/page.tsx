@@ -165,25 +165,25 @@ export default function GameSettingsPage() {
       ) : games.map(g => (
         <Card key={g._id} className="border-border/50">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <Badge variant="outline" className="font-mono">{g.gameCode}</Badge>
                 <CardTitle className="text-base">{g.gameName}</CardTitle>
                 {g.registrator && <Badge variant="secondary" className="text-xs">{g.registrator}</Badge>}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                <div className="flex flex-wrap items-center gap-4 text-sm flex-1 lg:flex-none">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <Switch checked={g.isEnabled} onCheckedChange={v => handleToggle(g.gameCode, 'isEnabled', v, g.registrator)} />
-                    <span className="text-muted-foreground">Enabled</span>
+                    <span className="text-muted-foreground whitespace-nowrap">Enabled</span>
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <Switch checked={g.connectEnabled} onCheckedChange={v => handleToggle(g.gameCode, 'connectEnabled', v, g.registrator)} />
-                    <span className="text-muted-foreground">Connect</span>
+                    <span className="text-muted-foreground whitespace-nowrap">Connect</span>
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <Switch checked={g.freeKeyEnabled} onCheckedChange={v => handleToggle(g.gameCode, 'freeKeyEnabled', v, g.registrator)} />
-                    <span className="text-muted-foreground">Free Key</span>
+                    <span className="text-muted-foreground whitespace-nowrap">Free Key</span>
                   </label>
                   <Button
                     variant="outline"
@@ -192,15 +192,17 @@ export default function GameSettingsPage() {
                     onClick={() => copyFreeKeyLink(g.registrator)}
                   >
                     <Copy className="h-3 w-3" />
-                    Free Key Link
+                    <span className="whitespace-nowrap">Free Key Link</span>
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => openEditGame(g)}>
-                  {expandedGame === g._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(g.gameCode, g.registrator)}>
-                  <Trash2 className="h-3 w-3 text-destructive" />
-                </Button>
+                <div className="flex items-center gap-1 ml-auto lg:ml-0">
+                  <Button variant="ghost" size="sm" onClick={() => openEditGame(g)}>
+                    {expandedGame === g._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(g.gameCode, g.registrator)}>
+                    <Trash2 className="h-3 w-3 text-destructive" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -230,7 +232,7 @@ export default function GameSettingsPage() {
                   placeholder="e.g., Winter Mod, ProTech Mod"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Telegram Channel</Label>
                   <Input
