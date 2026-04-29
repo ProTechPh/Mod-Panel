@@ -26,7 +26,12 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const res = await fetch(`https://ip-api.com/json/${ip}?fields=isp,org,proxy,hosting`, {
+    const res = await fetch(`https://iplogs.com/v1/check`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ip }),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -38,12 +43,10 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
 
     const data = await res.json();
     return {
-      // Only treat as VPN if BOTH hosting AND proxy are true to avoid
-      // false positives from ISPs using CGNAT or shared datacenter ranges
-      isVpn: data.hosting === true && data.proxy === true,
-      isProxy: data.proxy === true,
-      isp: data.isp || '',
-      org: data.org || '',
+      isVpn: data.is_vpn === true,
+      isProxy: data.ip_info?.is_proxy === true,
+      isp: data.ip_info?.isp || '',
+      org: data.ip_info?.org || '',
     };
   } catch {
     clearTimeout(timeoutId);
@@ -99,7 +102,17 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   }
 
 
-  const vpnCheck = await checkVpn(ip);
+  let vpnCheck = { isVpn: false, isProxy: false, isp: '', org: '' };
+  if (existingTrackers.length > 0) {
+    vpnCheck = {
+      isVpn: existingTrackers[0].isVpn || false,
+      isProxy: existingTrackers[0].isProxy || false,
+      isp: existingTrackers[0].isp || '',
+      org: existingTrackers[0].org || '',
+    };
+  } else {
+    vpnCheck = await checkVpn(ip);
+  }
   if (vpnCheck.isVpn || vpnCheck.isProxy) {
     const tracker = await IpTracker.findOne({ ipAddress: ip }).lean();
     if (tracker) {
