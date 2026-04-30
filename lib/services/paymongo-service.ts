@@ -84,6 +84,7 @@ export async function createCheckoutSession(
             cancel_url: params.cancelUrl,
             reference_number: params.referenceNumber,
             description: params.description,
+            statement_descriptor: 'Mod Panel Store',
             show_description: true,
             show_line_items: true,
           },
