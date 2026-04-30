@@ -210,23 +210,27 @@ export async function getMyFreeKey(ip: string, registrator: string, game: string
 export async function getMyFreeKeyHistory(ip: string, registrator: string) {
   await dbConnect();
 
+  // Find all trackers for this IP. 
+  // We populate the keyId to get the full key document in one go.
   const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+    .populate({
+      path: 'keyId',
+      match: { isFreeKey: true, registrator } // Only include keys for this reseller
+    })
     .sort({ createdAt: -1 })
     .lean();
 
   if (!trackers.length) return [];
 
   const now = new Date();
-  const results = await Promise.all(
-    trackers.map(async (tracker) => {
-      const key = await Key.findOne({
-        _id: tracker.keyId,
-        isFreeKey: true,
-        registrator,
-      }).lean() as import('@/types').KeyDoc | null;
-
-      if (!key) return null;
-
+  
+  // Map trackers to history entries. 
+  // If keyId is null (e.g. key deleted or didn't match the 'match' filter), we filter it out.
+  const results = trackers
+    .filter(t => t.keyId && typeof t.keyId === 'object') // Ensure key was found and matched
+    .map((tracker) => {
+      const key = tracker.keyId as any; // Cast to any because it's populated
+      
       const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
       const isActivated = (key.devices?.length ?? 0) > 0;
 
@@ -239,10 +243,9 @@ export async function getMyFreeKeyHistory(ip: string, registrator: string) {
         isActivated,
         isExpired,
       };
-    })
-  );
+    });
 
-  return results.filter(Boolean);
+  return results;
 }
 
 export async function resetFreeKeyDevices(userKey: string, ip: string) {

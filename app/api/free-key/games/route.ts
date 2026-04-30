@@ -13,7 +13,11 @@ export async function GET(request: NextRequest) {
     registrator,
     isEnabled: true,
     freeKeyEnabled: true,
-  }).select('gameCode gameName -_id').lean();
+  }).select('gameCode gameName downloadLink -_id').lean();
 
-  return NextResponse.json(games.map(g => ({ code: g.gameCode, name: g.gameName })));
+  return NextResponse.json(games.map(g => ({ 
+    code: g.gameCode, 
+    name: g.gameName,
+    downloadLink: g.downloadLink 
+  })));
 }

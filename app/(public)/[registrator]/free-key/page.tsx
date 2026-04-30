@@ -12,6 +12,7 @@ import { useTheme } from '@/components/shared/ThemeProvider';
 import {
   Moon, Sun, Copy, Check, RefreshCw, Loader2,
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -19,6 +20,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 interface GameOption {
   code: string;
   name: string;
+  downloadLink?: string;
 }
 
 interface KeyStatus {
@@ -47,7 +49,7 @@ interface StoreInfo {
   isActive: boolean;
 }
 
-type Tab = 'key' | 'history';
+type Tab = 'key' | 'history' | 'downloads';
 
 function formatCountdown(targetIso: string | null): string {
   if (!targetIso) return '—';
@@ -258,6 +260,7 @@ export default function FreeKeyPage() {
       label: history.length > 0 ? `History (${history.length})` : 'History',
       icon: <History className="h-3.5 w-3.5" />,
     },
+    { id: 'downloads', label: 'Downloads', icon: <Download className="h-3.5 w-3.5" /> },
   ];
 
   return (
@@ -362,12 +365,28 @@ export default function FreeKeyPage() {
                       <span className="text-xs text-muted-foreground font-mono">{keyStatus.game}</span>
                     </div>
                     <p className="font-mono text-sm break-all select-all">{keyStatus.key}</p>
-                    <Button variant="outline" size="sm" onClick={() => handleCopy(keyStatus.key)} className="h-7 text-xs gap-1.5">
-                      {copied === keyStatus.key
-                        ? <><Check className="h-3 w-3" />Copied</>
-                        : <><Copy className="h-3 w-3" />Copy Key</>
-                      }
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleCopy(keyStatus.key)} className="h-7 text-xs gap-1.5">
+                        {copied === keyStatus.key
+                          ? <><Check className="h-3 w-3" />Copied</>
+                          : <><Copy className="h-3 w-3" />Copy Key</>
+                        }
+                      </Button>
+                      {games.find(g => g.code === game)?.downloadLink && (
+                        <a
+                          href={games.find(g => g.code === game)?.downloadLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            buttonVariants({ variant: 'default', size: 'sm' }),
+                            "h-7 text-xs gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
+                          )}
+                        >
+                          <Download className="h-3 w-3" />
+                          Download Mod
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
@@ -546,6 +565,51 @@ export default function FreeKeyPage() {
                   Total keys generated: <strong>{history.length}</strong>
                 </p>
               )}
+            </div>
+          )}
+
+          {/* ══ DOWNLOADS TAB ════════════════════════════════════════ */}
+          {tab === 'downloads' && (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground text-center">
+                Download the official mod files for your selected games.
+              </p>
+              
+              <div className="space-y-2">
+                {games.filter(g => g.downloadLink).length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8 text-sm">No download links available.</p>
+                ) : (
+                  games.filter(g => g.downloadLink).map(g => (
+                    <div key={g.code} className="rounded-lg border border-border/50 bg-muted/20 p-4 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">{g.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono uppercase">{g.code}</p>
+                      </div>
+                      <a
+                        href={g.downloadLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          buttonVariants({ variant: 'outline', size: 'sm' }),
+                          "shrink-0 h-9 gap-2"
+                        )}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </a>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                <div className="flex gap-2">
+                  <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 leading-tight">
+                    Always download from these official links. We are not responsible for files downloaded from third-party sources.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
