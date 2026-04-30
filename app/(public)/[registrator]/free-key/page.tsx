@@ -2,14 +2,16 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/components/shared/ThemeProvider';
 import {
   Moon, Sun, Copy, Check, RefreshCw, Loader2,
-  Clock, Smartphone, ShieldAlert, KeyRound, Zap, History,
+  Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -38,6 +40,11 @@ interface KeyHistoryEntry {
   status: number;
   isActivated: boolean;
   isExpired: boolean;
+}
+
+interface StoreInfo {
+  storeName: string;
+  isActive: boolean;
 }
 
 type Tab = 'key' | 'history';
@@ -87,6 +94,8 @@ export default function FreeKeyPage() {
 
   // History state
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
+  // Store state
+  const [store, setStore] = useState<StoreInfo | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   // Fetch key for the selected game
@@ -148,6 +157,14 @@ export default function FreeKeyPage() {
         if (list.length === 1) setGame(list[0].code);
       })
       .catch(() => setGames([]));
+
+    // Fetch store info
+    fetch(`/api/store?registrator=${encodeURIComponent(registrator)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setStore(data);
+      })
+      .catch(() => setStore(null));
   }, [registrator]);
 
   // Live countdown
@@ -257,6 +274,27 @@ export default function FreeKeyPage() {
             <CardTitle className="text-2xl font-bold">Free Key Generator</CardTitle>
           </div>
           <CardDescription>Generate a free 1-hour key from {registrator}</CardDescription>
+
+          {store && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 flex flex-col items-center gap-3">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-primary">Want more time?</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Purchase premium keys with longer duration at our official shop.</p>
+                </div>
+                <Link
+                  href={`/${registrator}/store`}
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    "w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-semibold h-9 flex items-center justify-center gap-2"
+                  )}
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Visit {store.storeName}
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Tab switcher */}
           <div className="flex rounded-lg border border-border/50 overflow-hidden mt-3">
