@@ -69,18 +69,18 @@ export async function POST(request: NextRequest) {
       const sizeMB = (fullBuffer.length / (1024 * 1024)).toFixed(2);
       const stream = Readable.from(fullBuffer);
 
-      const lib = await uploadLib(fileName, `${sizeMB} MB`, stream, user.username);
+      const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level);
 
       // Clean up temp chunks
       await TempChunk.deleteMany({ sessionId });
 
-      return NextResponse.json(lib, { status: 201 });
+      return NextResponse.json({ ...lib, replaced: true }, { status: 200 });
     }
 
     return NextResponse.json({ received: chunkIndex, totalChunks });
   } catch (error: any) {
-    if (error.code === 'DUPLICATE_FILENAME') {
-      return NextResponse.json({ error: error.message }, { status: 409 });
+    if (error.code === 'FORBIDDEN_REPLACE') {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error('Chunked upload error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
