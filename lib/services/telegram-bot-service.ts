@@ -8,6 +8,7 @@ const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 // The verification question and answer
 // Removed static question/answer in favor of AI
+const QUESTION_TIMEOUT_MS = 60 * 1000; // 60 seconds
 
 export async function sendMessage(chatId: number, text: string) {
   if (!BOT_TOKEN) {
@@ -68,8 +69,13 @@ export async function handleUpdate(update: any) {
       await sendMessage(chatId, `<b>Verification Question:</b>\n${question}`);
       
       state.step = 'awaiting_verification';
-      state.data = { question };
+      state.data = { 
+        question, 
+        expiresAt: Date.now() + QUESTION_TIMEOUT_MS 
+      };
       await state.save();
+      
+      await sendMessage(chatId, "⏱ <b>Timer started:</b> You have 60 seconds to answer.");
     } catch (error) {
       console.error('Error generating AI question:', error);
       await sendMessage(chatId, "❌ I couldn't generate a question right now. Please try again later.");
@@ -87,6 +93,16 @@ export async function handleUpdate(update: any) {
     }
 
     try {
+      // Check for timeout
+      const expiresAt = state.data?.expiresAt;
+      if (expiresAt && Date.now() > expiresAt) {
+        await sendMessage(chatId, "⏰ <b>Time's up!</b> You took too long to answer. Use /request_referral to try again with a new question.");
+        state.step = 'idle';
+        state.data = {};
+        await state.save();
+        return;
+      }
+
       await sendMessage(chatId, "Checking your answer... 🔍");
       const isCorrect = await verifyModderAnswer(question, text);
       
