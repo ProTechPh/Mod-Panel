@@ -56,29 +56,33 @@ export async function handleUpdate(update: any) {
   }
 
   if (text === '/start') {
-    await sendMessage(chatId, "Welcome to Mod Panel Bot! Use /request_referral to get a Level 2 Admin referral code.");
+    await sendMessage(chatId, "<b>SYSTEM:</b> Welcome to the Mod Panel Verification Bot.\n\nAccess to Level 2 Admin is restricted to verified modders only. Use /request_referral to begin the mandatory screening process. Do not waste my time.");
     state.step = 'idle';
+    state.data = {};
     await state.save();
     return;
   }
 
   if (text === '/request_referral') {
     try {
-      await sendMessage(chatId, "Please wait, generating a verification question for you...");
+      await sendMessage(chatId, "<b>SCREENING STARTED.</b>\n\nYou will be asked a series of technical questions. You have exactly 3 attempts. Failure to provide accurate answers will result in rejection.");
+      await sendMessage(chatId, "Retrieving technical challenge... ⏳");
+      
       const question = await generateModderQuestion();
-      await sendMessage(chatId, `<b>Verification Question:</b>\n${question}`);
+      await sendMessage(chatId, `<b>CHALLENGE #1:</b>\n${question}`);
       
       state.step = 'awaiting_verification';
       state.data = { 
         question, 
+        attempts: 1,
         expiresAt: Date.now() + QUESTION_TIMEOUT_MS 
       };
       await state.save();
       
-      await sendMessage(chatId, "⏱ <b>Timer started:</b> You have 60 seconds to answer.");
+      await sendMessage(chatId, "⏱ <b>60 SECONDS REMAINING.</b> Answer now.");
     } catch (error) {
       console.error('Error generating AI question:', error);
-      await sendMessage(chatId, "❌ I couldn't generate a question right now. Please try again later.");
+      await sendMessage(chatId, "❌ SYSTEM ERROR: Failed to retrieve challenge. Re-initialize /request_referral.");
     }
     return;
   }
@@ -96,32 +100,47 @@ export async function handleUpdate(update: any) {
       // Check for timeout
       const expiresAt = state.data?.expiresAt;
       if (expiresAt && Date.now() > expiresAt) {
-        await sendMessage(chatId, "⏰ <b>Time's up!</b> You took too long to answer. Use /request_referral to try again with a new question.");
+        await sendMessage(chatId, "❌ <b>SESSION EXPIRED.</b> You failed to respond within the allocated time.\n\n<i>(P.S. Joke lang! I'm not actually harshing your welcome here in the Mod Panel. You can try again whenever you want with /request_referral!)</i>");
         state.step = 'idle';
         state.data = {};
         await state.save();
         return;
       }
 
-      await sendMessage(chatId, "Checking your answer... 🔍");
+      await sendMessage(chatId, "Analyzing response... 🔍");
       const isCorrect = await verifyModderAnswer(question, text);
       
       if (isCorrect) {
         // Create a referral code for Level 2 Admin
         const referral = await createReferral('TelegramBot', 2, 0, 7);
-        await sendMessage(chatId, `✅ <b>Verification Success!</b>\n\nHere is your Level 2 Admin referral code:\n<code>${referral.code}</code>\n\nUse this on the registration page.`);
+        await sendMessage(chatId, `✅ <b>VERIFICATION SUCCESS.</b>\n\nYour Level 2 Admin referral code has been issued:\n<code>${referral.code}</code>\n\n<b>Wait...</b> Actually, congrats! 🎉 I'm not really harshing your welcome here in the Mod Panel, I just wanted to see if you knew your stuff! Welcome to the team!`);
         state.step = 'idle';
         state.data = {};
         await state.save();
       } else {
-        await sendMessage(chatId, "❌ Your answer is incorrect or insufficient. Please use /request_referral again for a new question.");
-        state.step = 'idle';
-        state.data = {};
-        await state.save();
+        const attempts = (state.data?.attempts || 1);
+        if (attempts < 3) {
+          await sendMessage(chatId, `❌ <b>INCORRECT.</b> Attempt ${attempts}/3 failed. Generating secondary challenge...`);
+          
+          const nextQuestion = await generateModderQuestion();
+          await sendMessage(chatId, `<b>CHALLENGE #${attempts + 1}:</b>\n${nextQuestion}`);
+          
+          state.data = { 
+            question: nextQuestion, 
+            attempts: attempts + 1,
+            expiresAt: Date.now() + QUESTION_TIMEOUT_MS 
+          };
+          await state.save();
+        } else {
+          await sendMessage(chatId, "❌ <b>FINAL REJECTION.</b> All attempts exhausted. System access denied.\n\n...\n\nJust kidding! 😂 I'm not harshing your welcome here in the Mod Panel. You're still welcome to join, just ask me if you have any questions about how it works!");
+          state.step = 'idle';
+          state.data = {};
+          await state.save();
+        }
       }
     } catch (error) {
       console.error('Error verifying AI answer:', error);
-      await sendMessage(chatId, "❌ There was an error verifying your answer. Please try again later.");
+      await sendMessage(chatId, "❌ CRITICAL ERROR: Verification system offline.");
     }
     return;
   }
