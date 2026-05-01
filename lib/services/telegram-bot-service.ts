@@ -1,7 +1,7 @@
 import dbConnect from '@/lib/db/connection';
 import TelegramBotState from '@/lib/db/models/TelegramBotState';
 import { createReferral } from '@/lib/services/referral-service';
-import { generateModderQuestion, verifyModderAnswer } from '@/lib/services/ai-service';
+import { generateModderQuestion, verifyModderAnswer, askAI } from '@/lib/services/ai-service';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -37,6 +37,29 @@ export async function sendMessage(chatId: number, text: string) {
   }
 }
 
+export async function setBotCommands() {
+  if (!BOT_TOKEN) return false;
+
+  try {
+    const response = await fetch(`${TELEGRAM_API}/setMyCommands`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        commands: [
+          { command: 'start', description: 'Start the bot' },
+          { command: 'request_referral', description: 'Request a Level 2 Admin referral code' },
+          { command: 'ask', description: 'Ask a question about the Mod Panel' },
+        ],
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Error setting bot commands:', error);
+    return false;
+  }
+}
+
 export async function handleUpdate(update: any) {
   console.log('Received Telegram Update:', JSON.stringify(update));
   if (!update.message || !update.message.text) {
@@ -56,6 +79,7 @@ export async function handleUpdate(update: any) {
   }
 
   if (text === '/start') {
+    await setBotCommands();
     await sendMessage(chatId, "<b>SYSTEM:</b> Welcome to the Mod Panel Verification Bot.\n\nAccess to Level 2 Admin is restricted to verified modders only. Use /request_referral to begin the mandatory screening process. Do not waste my time.");
     state.step = 'idle';
     state.data = {};
@@ -87,6 +111,32 @@ export async function handleUpdate(update: any) {
     } catch (error) {
       console.error('Error generating AI question:', error);
       await sendMessage(chatId, "❌ SYSTEM ERROR: Failed to retrieve challenge. Re-initialize /request_referral.");
+    }
+    return;
+  }
+  
+  if (text.startsWith('/ask')) {
+    const query = update.message.text.substring(4).trim();
+    if (!query) {
+      await sendMessage(chatId, "<b>SYSTEM:</b> Please provide a question after the /ask command.\nExample: <code>/ask how to use the panel?</code>");
+      return;
+    }
+
+    try {
+      await sendMessage(chatId, "Thinking... 🧠");
+      const systemPrompt = `You are a helpful assistant for the "Mod Panel" system. 
+      The Mod Panel is a management system for Android game modders, allowing them to manage keys, users, and settings.
+      Users can get Level 2 Admin access by passing a technical test via this bot.
+      The panel supports features like free keys with ads (ReShortFly), IP logging, and game settings management.
+      Answer the user's question concisely and professionally.
+      
+      User Question: ${query}`;
+      
+      const response = await askAI(systemPrompt);
+      await sendMessage(chatId, `<b>ASSISTANT:</b>\n${response}`);
+    } catch (error) {
+      console.error('Error in /ask command:', error);
+      await sendMessage(chatId, "❌ SYSTEM ERROR: Failed to process your question. Please try again later.");
     }
     return;
   }

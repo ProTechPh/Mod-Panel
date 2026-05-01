@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { handleUpdate } from '@/lib/services/telegram-bot-service';
+import { handleUpdate, setBotCommands } from '@/lib/services/telegram-bot-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,5 +24,9 @@ export async function POST(request: NextRequest) {
 
 // Optionally handle GET for simple status check or webhook setup
 export async function GET() {
-  return NextResponse.json({ status: 'Telegram Bot Webhook is running' });
+  const success = await setBotCommands();
+  return NextResponse.json({ 
+    status: 'Telegram Bot Webhook is running',
+    commandsSet: success 
+  });
 }
