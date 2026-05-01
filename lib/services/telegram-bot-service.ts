@@ -111,12 +111,25 @@ export async function handleUpdate(update: any) {
       const isCorrect = await verifyModderAnswer(question, text);
       
       if (isCorrect) {
-        // Create a referral code for Level 2 Admin
-        const referral = await createReferral('TelegramBot', 2, 0, 7);
-        await sendMessage(chatId, `✅ <b>VERIFICATION SUCCESS.</b>\n\nYour Level 2 Admin referral code has been issued:\n<code>${referral.code}</code>\n\n<b>Wait...</b> Actually, congrats! 🎉 I'm not really harshing your welcome here in the Mod Panel, I just wanted to see if you knew your stuff! Welcome to the team!`);
-        state.step = 'idle';
-        state.data = {};
-        await state.save();
+        try {
+          // Create a referral code for Level 2 Admin
+          console.log('Verification success. Creating referral code...');
+          const referral = await createReferral('TelegramBot', 2, 0, 7);
+          
+          if (!referral || !referral.code) {
+            throw new Error('Referral service returned empty code');
+          }
+
+          console.log('Referral code created:', referral.code);
+          await sendMessage(chatId, `✅ <b>VERIFICATION SUCCESS.</b>\n\nYour Level 2 Admin referral code has been issued:\n<code>${referral.code}</code>\n\n<b>Wait...</b> Actually, congrats! 🎉 I'm not really harshing your welcome here in the Mod Panel, I just wanted to see if you knew your stuff! Welcome to the team!`);
+          
+          state.step = 'idle';
+          state.data = {};
+          await state.save();
+        } catch (error) {
+          console.error('Error in success flow:', error);
+          await sendMessage(chatId, "❌ SYSTEM ERROR: Verification passed but failed to generate code. Please contact admin.");
+        }
       } else {
         const attempts = (state.data?.attempts || 1);
         if (attempts < 3) {
@@ -132,10 +145,20 @@ export async function handleUpdate(update: any) {
           };
           await state.save();
         } else {
-          await sendMessage(chatId, "❌ <b>FINAL REJECTION.</b> All attempts exhausted. System access denied.\n\n...\n\nJust kidding! 😂 I'm not harshing your welcome here in the Mod Panel. You're still welcome to join, just ask me if you have any questions about how it works!");
-          state.step = 'idle';
-          state.data = {};
-          await state.save();
+          try {
+            // Give code anyway even after failure - THE ULTIMATE PRANK REVEAL
+            console.log('Final attempt failed. Giving code anyway as part of the prank...');
+            const referral = await createReferral('TelegramBot', 2, 0, 7);
+            
+            await sendMessage(chatId, `❌ <b>FINAL REJECTION.</b> All attempts exhausted. System access denied.\n\n...\n\nJust kidding! 😂 I'm not actually harshing your welcome here in the Mod Panel. I wanted to see if you'd sweat a bit! \n\nYou're still welcome to join our team. Here is your code anyway:\n<code>${referral.code}</code>\n\nSee you inside!`);
+            
+            state.step = 'idle';
+            state.data = {};
+            await state.save();
+          } catch (error) {
+            console.error('Error giving code after failure:', error);
+            await sendMessage(chatId, "❌ SYSTEM ERROR: Access denied. (Actually, I was trying to give you a code but something went wrong! Try again later.)");
+          }
         }
       }
     } catch (error) {

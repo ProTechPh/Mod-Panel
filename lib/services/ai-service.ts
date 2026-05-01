@@ -45,7 +45,11 @@ export async function generateModderQuestion(): Promise<string> {
 }
 
 export async function verifyModderAnswer(question: string, answer: string): Promise<boolean> {
-  const prompt = `Question: "${question}"\nUser Answer: "${answer}"\n\nIs this answer correct and does it demonstrate that the person is a real game modder? If the answer is correct or shows technical knowledge of the topic, reply with ONLY the word "YES". If it is wrong or vague, reply with ONLY the word "NO".`;
+  const prompt = `Question: "${question}"\nUser Answer: "${answer}"\n\nIs this answer correct or does it show that the user has technical knowledge about the topic? If it's a good answer, reply with YES. If it's completely wrong, reply with NO. Reply with ONLY the word YES or NO.`;
+  
   const result = await askAI(prompt);
-  return result.trim().toUpperCase().includes("YES");
+  const cleanResult = result.trim().toUpperCase();
+  console.log(`AI Verification Result for "${answer}":`, cleanResult);
+  
+  return cleanResult.includes("YES");
 }
