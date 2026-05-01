@@ -55,7 +55,7 @@ export default function ReferralsTable({ referrals, onRefresh }: { referrals: Re
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this referral?')) return;
-    const res = await fetch(`/admin/referrals?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/referrals/${id}`, { method: 'DELETE' });
     if (res.ok) { toast.success('Deleted'); onRefresh(); }
     else toast.error('Failed to delete');
   };

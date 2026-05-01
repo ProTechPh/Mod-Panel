@@ -30,6 +30,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await authenticate(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  if (user.level !== 1 && user.level !== 2) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+  }
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: 'Referral ID required' }, { status: 400 });
