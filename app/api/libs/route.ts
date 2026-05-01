@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
     const stream = Readable.fromWeb(file.stream() as unknown as NodeReadableStream);
 
-    const lib = await uploadLib(file.name, `${sizeMB} MB`, stream, user.username);
-    return NextResponse.json(lib, { status: 201 });
+    const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level);
+    return NextResponse.json({ ...lib, replaced: true }, { status: 200 });
   } catch (error: any) {
-    if (error.code === 'DUPLICATE_FILENAME') {
-      return NextResponse.json({ error: error.message }, { status: 409 });
+    if (error.code === 'FORBIDDEN_REPLACE') {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error('Lib upload error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

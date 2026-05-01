@@ -22,26 +22,46 @@ export async function getLib(id: string) {
   return sanitize(lib);
 }
 
-export async function uploadLib(fileName: string, fileSize: string, stream: Readable, uploadedBy: string) {
+export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2) {
   await dbConnect();
 
   const existing = await Lib.findOne({ fileName }).lean();
+
   if (existing) {
-    const error: any = new Error('A file with this name already exists. Please rename your file and try again.');
-    error.code = 'DUPLICATE_FILENAME';
-    throw error;
+    // Only the original uploader OR level 1 admin can replace
+    if (existing.uploadedBy !== uploadedBy && uploaderLevel !== 1) {
+      const error: any = new Error(`This file was uploaded by @${existing.uploadedBy}. You cannot replace it.`);
+      error.code = 'FORBIDDEN_REPLACE';
+      throw error;
+    }
+
+    // Authorized — delete old file from FTP first
+    try {
+      await deleteFromFtp(fileName);
+    } catch {
+      // FTP file may already be gone, continue anyway
+    }
   }
 
   const ftpUrl = await uploadToFtp(fileName, stream);
-  const lib = await Lib.create({
-    fileName,
-    displayName: fileName,
-    ftpUrl,
-    fileSize,
-    uploadedBy,
-  });
+
+  const lib = await Lib.findOneAndUpdate(
+    { fileName },
+    {
+      fileName,
+      displayName: fileName,
+      ftpUrl,
+      fileSize,
+      fileSizeBytes,
+      uploadedBy,
+      uploadedAt: new Date(),
+    },
+    { upsert: true, new: true }
+  );
+
   return sanitize(lib);
 }
+
 
 export async function deleteLib(id: string) {
   await dbConnect();

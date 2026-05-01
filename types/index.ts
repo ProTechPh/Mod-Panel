@@ -114,6 +114,7 @@ export interface LibDoc {
   displayName: string;
   ftpUrl: string;
   fileSize: string;
+  fileSizeBytes: number;
   uploadedBy: string;
   uploadedAt: Date;
 }

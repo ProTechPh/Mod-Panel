@@ -31,13 +31,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const stream = await downloadFromFtp(fileName);
-    return new Response(stream as unknown as ReadableStream, {
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Last-Modified': lastModifiedStr,
-      },
-    });
+    
+    // Get file size from DB if available to provide Content-Length
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+      'Last-Modified': lastModifiedStr,
+    };
+
+    if (lib?.fileSizeBytes) {
+      headers['Content-Length'] = lib.fileSizeBytes.toString();
+    }
+
+    return new Response(stream as unknown as ReadableStream, { headers });
   } catch {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }

@@ -6,6 +6,7 @@ const LibSchema = new Schema<LibDoc & Document>({
   displayName: { type: String, required: true, trim: true },
   ftpUrl: { type: String, required: true },
   fileSize: { type: String, default: '' },
+  fileSizeBytes: { type: Number, default: 0 },
   uploadedBy: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now },
 }, { collection: 'libs' });
