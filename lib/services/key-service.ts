@@ -134,7 +134,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: `Suspended Key, Contact: ${contact}` };
   }
 
-  if (key.registrator === 'FreeKey') {
+  if (key.isFreeKey) {
     const tracker = await IpTracker.findOne({ keyId: key._id }).lean();
     if (tracker && tracker.generatorIp !== connectIp) {
       // Invalidate the key but do NOT ban the generator IP.
