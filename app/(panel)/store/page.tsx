@@ -51,7 +51,7 @@ interface Order {
 
 const DURATION_OPTIONS = [
   { label: '1 Hour', value: '1h' },
-  { label: '6 Hours', value: '6h' },
+  { label: '3 Hours', value: '3h' },
   { label: '1 Day', value: 1 },
   { label: '7 Days', value: 7 },
   { label: '30 Days', value: 30 },
@@ -197,7 +197,7 @@ export default function StorePage() {
   const saveProduct = async () => {
     setProductSaving(true);
     try {
-      const duration: Duration = productForm.duration === '1h' || productForm.duration === '6h'
+      const duration: Duration = productForm.duration === '1h' || productForm.duration === '3h'
         ? productForm.duration
         : Number(productForm.duration);
 

@@ -42,8 +42,8 @@ export type ConnectInput = z.infer<typeof connectSchema>;
 export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>;
 export type ExtendKeyInput = z.infer<typeof extendKeySchema>;
 
-export function parseDuration(raw: string): number | '1h' | '6h' {
-  if (raw === '1h' || raw === '6h') return raw;
+export function parseDuration(raw: string): number | '1h' | '3h' {
+  if (raw === '1h' || raw === '3h') return raw;
   const num = parseInt(raw, 10);
   if (!isNaN(num) && num > 0) return num;
   throw new Error('Invalid duration');
