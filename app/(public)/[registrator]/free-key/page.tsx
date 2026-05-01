@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { useTheme } from '@/components/shared/ThemeProvider';
 import {
   Moon, Sun, Copy, Check, RefreshCw, Loader2,
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
-  Download,
+  Download, Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -78,14 +78,16 @@ function HistoryStatusBadge({ entry }: { entry: KeyHistoryEntry }) {
 
 export default function FreeKeyPage() {
   const { registrator } = useParams<{ registrator: string }>();
+  const searchParams = useSearchParams();
   const { theme, toggleTheme } = useTheme();
 
   const [games, setGames] = useState<GameOption[]>([]);
-  const [game, setGame] = useState('');
+  const [game, setGame] = useState(searchParams.get('game') || '');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('key');
+  const [duration, setDuration] = useState<'1h' | '3h'>('1h');
 
   // Per-game key state
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
@@ -93,6 +95,9 @@ export default function FreeKeyPage() {
   const [statusLoading, setStatusLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [countdown, setCountdown] = useState('');
+  const [claiming, setClaiming] = useState(false);
+  const [extending, setExtending] = useState(false);
+  const [extendingRequest, setExtendingRequest] = useState(false);
 
   // History state
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
@@ -138,6 +143,35 @@ export default function FreeKeyPage() {
     if (tab === 'history') fetchHistory();
   }, [tab, fetchHistory]);
 
+  const handleExtendKey = async () => {
+    if (!game) return;
+    setExtendingRequest(true);
+    try {
+      const res = await fetch('/api/free-key/extend-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ game, registrator }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.adUrl) {
+          toast.success('Redirecting to ad link to extend key...');
+          setTimeout(() => {
+            window.location.href = data.adUrl;
+          }, 1500);
+        } else {
+          toast.error('Failed to generate extension link');
+        }
+      } else {
+        toast.error(data.error || 'Failed to request extension');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setExtendingRequest(false);
+    }
+  };
+
   // When game changes, fetch key for that game
   useEffect(() => {
     if (game) {
@@ -167,7 +201,67 @@ export default function FreeKeyPage() {
         if (data && !data.error) setStore(data);
       })
       .catch(() => setStore(null));
-  }, [registrator]);
+
+    // Handle claim token if present in URL
+    const claimToken = searchParams.get('claimToken');
+    if (claimToken) {
+      const claim = async () => {
+        setClaiming(true);
+        try {
+          const res = await fetch('/api/free-key/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: claimToken }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            toast.success('Key claimed successfully!');
+            setGame(data.game);
+            await fetchMyKey(data.game, true);
+            // Clean URL
+            window.history.replaceState({}, '', window.location.pathname);
+          } else {
+            toast.error(data.error || 'Failed to claim key');
+          }
+        } catch {
+          toast.error('Claim error');
+        } finally {
+          setClaiming(false);
+        }
+      };
+      claim();
+    }
+
+    // Handle extend token if present in URL
+    const extendToken = searchParams.get('extendToken');
+    if (extendToken) {
+      const extend = async () => {
+        setExtending(true);
+        try {
+          const res = await fetch('/api/free-key/extend-claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: extendToken }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            toast.success('Key extended by 1 hour!');
+            setGame(data.game);
+            await fetchMyKey(data.game, true);
+            // Clean URL
+            window.history.replaceState({}, '', window.location.pathname);
+          } else {
+            toast.error(data.error || 'Failed to extend key');
+          }
+        } catch {
+          toast.error('Extension error');
+        } finally {
+          setExtending(false);
+        }
+      };
+      extend();
+    }
+  }, [registrator, searchParams, fetchMyKey]);
 
   // Live countdown
   useEffect(() => {
@@ -187,11 +281,22 @@ export default function FreeKeyPage() {
       const res = await fetch('/api/free-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, turnstileToken, registrator }),
+        body: JSON.stringify({ game, turnstileToken, registrator, duration }),
       });
       const data = await res.json();
 
       if (res.ok) {
+        if (duration === '3h') {
+          if (data.adUrl) {
+            toast.success('Redirecting to ad link...');
+            setTimeout(() => {
+              window.location.href = data.adUrl;
+            }, 1500);
+          } else {
+            toast.error('Failed to generate ad link. Please try again later or contact support.');
+          }
+          return;
+        }
         toast.success('Free key generated!');
         await fetchMyKey(game, true);
       } else {
@@ -264,7 +369,21 @@ export default function FreeKeyPage() {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+      {claiming && (
+        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="font-semibold text-lg animate-pulse">Claiming your 3-hour key...</p>
+          <p className="text-sm text-muted-foreground">Please wait while we verify your ad completion.</p>
+        </div>
+      )}
+      {extending && (
+        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="font-semibold text-lg animate-pulse">Extending your key...</p>
+          <p className="text-sm text-muted-foreground">Please wait while we apply your 1-hour bonus.</p>
+        </div>
+      )}
       <Card className="w-full max-w-md border-border/50">
         <CardHeader className="text-center pb-3">
           <div className="flex justify-end mb-2">
@@ -411,10 +530,24 @@ export default function FreeKeyPage() {
 
                     <div className="flex items-start gap-2 text-sm">
                       <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          {keyStatus.isActivated ? 'Expires in' : 'Unused grace expires in'}
-                        </p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">
+                            {keyStatus.isActivated ? 'Expires in' : 'Unused grace expires in'}
+                          </p>
+                          {keyStatus.isActivated && !keyStatus.isExpired && (
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={handleExtendKey}
+                              disabled={extendingRequest}
+                              className="h-auto p-0 text-[10px] text-primary font-bold flex items-center gap-1 hover:no-underline"
+                            >
+                              {extendingRequest ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Plus className="h-2.5 w-2.5" />}
+                              Extend Time (+1h)
+                            </Button>
+                          )}
+                        </div>
                         <p className={`font-mono font-semibold ${keyStatus.isExpired ? 'text-destructive' : ''}`}>
                           {keyStatus.isExpired ? 'Expired' : countdown}
                         </p>
@@ -469,16 +602,50 @@ export default function FreeKeyPage() {
                   )}
 
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-3">
+                      <Label className="text-center block">Select Duration</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDuration('1h')}
+                          className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            duration === '1h'
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border/50 hover:border-border text-muted-foreground"
+                          )}
+                        >
+                          <Clock className="h-5 w-5" />
+                          <span className="text-sm font-bold">1 Hour</span>
+                          <span className="text-[10px] opacity-70">No Ads</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDuration('3h')}
+                          className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            duration === '3h'
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border/50 hover:border-border text-muted-foreground"
+                          )}
+                        >
+                          <Zap className="h-5 w-5" />
+                          <span className="text-sm font-bold">3 Hours</span>
+                          <span className="text-[10px] opacity-70">With Ads</span>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex justify-center">
                       <Turnstile
                         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
                         onSuccess={setTurnstileToken}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={generating || !turnstileToken}>
+                    <Button type="submit" className="w-full h-11 text-base font-bold shadow-lg shadow-primary/20" disabled={generating || !turnstileToken}>
                       {generating
                         ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
-                        : `Get Free ${game} Key`
+                        : duration === '3h' ? 'Unlock 3h Key (Watch Ads)' : `Get Free ${game} Key`
                       }
                     </Button>
                   </form>

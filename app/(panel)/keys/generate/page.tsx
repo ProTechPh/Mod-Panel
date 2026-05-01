@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 const DURATIONS = [
   { value: '1h', label: '1 Hour' },
-  { value: '6h', label: '6 Hours' },
+  { value: '3h', label: '3 Hours' },
   { value: '1', label: '1 Day' },
   { value: '3', label: '3 Days' },
   { value: '7', label: '7 Days' },

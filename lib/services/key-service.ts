@@ -153,8 +153,11 @@ export async function validateKey(game: string, userKey: string, serial: string,
     // - On first connect: replace expiredDate with now+1hour (active timer starts)
     const isFirstUse = !key.devices || key.devices.length === 0;
     if (isFirstUse) {
-      // First use — start the 1-hour active timer now
-      const activeExpiry = new Date(now.getTime() + 60 * 60 * 1000);
+      // First use — start the active timer now based on duration
+      let durationMs = 60 * 60 * 1000; // Default 1h
+      if (key.duration === '3h') durationMs = 3 * 60 * 60 * 1000;
+
+      const activeExpiry = new Date(now.getTime() + durationMs);
       await Key.updateOne({ _id: key._id }, { expiredDate: activeExpiry });
       key.expiredDate = activeExpiry;
     }
@@ -164,8 +167,8 @@ export async function validateKey(game: string, userKey: string, serial: string,
     let expiredDate: Date;
     if (key.duration === '1h') {
       expiredDate = new Date(now.getTime() + 60 * 60 * 1000);
-    } else if (key.duration === '6h') {
-      expiredDate = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+    } else if (key.duration === '3h') {
+      expiredDate = new Date(now.getTime() + 3 * 60 * 60 * 1000);
     } else {
       expiredDate = new Date(now.getTime() + (key.duration as number) * 24 * 60 * 60 * 1000);
     }

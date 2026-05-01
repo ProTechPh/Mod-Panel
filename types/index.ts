@@ -43,7 +43,7 @@ export interface KeyDoc {
   _id: ObjectId;
   game: string;
   userKey: string;
-  duration: number | '1h' | '6h';
+  duration: number | '1h' | '3h';
   expiredDate: Date | null;
   maxDevices: number;
   devices: string[];
@@ -149,7 +149,7 @@ export interface JwtPayload {
   exp: number;
 }
 
-export type Duration = number | '1h' | '6h';
+export type Duration = number | '1h' | '3h';
 
 export const LEVEL_OWNER: UserLevel = 1;
 export const LEVEL_ADMIN: UserLevel = 2;

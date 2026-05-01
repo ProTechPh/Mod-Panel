@@ -28,7 +28,7 @@ interface Product {
 
 function formatDuration(duration: number | string): string {
   if (duration === '1h') return '1 Hour';
-  if (duration === '6h') return '6 Hours';
+  if (duration === '3h') return '3 Hours';
   if (typeof duration === 'number') {
     if (duration === 1) return '1 Day';
     if (duration === 7) return '7 Days';
@@ -40,7 +40,7 @@ function formatDuration(duration: number | string): string {
 
 function getDurationColor(duration: number | string): string {
   if (duration === '1h') return 'bg-blue-500/15 text-blue-400 border-blue-500/30';
-  if (duration === '6h') return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30';
+  if (duration === '3h') return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30';
   if (duration === 1) return 'bg-green-500/15 text-green-400 border-green-500/30';
   if (duration === 7) return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
   return 'bg-purple-500/15 text-purple-400 border-purple-500/30';

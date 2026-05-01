@@ -55,7 +55,29 @@ async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean;
   }
 }
 
-export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string) {
+import { shortenUrl } from './reshortfly-service';
+
+import { SignJWT, jwtVerify } from 'jose';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'b6e7f8a9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5');
+
+async function createClaimToken(payload: any) {
+  return await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('10m')
+    .sign(JWT_SECRET);
+}
+
+async function verifyClaimToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string, duration: '1h' | '3h' = '1h') {
   await dbConnect();
 
   const gameSetting = await GameSetting.findOne({
@@ -80,7 +102,6 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   }
 
   // Block only if the IP already has a non-expired free key FOR THIS SPECIFIC GAME.
-  // Different games are independent — an active CODM key doesn't block an MLBB key.
   const existingTrackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
     .sort({ createdAt: -1 })
     .lean();
@@ -134,9 +155,18 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'VPN/Proxy detected. Free keys are not available for VPN users.' };
   }
 
+  // For 3h keys, we return an adUrl with a claim token. 
+  // The key is ONLY created after they return from the ad link.
+  if (duration === '3h') {
+    const claimToken = await createClaimToken({ game, duration, registrator, ip });
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
+    const adUrl = await shortenUrl(targetUrl);
+    return { adUrl };
+  }
+
+  // 1h keys are created immediately as before
   const keyString = generateKeyString(16);
-  // Set a 1-day "pending" expiry so unused keys auto-expire.
-  // On first use (connect), this will be replaced with now + 1 hour.
   const pendingExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const key = await Key.create({
     game: game.toUpperCase(),
@@ -162,6 +192,143 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   });
 
   return { key: keyString };
+}
+
+export async function claimFreeKey(token: string, currentIp: string) {
+  await dbConnect();
+
+  const payload = await verifyClaimToken(token);
+  if (!payload || typeof payload !== 'object') {
+    return { error: 'Invalid or expired claim token' };
+  }
+
+  const { game, duration, registrator, ip: originalIp } = payload as any;
+
+  if (originalIp !== currentIp) {
+    return { error: 'IP mismatch. You must claim the key from the same IP that generated the request.' };
+  }
+
+  // Final check for existing active keys to prevent double-claiming or bypassing limits
+  const existingTrackers = await IpTracker.find({ ipAddress: currentIp, isBanned: false })
+    .sort({ createdAt: -1 })
+    .lean();
+  
+  if (existingTrackers.length) {
+    const keyIds = existingTrackers.map(t => t.keyId);
+    const existingKey = await Key.findOne({
+      _id: { $in: keyIds },
+      isFreeKey: true,
+      game: game.toUpperCase(),
+      status: 1,
+    }).lean() as import('@/types').KeyDoc | null;
+    
+    const now = new Date();
+    if (existingKey && existingKey.expiredDate && new Date(existingKey.expiredDate) > now) {
+      return { key: existingKey.userKey }; // Return existing key if still active
+    }
+  }
+
+  // Actually create the key now
+  const keyString = generateKeyString(16);
+  const pendingExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const key = await Key.create({
+    game: game.toUpperCase(),
+    userKey: keyString,
+    duration,
+    maxDevices: 1,
+    devices: [],
+    status: 1,
+    registrator,
+    isFreeKey: true,
+    expiredDate: pendingExpiry,
+  });
+
+  await IpTracker.create({
+    userId: '0',
+    ipAddress: currentIp,
+    generatorIp: currentIp,
+    keyId: key._id,
+    isp: '', // VPN checks were already done in generateFreeKey
+    org: '',
+    isVpn: false,
+    isProxy: false,
+  });
+
+  return { key: keyString, game };
+}
+
+export async function generateExtendToken(game: string, ip: string, registrator: string) {
+  await dbConnect();
+
+  // Find the active key for this IP and game
+  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (!trackers.length) return { error: 'No active key found to extend' };
+
+  const keyIds = trackers.map(t => t.keyId);
+  const key = await Key.findOne({
+    _id: { $in: keyIds },
+    isFreeKey: true,
+    game: game.toUpperCase(),
+    status: 1,
+  }).lean() as import('@/types').KeyDoc | null;
+
+  if (!key) return { error: 'No active key found to extend' };
+
+  const now = new Date();
+  if (!key.expiredDate || new Date(key.expiredDate) <= now) {
+    return { error: 'Only active (non-expired) keys can be extended' };
+  }
+
+  // Create a claim token for extension
+  const claimToken = await createClaimToken({
+    type: 'extend',
+    keyId: key._id.toString(),
+    game: game.toUpperCase(),
+    ip,
+    registrator
+  });
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const targetUrl = `${baseUrl}/${registrator}/free-key?extendToken=${encodeURIComponent(claimToken)}`;
+  const adUrl = await shortenUrl(targetUrl);
+
+  return { adUrl };
+}
+
+export async function extendFreeKey(token: string, currentIp: string) {
+  await dbConnect();
+
+  const payload = await verifyClaimToken(token);
+  if (!payload || typeof payload !== 'object' || (payload as any).type !== 'extend') {
+    return { error: 'Invalid or expired extension token' };
+  }
+
+  const { keyId, ip: originalIp, game } = payload as any;
+
+  if (originalIp !== currentIp) {
+    return { error: 'IP mismatch' };
+  }
+
+  const key = await Key.findById(keyId);
+  if (!key || !key.isFreeKey || key.status !== 1) {
+    return { error: 'Key not found or invalid' };
+  }
+
+  const now = new Date();
+  const currentExpiry = key.expiredDate ? new Date(key.expiredDate) : now;
+
+  if (currentExpiry <= now) {
+    return { error: 'Key has already expired and cannot be extended' };
+  }
+
+  // Add 1 hour to the current expiry
+  const newExpiry = new Date(currentExpiry.getTime() + 60 * 60 * 1000);
+  await Key.updateOne({ _id: key._id }, { expiredDate: newExpiry });
+
+  return { success: true, game, newExpiry: newExpiry.toISOString() };
 }
 
 /**

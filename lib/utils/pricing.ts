@@ -4,7 +4,7 @@ const PRICES: Record<string, number> = {
   '1': 1, '2': 2, '3': 3, '5': 5, '7': 7, '14': 14, '30': 30,
   '60': 60, '90': 90,
   '1h': 0.5,
-  '6h': 1,
+  '3h': 0.75,
 };
 
 export function getPrice(duration: Duration, count: number, maxDevices: number): number | false {
