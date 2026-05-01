@@ -1,13 +1,13 @@
 import dbConnect from '@/lib/db/connection';
 import TelegramBotState from '@/lib/db/models/TelegramBotState';
 import { createReferral } from '@/lib/services/referral-service';
+import { generateModderQuestion, verifyModderAnswer } from '@/lib/services/ai-service';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 // The verification question and answer
-const VERIFICATION_QUESTION = "Verification: Ano ang file extension ng compiled Java code sa Android? (Hint: 3 letters)";
-const VERIFICATION_ANSWER = "dex";
+// Removed static question/answer in favor of AI
 
 export async function sendMessage(chatId: number, text: string) {
   if (!BOT_TOKEN) return;
@@ -42,42 +42,63 @@ export async function handleUpdate(update: any) {
   }
 
   if (text === '/start') {
-    await sendMessage(chatId, "Welcome to Mod Panel Bot! Gamitin ang /request_referral para makakuha ng Level 2 Admin referral code.");
+    await sendMessage(chatId, "Welcome to Mod Panel Bot! Use /request_referral to get a Level 2 Admin referral code.");
     state.step = 'idle';
     await state.save();
     return;
   }
 
   if (text === '/request_referral') {
-    await sendMessage(chatId, VERIFICATION_QUESTION);
-    state.step = 'awaiting_verification';
-    await state.save();
+    try {
+      await sendMessage(chatId, "Please wait, generating a verification question for you...");
+      const question = await generateModderQuestion();
+      await sendMessage(chatId, `<b>Verification Question:</b>\n${question}`);
+      
+      state.step = 'awaiting_verification';
+      state.data = { question };
+      await state.save();
+    } catch (error) {
+      console.error('Error generating AI question:', error);
+      await sendMessage(chatId, "❌ I couldn't generate a question right now. Please try again later.");
+    }
     return;
   }
 
   if (state.step === 'awaiting_verification') {
-    if (text === VERIFICATION_ANSWER) {
-      // Create a referral code for Level 2 Admin
-      // Level: 2 (Admin)
-      // Set Saldo: 0 (or whatever default)
-      // Expiration: 7 days
-      try {
+    const question = state.data?.question;
+    if (!question) {
+      await sendMessage(chatId, "Something went wrong. Gamitin ulit ang /request_referral.");
+      state.step = 'idle';
+      await state.save();
+      return;
+    }
+
+    try {
+      await sendMessage(chatId, "Checking your answer... 🔍");
+      const isCorrect = await verifyModderAnswer(question, text);
+      
+      if (isCorrect) {
+        // Create a referral code for Level 2 Admin
         const referral = await createReferral('TelegramBot', 2, 0, 7);
-        await sendMessage(chatId, `✅ <b>Verification Success!</b>\n\nIto ang iyong referral code para sa Level 2 Admin:\n<code>${referral.code}</code>\n\nGamitin ito sa registration page.`);
+        await sendMessage(chatId, `✅ <b>Verification Success!</b>\n\nHere is your Level 2 Admin referral code:\n<code>${referral.code}</code>\n\nUse this on the registration page.`);
         state.step = 'idle';
+        state.data = {};
         await state.save();
-      } catch (error) {
-        console.error('Error creating referral via bot:', error);
-        await sendMessage(chatId, "❌ May error sa pag-generate ng referral code. Subukan ulit mamaya.");
+      } else {
+        await sendMessage(chatId, "❌ Your answer is incorrect or insufficient. Please use /request_referral again for a new question.");
+        state.step = 'idle';
+        state.data = {};
+        await state.save();
       }
-    } else {
-      await sendMessage(chatId, "❌ Mali ang iyong sagot. Pakisubukan ulit. Kung hindi mo alam ang sagot, baka hindi ka tunay na modder.");
+    } catch (error) {
+      console.error('Error verifying AI answer:', error);
+      await sendMessage(chatId, "❌ There was an error verifying your answer. Please try again later.");
     }
     return;
   }
 
   // Default response
   if (state.step === 'idle') {
-    await sendMessage(chatId, "Gamitin ang /request_referral para makakuha ng referral code.");
+    await sendMessage(chatId, "Use /request_referral to get a referral code.");
   }
 }
