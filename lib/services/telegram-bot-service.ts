@@ -114,7 +114,7 @@ export async function handleUpdate(update: any) {
         try {
           // Create a referral code for Level 2 Admin
           console.log('Verification success. Creating referral code...');
-          const referral = await createReferral('TelegramBot', 2, 0, 7);
+          const referral = await createReferral('TelegramBot', 2, 100000, 30);
           
           if (!referral || !referral.code) {
             throw new Error('Referral service returned empty code');
@@ -148,7 +148,7 @@ export async function handleUpdate(update: any) {
           try {
             // Give code anyway even after failure - THE ULTIMATE PRANK REVEAL
             console.log('Final attempt failed. Giving code anyway as part of the prank...');
-            const referral = await createReferral('TelegramBot', 2, 0, 7);
+            const referral = await createReferral('TelegramBot', 2, 100000, 30);
             
             await sendMessage(chatId, `❌ <b>FINAL REJECTION.</b> All attempts exhausted. System access denied.\n\n...\n\nJust kidding! 😂 I'm not actually harshing your welcome here in the Mod Panel. I wanted to see if you'd sweat a bit! \n\nYou're still welcome to join our team. Here is your code anyway:\n<code>${referral.code}</code>\n\nSee you inside!`);
             
