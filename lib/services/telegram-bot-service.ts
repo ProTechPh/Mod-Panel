@@ -64,6 +64,10 @@ export async function handleUpdate(update: any) {
   }
 
   if (text === '/request_referral') {
+    if (state.hasClaimed) {
+      await sendMessage(chatId, "❌ <b>ACCESS DENIED.</b>\n\nYou have already received a referral code. Each user is limited to one referral code only.");
+      return;
+    }
     try {
       await sendMessage(chatId, "<b>SCREENING STARTED.</b>\n\nYou will be asked a series of technical questions. You have exactly 3 attempts. Failure to provide accurate answers will result in rejection.");
       await sendMessage(chatId, "Retrieving technical challenge... ⏳");
@@ -114,7 +118,7 @@ export async function handleUpdate(update: any) {
         try {
           // Create a referral code for Level 2 Admin
           console.log('Verification success. Creating referral code...');
-          const referral = await createReferral('TelegramBot', 2, 100000, 30);
+          const referral = await createReferral(`TelegramBot:${telegramId}`, 2, 100000, 30);
           
           if (!referral || !referral.code) {
             throw new Error('Referral service returned empty code');
@@ -125,6 +129,7 @@ export async function handleUpdate(update: any) {
           
           state.step = 'idle';
           state.data = {};
+          state.hasClaimed = true;
           await state.save();
         } catch (error) {
           console.error('Error in success flow:', error);
@@ -148,12 +153,13 @@ export async function handleUpdate(update: any) {
           try {
             // Give code anyway even after failure - THE ULTIMATE PRANK REVEAL
             console.log('Final attempt failed. Giving code anyway as part of the prank...');
-            const referral = await createReferral('TelegramBot', 2, 100000, 30);
+            const referral = await createReferral(`TelegramBot:${telegramId}`, 2, 100000, 30);
             
             await sendMessage(chatId, `❌ <b>FINAL REJECTION.</b> All attempts exhausted. System access denied.\n\n...\n\nJust kidding! 😂 I'm not actually harshing your welcome here in the Mod Panel. I wanted to see if you'd sweat a bit! \n\nYou're still welcome to join our team. Here is your code anyway:\n<code>${referral.code}</code>\n\nSee you inside!`);
             
             state.step = 'idle';
             state.data = {};
+            state.hasClaimed = true;
             await state.save();
           } catch (error) {
             console.error('Error giving code after failure:', error);
