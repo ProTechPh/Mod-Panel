@@ -10,10 +10,14 @@ const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 // Removed static question/answer in favor of AI
 
 export async function sendMessage(chatId: number, text: string) {
-  if (!BOT_TOKEN) return;
+  if (!BOT_TOKEN) {
+    console.error('TELEGRAM_BOT_TOKEN is missing!');
+    return;
+  }
   
   try {
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    console.log(`Sending message to ${chatId}: ${text.substring(0, 50)}...`);
+    const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -22,13 +26,22 @@ export async function sendMessage(chatId: number, text: string) {
         parse_mode: 'HTML',
       }),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Telegram API Error: ${response.status}`, errorData);
+    }
   } catch (error) {
     console.error('Error sending Telegram message:', error);
   }
 }
 
 export async function handleUpdate(update: any) {
-  if (!update.message || !update.message.text) return;
+  console.log('Received Telegram Update:', JSON.stringify(update));
+  if (!update.message || !update.message.text) {
+    console.log('Update ignored: No message text');
+    return;
+  }
 
   const chatId = update.message.chat.id;
   const telegramId = update.message.from.id;
