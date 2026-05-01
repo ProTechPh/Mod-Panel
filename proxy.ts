@@ -5,7 +5,7 @@ import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
 const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback', '/store-terms'];
-const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook'];
+const API_PUBLIC = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/download', '/api/libs/serve', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', '/api/cron/check-telegram'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);
 const MAX_BODY_SIZE = 1024 * 1024;

@@ -18,6 +18,7 @@ const UserSchema = new Schema<UserDoc & Document>({
   loggedIn: { type: Number, default: 0 },
   resetLinkToken: { type: String },
   resetTokenExpiry: { type: Date },
+  banReason: { type: String, default: '' },
 }, { timestamps: true, collection: 'users' });
 
 UserSchema.index({ level: 1 });

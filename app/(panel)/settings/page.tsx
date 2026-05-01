@@ -213,9 +213,11 @@ export default function SettingsPage() {
               </div>
             </div>
             {user?.telegramId ? (
-              <Button variant="destructive" size="sm" onClick={onDisconnectTelegram} disabled={disconnectLoading}>
-                {disconnectLoading ? 'Disconnecting...' : 'Disconnect'}
-              </Button>
+              user.level === 1 && (
+                <Button variant="destructive" size="sm" onClick={onDisconnectTelegram} disabled={disconnectLoading}>
+                  {disconnectLoading ? 'Disconnecting...' : 'Disconnect'}
+                </Button>
+              )
             ) : (
               <Button variant="outline" size="sm" onClick={() => {
                 sessionStorage.setItem('telegram_auth_mode', 'connect');

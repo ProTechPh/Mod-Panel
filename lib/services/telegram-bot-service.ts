@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db/connection';
 import TelegramBotState from '@/lib/db/models/TelegramBotState';
+import User from '@/lib/db/models/User';
 import { createReferral } from '@/lib/services/referral-service';
 import { generateModderQuestion, verifyModderAnswer, askAI } from '@/lib/services/ai-service';
 
@@ -92,6 +93,14 @@ export async function handleUpdate(update: any) {
       await sendMessage(chatId, "❌ <b>ACCESS DENIED.</b>\n\nYou have already received a referral code. Each user is limited to one referral code only.");
       return;
     }
+
+    // Check if telegramId is already connected to a user account
+    const existingUser = await User.findOne({ telegramId });
+    if (existingUser) {
+      await sendMessage(chatId, `❌ <b>ACCESS DENIED.</b>\n\nYour Telegram account is already connected to an existing account (<b>${existingUser.username}</b>). You cannot request a new referral code.`);
+      return;
+    }
+
     try {
       await sendMessage(chatId, "<b>SCREENING STARTED.</b>\n\nYou will be asked a series of technical questions. You have exactly 3 attempts. Failure to provide accurate answers will result in rejection.");
       await sendMessage(chatId, "Retrieving technical challenge... ⏳");

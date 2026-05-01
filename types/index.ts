@@ -35,6 +35,7 @@ export interface UserDoc {
   loggedIn: number;
   resetLinkToken?: string;
   resetTokenExpiry?: Date;
+  banReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
