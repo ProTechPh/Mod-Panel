@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollText, Shield, ShoppingCart, Users } from 'lucide-react';
 
-const EFFECTIVE_DATE = 'April 28, 2026';
+const EFFECTIVE_DATE = 'May 1, 2026';
 
 interface Section {
   title: string;
@@ -55,7 +55,15 @@ const GENERAL_TERMS: Section[] = [
     ],
   },
   {
-    title: '7. Modifications',
+    title: '7. Mandatory Telegram Connection',
+    content: [
+      'All users (Admins and Resellers) are required to have a connected Telegram account linked to their profile for identity verification and notification purposes.',
+      'A weekly automated sweep is performed. Any account found without a linked Telegram ID will be automatically suspended (banned).',
+      'Suspended users must contact @CanKillYouForever on Telegram to appeal their ban and provide their Telegram ID for manual verification.',
+    ],
+  },
+  {
+    title: '8. Modifications',
     content: [
       'The platform Owner may update these Terms at any time. Continued use of the Service after any changes constitutes your acceptance of the new Terms.',
     ],
