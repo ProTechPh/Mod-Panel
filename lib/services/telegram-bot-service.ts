@@ -10,7 +10,7 @@ const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 // Removed static question/answer in favor of AI
 const QUESTION_TIMEOUT_MS = 60 * 1000; // 60 seconds
 
-export async function sendMessage(chatId: number, text: string) {
+export async function sendMessage(chatId: number, text: string, parseMode: 'HTML' | 'Markdown' | 'MarkdownV2' = 'HTML') {
   if (!BOT_TOKEN) {
     console.error('TELEGRAM_BOT_TOKEN is missing!');
     return;
@@ -24,7 +24,7 @@ export async function sendMessage(chatId: number, text: string) {
       body: JSON.stringify({
         chat_id: chatId,
         text: text,
-        parse_mode: 'HTML',
+        parse_mode: parseMode,
       }),
     });
 
@@ -124,16 +124,25 @@ export async function handleUpdate(update: any) {
 
     try {
       await sendMessage(chatId, "Thinking... 🧠");
-      const systemPrompt = `You are a helpful assistant for the "Mod Panel" system. 
-      The Mod Panel is a management system for Android game modders, allowing them to manage keys, users, and settings.
-      Users can get Level 2 Admin access by passing a technical test via this bot.
-      The panel supports features like free keys with ads (ReShortFly), IP logging, and game settings management.
-      Answer the user's question concisely and professionally.
+      const systemPrompt = `You are a specialized assistant for the "Mod Panel" system. 
+      Your ONLY task is to answer questions about the **Level 2 Admin** role and its responsibilities.
+      
+      Key Information about Level 2 Admin:
+      - It is a privileged role for verified modders.
+      - Level 2 Admins can generate referral codes and manage certain aspects of the panel.
+      - They have access to advanced modding tools and settings.
+      - Access is granted only after passing the technical screening in this bot.
+      
+      RULES:
+      1. ONLY answer questions related to Level 2 roles and the Mod Panel system.
+      2. If the question is unrelated, politely redirect them to ask about Level 2 roles.
+      3. Use **Markdown** formatting (bold, italics, lists, code blocks) for all responses to make them look professional.
+      4. Be concise and technical.
       
       User Question: ${query}`;
       
       const response = await askAI(systemPrompt);
-      await sendMessage(chatId, `<b>ASSISTANT:</b>\n${response}`);
+      await sendMessage(chatId, response, 'Markdown');
     } catch (error) {
       console.error('Error in /ask command:', error);
       await sendMessage(chatId, "❌ SYSTEM ERROR: Failed to process your question. Please try again later.");
