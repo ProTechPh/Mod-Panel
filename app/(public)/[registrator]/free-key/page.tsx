@@ -104,6 +104,7 @@ export default function FreeKeyPage() {
   // Store state
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [ipAddress, setIpAddress] = useState<string>('');
 
   // Fetch key for the selected game
   const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
@@ -184,6 +185,15 @@ export default function FreeKeyPage() {
 
   // Fetch games list
   useEffect(() => {
+    fetch('/api/ip')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ip && !data.ip.startsWith('unknown')) {
+          setIpAddress(data.ip);
+        }
+      })
+      .catch(() => {});
+
     fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
       .then(res => res.json())
       .then(data => {
@@ -396,6 +406,18 @@ export default function FreeKeyPage() {
             <CardTitle className="text-2xl font-bold">Free Key Generator</CardTitle>
           </div>
           <CardDescription>Generate a free 1-hour key from {registrator}</CardDescription>
+
+          {ipAddress && (
+            <div className="mt-3 flex justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/30 border border-border/50 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">Your IP: <span className="font-mono text-foreground">{ipAddress}</span></span>
+              </div>
+            </div>
+          )}
 
           {store && (
             <div className="mt-4 pt-4 border-t border-border/50">
