@@ -85,7 +85,8 @@ export async function updateServerConfig(data: {
                   },
                 },
               },
-            ]
+            ],
+            { updatePipeline: true }
           );
         }
       }
