@@ -185,14 +185,22 @@ export default function FreeKeyPage() {
 
   // Fetch games list
   useEffect(() => {
-    fetch('/api/ip')
-      .then(res => res.json())
-      .then(data => {
-        if (data.ip && !data.ip.startsWith('unknown')) {
-          setIpAddress(data.ip);
+    fetch('https://checkip.amazonaws.com')
+      .then(res => res.text())
+      .then(text => {
+        if (text) {
+          setIpAddress(text.trim());
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback to internal API
+        fetch('/api/ip')
+          .then(r => r.json())
+          .then(d => {
+            if (d.ip) setIpAddress(d.ip);
+          })
+          .catch(() => {});
+      });
 
     fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
       .then(res => res.json())
