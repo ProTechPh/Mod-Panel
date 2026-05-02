@@ -17,6 +17,7 @@ export async function GET() {
       _client: APP_NAME,
       license: LICENSE_KEY,
       version: '3.0.5',
+      announcement: config?.announcementStatus === 'on' ? config.announcement : null,
     },
     web__dev: {
       author: 'ProTech Dev',

@@ -96,6 +96,8 @@ export interface ServerConfigDoc {
   maintenanceStatus: MaintenanceStatus;
   maintenanceMessage: string;
   maintenanceStartedAt: Date | null;
+  announcement: string;
+  announcementStatus: 'on' | 'off';
   telegramChannel: string;
   telegramGroup: string;
   updatedAt: Date;

@@ -14,6 +14,8 @@ export async function getServerConfig() {
       maintenanceStatus: 'off',
       maintenanceMessage: '',
       maintenanceStartedAt: null,
+      announcement: '',
+      announcementStatus: 'off',
       telegramChannel: '',
       telegramGroup: '',
     });
@@ -25,6 +27,8 @@ export async function updateServerConfig(data: {
   modName?: string;
   maintenanceStatus?: MaintenanceStatus;
   maintenanceMessage?: string;
+  announcement?: string;
+  announcementStatus?: 'on' | 'off';
   telegramChannel?: string;
   telegramGroup?: string;
 }) {
@@ -33,6 +37,8 @@ export async function updateServerConfig(data: {
   const update: Record<string, unknown> = {};
   if (data.modName !== undefined) update.modName = data.modName;
   if (data.maintenanceMessage !== undefined) update.maintenanceMessage = data.maintenanceMessage;
+  if (data.announcement !== undefined) update.announcement = data.announcement;
+  if (data.announcementStatus !== undefined) update.announcementStatus = data.announcementStatus;
   if (data.telegramChannel !== undefined) update.telegramChannel = data.telegramChannel;
   if (data.telegramGroup !== undefined) update.telegramGroup = data.telegramGroup;
 

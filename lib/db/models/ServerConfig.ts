@@ -8,6 +8,8 @@ const ServerConfigSchema = new Schema<ServerConfigDoc & Document>({
   maintenanceStatus: { type: String, enum: ['on', 'off'] as MaintenanceStatus[], default: 'off' },
   maintenanceMessage: { type: String, default: '' },
   maintenanceStartedAt: { type: Date, default: null },
+  announcement: { type: String, default: '' },
+  announcementStatus: { type: String, enum: ['on', 'off'], default: 'off' },
   telegramChannel: { type: String, default: '' },
   telegramGroup: { type: String, default: '' },
   updatedAt: { type: Date, default: Date.now },
