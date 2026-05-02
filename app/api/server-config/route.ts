@@ -19,8 +19,11 @@ export async function PUT(request: NextRequest) {
     if (!config) return NextResponse.json({ error: 'Config not found' }, { status: 404 });
 
     return NextResponse.json(config);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Server config update error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error.message 
+    }, { status: 500 });
   }
 }

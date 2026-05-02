@@ -20,7 +20,17 @@ export async function getServerConfig() {
       telegramGroup: '',
     });
   }
-  return { ...config, _id: config._id.toString() };
+  return {
+    modName: config.modName || '',
+    maintenanceStatus: config.maintenanceStatus || 'off',
+    maintenanceMessage: config.maintenanceMessage || '',
+    maintenanceStartedAt: config.maintenanceStartedAt || null,
+    announcement: config.announcement || '',
+    announcementStatus: config.announcementStatus || 'off',
+    telegramChannel: config.telegramChannel || '',
+    telegramGroup: config.telegramGroup || '',
+    _id: config._id.toString(),
+  };
 }
 
 export async function updateServerConfig(data: {

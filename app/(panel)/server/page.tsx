@@ -14,6 +14,8 @@ interface ServerConfig {
   maintenanceStatus: string;
   maintenanceMessage: string;
   maintenanceStartedAt: string | null;
+  announcement: string;
+  announcementStatus: string;
 }
 
 function useElapsed(startedAt: string | null, isOn: boolean) {
@@ -101,7 +103,26 @@ export default function ServerPage() {
     }
   };
 
+  const handleSaveAnnouncement = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/server-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          announcement: config.announcement,
+          announcementStatus: config.announcementStatus
+        }),
+      });
+      if (res.ok) toast.success('Announcement saved');
+      else toast.error('Failed to save announcement');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const isOn = config.maintenanceStatus === 'on';
+  const isAnnOn = config.announcementStatus === 'on';
 
   return (
     <div className="space-y-4">
@@ -111,9 +132,9 @@ export default function ServerPage() {
 
       <Card className={`border-border/50 ${isOn ? 'border-amber-500/60 bg-amber-500/5' : ''}`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <ShieldAlert className={`h-4 w-4 ${isOn ? 'text-amber-500' : 'text-muted-foreground'}`} />
-            Maintenance
+            Maintenance Settings
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -123,9 +144,9 @@ export default function ServerPage() {
               onCheckedChange={handleMaintenanceToggle}
               disabled={toggling}
             />
-            <Label>Maintenance Mode</Label>
+            <Label className="text-xs">Maintenance Mode</Label>
             {isOn && elapsed && (
-              <span className="flex items-center gap-1.5 text-xs text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full ml-auto">
+              <span className="flex items-center gap-1.5 text-[10px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full ml-auto border border-amber-500/20">
                 <Clock className="h-3 w-3" />
                 {elapsed} — key timers paused
               </span>
@@ -133,20 +154,52 @@ export default function ServerPage() {
           </div>
 
           {isOn && (
-            <p className="text-xs text-amber-500/80 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2">
+            <p className="text-[10px] text-amber-500/80 bg-amber-500/5 border border-amber-500/10 rounded px-2 py-1.5">
               All active key timers are paused. When maintenance ends, timers will automatically be extended by the full downtime duration.
             </p>
           )}
 
-          <div className="space-y-2">
-            <Label>Maintenance Message</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Maintenance Message</Label>
             <Textarea
               value={config.maintenanceMessage}
               onChange={e => setConfig({ ...config, maintenanceMessage: e.target.value })}
               placeholder="Message shown to users during maintenance..."
+              className="text-xs min-h-[60px]"
             />
-            <Button onClick={handleSaveMessage} disabled={saving} size="sm" variant="outline">
-              {saving ? 'Saving...' : 'Save Message'}
+            <Button onClick={handleSaveMessage} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
+              {saving ? 'Saving...' : 'Update Maintenance Message'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className={`border-border/50 ${isAnnOn ? 'border-indigo-500/60 bg-indigo-500/5' : ''}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Clock className={`h-4 w-4 ${isAnnOn ? 'text-indigo-500' : 'text-muted-foreground'}`} />
+            System Announcement
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={isAnnOn}
+              onCheckedChange={(val) => setConfig({ ...config, announcementStatus: val ? 'on' : 'off' })}
+            />
+            <Label className="text-xs">Show Announcement in Mod Panel</Label>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Announcement Message</Label>
+            <Textarea
+              value={config.announcement}
+              onChange={e => setConfig({ ...config, announcement: e.target.value })}
+              placeholder="Enter announcement text to show in the loader..."
+              className="text-xs min-h-[60px]"
+            />
+            <Button onClick={handleSaveAnnouncement} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
+              {saving ? 'Saving...' : 'Update Announcement'}
             </Button>
           </div>
         </CardContent>
