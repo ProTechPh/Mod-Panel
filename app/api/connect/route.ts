@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const body = {
       game: formData.get('game') as string,
-      user_key: formData.get('user_key') as string,
+      user_key: (formData.get('user_key') || formData.get('u_key')) as string,
       serial: formData.get('serial') as string,
     };
 

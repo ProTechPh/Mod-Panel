@@ -41,6 +41,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  async rewrites() {
+    return [
+      {
+        source: '/a/c',
+        destination: '/api/connect',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
