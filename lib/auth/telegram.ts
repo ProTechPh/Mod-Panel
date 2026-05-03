@@ -13,7 +13,13 @@ export interface TelegramAuthData {
 export function verifyTelegramAuth(data: TelegramAuthData, botToken: string): boolean {
   const { hash, ...rest } = data;
 
+  // Filter out any fields that are not part of the standard Telegram auth
+  // and remove any fields that have null, undefined, or empty string values.
   const checkString = Object.keys(rest)
+    .filter(key => {
+      const value = rest[key as keyof typeof rest];
+      return value !== undefined && value !== null && value !== '' && key !== 'hash';
+    })
     .sort()
     .map(key => `${key}=${rest[key as keyof typeof rest]}`)
     .join('\n');

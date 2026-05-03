@@ -43,15 +43,18 @@ function TelegramCallbackContent() {
           const decoded = decodeURIComponent(escape(atob(base64)));
           const parsed = JSON.parse(decoded);
           if (parsed.id && parsed.hash) {
-            authParams = {
+            const params: Record<string, string> = {
               id: String(parsed.id),
-              first_name: parsed.first_name || '',
-              last_name: parsed.last_name || '',
-              username: parsed.username || '',
-              photo_url: parsed.photo_url || '',
               auth_date: String(parsed.auth_date),
               hash: parsed.hash,
             };
+            
+            if (parsed.first_name) params.first_name = parsed.first_name;
+            if (parsed.last_name) params.last_name = parsed.last_name;
+            if (parsed.username) params.username = parsed.username;
+            if (parsed.photo_url) params.photo_url = parsed.photo_url;
+            
+            authParams = params;
           }
         } catch {
           // Invalid base64/JSON in hash fragment
