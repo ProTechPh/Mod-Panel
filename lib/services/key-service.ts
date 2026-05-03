@@ -193,7 +193,8 @@ export async function validateKey(game: string, userKey: string, serial: string,
     await Key.updateOne({ _id: key._id }, update);
   }
 
-  const { real, token } = generateTokenResult(game, userKey, serial);
+  const modName = gameSetting?.modName || activeGame;
+  const { real, token } = generateTokenResult(modName, userKey, serial);
   const expiredStr = finalExpiredDate ? new Date(finalExpiredDate).toISOString().replace('T', ' ').substring(0, 19) : '';
 
   return {
@@ -201,7 +202,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
     data: {
       real,
       token,
-      modname: gameSetting?.modName || '',
+      modname: modName,
       mod_status: gameSetting?.floatingTextStatus || '',
       credit: gameSetting?.floatingText || '',
       ESP: gameSetting?.features.esp ?? false,
