@@ -86,6 +86,7 @@ export interface GameSettingDoc {
   telegramGroup: string;
   features: Features;
   patches: string;
+  patchVersion: number;
   registrator: string;
   createdAt: Date;
   updatedAt: Date;

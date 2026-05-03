@@ -111,6 +111,12 @@ export async function updateGameSetting(gameCode: string, data: {
     }
   }
   // ─────────────────────────────────────────────────────────────────────────
+  if (data.patches !== undefined) {
+    const current = await GameSetting.findOne(filter).lean();
+    if (current && current.patches !== data.patches) {
+      (updateData as any).$inc = { patchVersion: 1 };
+    }
+  }
 
   const game = await GameSetting.findOneAndUpdate(
     filter,
