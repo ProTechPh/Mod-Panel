@@ -33,7 +33,12 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
-      body = await request.json();
+      const json = await request.json();
+      body = {
+        game: (json.game || '').trim(),
+        user_key: (json.user_key || '').trim(),
+        serial: (json.serial || '').trim(),
+      };
     } else {
       const formData = await request.formData();
       body = {
