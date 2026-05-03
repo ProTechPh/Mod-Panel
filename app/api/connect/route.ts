@@ -29,12 +29,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const body = {
-      game: (formData.get('game') as string || '').trim(),
-      user_key: (formData.get('user_key') as string || '').trim(),
-      serial: (formData.get('serial') as string || '').trim(),
-    };
+    let body: any;
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      body = await request.json();
+    } else {
+      const formData = await request.formData();
+      body = {
+        game: (formData.get('game') as string || '').trim(),
+        user_key: (formData.get('user_key') as string || '').trim(),
+        serial: (formData.get('serial') as string || '').trim(),
+      };
+    }
 
     const parsed = connectSchema.safeParse(body);
     if (!parsed.success) {
