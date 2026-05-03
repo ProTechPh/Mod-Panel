@@ -8,7 +8,6 @@ import { checkDeviceSlot } from '@/lib/utils/device';
 import User from '@/lib/db/models/User';
 import GameSetting from '@/lib/db/models/GameSetting';
 import ServerConfig, { SingletonId } from '@/lib/db/models/ServerConfig';
-import IpTracker from '@/lib/db/models/IpTracker';
 import crypto from 'crypto';
 import type { Duration, KeyDoc, ServerConfigDoc, GameSettingDoc } from '@/types';
 
@@ -114,7 +113,7 @@ export async function generateKeys(
   return { keys, newSaldo: isOwner ? user.saldo : (newSaldo as number) };
 }
 
-export async function validateKey(game: string, userKey: string, serial: string, connectIp: string) {
+export async function validateKey(game: string, userKey: string, serial: string) {
   await dbConnect();
 
   const config = await getServerConfig();
@@ -146,13 +145,6 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: `Suspended Key, Contact: ${contact}` };
   }
 
-  if (key.isFreeKey) {
-    const tracker = await IpTracker.findOne({ keyId: key._id }).lean();
-    if (tracker && tracker.generatorIp !== connectIp) {
-      await Key.updateOne({ _id: key._id }, { status: 0 });
-      return { status: false, reason: `Key invalidated - IP mismatch detected. Contact: ${contact}` };
-    }
-  }
 
   const now = new Date();
   const update: Record<string, any> = {};
