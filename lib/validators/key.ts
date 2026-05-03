@@ -19,8 +19,6 @@ export const connectSchema = z.object({
   game: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid game format'),
   user_key: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid key format'),
   serial: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid serial format'),
-  ts: z.string().optional(),
-  sign: z.string().optional(),
 });
 
 export const bulkDeleteSchema = z.object({
