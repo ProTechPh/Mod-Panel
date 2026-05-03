@@ -18,7 +18,6 @@ export async function getServerConfig() {
       announcementStatus: 'off',
       telegramChannel: '',
       telegramGroup: '',
-      freeKeyAdLink: '',
     });
   }
   return {
@@ -30,7 +29,6 @@ export async function getServerConfig() {
     announcementStatus: config.announcementStatus || 'off',
     telegramChannel: config.telegramChannel || '',
     telegramGroup: config.telegramGroup || '',
-    freeKeyAdLink: config.freeKeyAdLink || '',
     _id: config._id.toString(),
   };
 }
@@ -43,7 +41,6 @@ export async function updateServerConfig(data: {
   announcementStatus?: 'on' | 'off';
   telegramChannel?: string;
   telegramGroup?: string;
-  freeKeyAdLink?: string;
 }) {
   await dbConnect();
 
@@ -54,7 +51,6 @@ export async function updateServerConfig(data: {
   if (data.announcementStatus !== undefined) update.announcementStatus = data.announcementStatus;
   if (data.telegramChannel !== undefined) update.telegramChannel = data.telegramChannel;
   if (data.telegramGroup !== undefined) update.telegramGroup = data.telegramGroup;
-  if (data.freeKeyAdLink !== undefined) update.freeKeyAdLink = data.freeKeyAdLink;
 
   // ── Maintenance timer pause / resume ─────────────────────────────────────
   if (data.maintenanceStatus !== undefined) {
@@ -101,13 +97,8 @@ export async function updateServerConfig(data: {
   }
   // ─────────────────────────────────────────────────────────────────────────
 
-  const config = await ServerConfig.findOneAndUpdate(
-    { _id: SingletonId }, 
-    update, 
-    { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
-  ).lean();
-  
+  const config = await ServerConfig.findByIdAndUpdate(SingletonId, update, { returnDocument: 'after' }).lean();
   clearConfigCache();
-  return config ? { ...config, _id: config?._id?.toString() } : null;
+  return config ? { ...config, _id: config._id.toString() } : null;
 }
 

@@ -12,17 +12,13 @@ const ServerConfigSchema = new Schema<ServerConfigDoc & Document>({
   announcementStatus: { type: String, enum: ['on', 'off'], default: 'off' },
   telegramChannel: { type: String, default: '' },
   telegramGroup: { type: String, default: '' },
-  freeKeyAdLink: { type: String, default: '' },
   updatedAt: { type: Date, default: Date.now },
-}, { collection: 'server_config', _id: false, strict: false });
+}, { collection: 'server_config', _id: false });
 
 ServerConfigSchema.pre('findOneAndUpdate', function () {
   this.set({ updatedAt: new Date() });
 });
 
 export const SingletonId = SERVER_CONFIG_ID;
-if (mongoose.models.ServerConfig) {
-  delete mongoose.models.ServerConfig;
-}
 
 export default mongoose.models.ServerConfig || mongoose.model<ServerConfigDoc & Document>('ServerConfig', ServerConfigSchema);

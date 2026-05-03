@@ -7,7 +7,7 @@ const freeKeySchema = z.object({
   game: z.string().min(1, 'Game is required'),
   turnstileToken: z.string().min(1, 'Captcha verification required'),
   registrator: z.string().min(1, 'Registrator is required'),
-  duration: z.enum(['1h', '3h']).optional().default('3h'),
+  duration: z.enum(['1h', '3h']).optional().default('1h'),
 });
 
 export async function POST(request: NextRequest) {

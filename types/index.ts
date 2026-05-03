@@ -100,7 +100,6 @@ export interface ServerConfigDoc {
   announcementStatus: 'on' | 'off';
   telegramChannel: string;
   telegramGroup: string;
-  freeKeyAdLink: string;
   updatedAt: Date;
 }
 

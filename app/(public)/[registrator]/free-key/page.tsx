@@ -87,7 +87,7 @@ export default function FreeKeyPage() {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('key');
-  const [duration, setDuration] = useState<'1h' | '3h'>('3h');
+  const [duration, setDuration] = useState<'1h' | '3h'>('1h');
 
   // Per-game key state
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
@@ -369,7 +369,7 @@ export default function FreeKeyPage() {
     if (!keyStatus) return '—';
     if (keyStatus.status === 0) return 'Suspended';
     if (keyStatus.isExpired) return 'Expired';
-    if (keyStatus.isActivated) return 'Active – 3h timer running';
+    if (keyStatus.isActivated) return 'Active – 1h timer running';
     return 'Unused – grace period (1 day)';
   };
 
@@ -413,7 +413,7 @@ export default function FreeKeyPage() {
             <KeyRound className="h-6 w-6 text-primary" />
             <CardTitle className="text-2xl font-bold">Free Key Generator</CardTitle>
           </div>
-          <CardDescription>Generate a free 3-hour key from {registrator}</CardDescription>
+          <CardDescription>Generate a free 1-hour key from {registrator}</CardDescription>
 
           {ipAddress && (
             <div className="mt-3 flex justify-center">
@@ -632,6 +632,40 @@ export default function FreeKeyPage() {
                   )}
 
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-3">
+                      <Label className="text-center block">Select Duration</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDuration('1h')}
+                          className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            duration === '1h'
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border/50 hover:border-border text-muted-foreground"
+                          )}
+                        >
+                          <Clock className="h-5 w-5" />
+                          <span className="text-sm font-bold">1 Hour</span>
+                          <span className="text-[10px] opacity-70">No Ads</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDuration('3h')}
+                          className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            duration === '3h'
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border/50 hover:border-border text-muted-foreground"
+                          )}
+                        >
+                          <Zap className="h-5 w-5" />
+                          <span className="text-sm font-bold">3 Hours</span>
+                          <span className="text-[10px] opacity-70">With Ads</span>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex justify-center">
                       <Turnstile
                         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
@@ -641,7 +675,7 @@ export default function FreeKeyPage() {
                     <Button type="submit" className="w-full h-11 text-base font-bold shadow-lg shadow-primary/20" disabled={generating || !turnstileToken}>
                       {generating
                         ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
-                        : 'Unlock 3h Key (Watch Ads)'
+                        : duration === '3h' ? 'Unlock 3h Key (Watch Ads)' : `Get Free ${game} Key`
                       }
                     </Button>
                   </form>
