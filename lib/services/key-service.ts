@@ -26,13 +26,15 @@ async function getServerConfig(): Promise<ServerConfigDoc | null> {
   return configCache;
 }
 
-async function getGameSettings(): Promise<Map<string, GameSettingDoc>> {
+async function getGameSetting(gameCode: string, registrator: string): Promise<GameSettingDoc | null> {
   const now = Date.now();
-  if (gameCache && now < gameCacheExpiry) return gameCache;
-  const games = await GameSetting.find({}).lean();
-  gameCache = new Map(games.map(g => [`${g.gameCode}|${g.registrator}`, g as unknown as GameSettingDoc]));
-  gameCacheExpiry = now + CONFIG_TTL_MS;
-  return gameCache!;
+  const cacheKey = `${gameCode.toUpperCase()}|${registrator}`;
+  if (gameCache && now < gameCacheExpiry) {
+    return gameCache.get(cacheKey) || null;
+  }
+  // If cache expired, just fetch the specific one to save bandwidth
+  const setting = await GameSetting.findOne({ gameCode: gameCode.toUpperCase(), registrator }).lean() as GameSettingDoc | null;
+  return setting;
 }
 
 export function clearConfigCache() {
@@ -44,12 +46,20 @@ export function clearConfigCache() {
 
 const DEFAULT_CONTACT = '@CanKillYouForever';
 
+const contactCache = new Map<string, { contact: string; expiry: number }>();
+
 async function getTelegramContact(registrator: string, gameSetting?: GameSettingDoc | null): Promise<string> {
-  // Prefer game-specific telegram channel from GameSetting
   if (gameSetting?.telegramChannel) return gameSetting.telegramChannel;
   if (registrator === 'FreeKey') return DEFAULT_CONTACT;
+
+  const now = Date.now();
+  const cached = contactCache.get(registrator);
+  if (cached && now < cached.expiry) return cached.contact;
+
   const admin = await User.findOne({ username: registrator }).lean();
-  return admin?.telegramContact || DEFAULT_CONTACT;
+  const contact = admin?.telegramContact || DEFAULT_CONTACT;
+  contactCache.set(registrator, { contact, expiry: now + CONFIG_TTL_MS });
+  return contact;
 }
 
 export async function generateKeys(
@@ -119,11 +129,9 @@ export async function validateKey(game: string, userKey: string, serial: string,
 
   // Use the actual game product from the key record
   const normalizedGame = key.game.toUpperCase();
-  const activeGame = normalizedGame; // Use this for game setting lookup
+  const activeGame = normalizedGame;
 
-  const games = await getGameSettings();
-  const gameSetting = games.get(`${activeGame}|${key.registrator}`);
-
+  const gameSetting = await getGameSetting(activeGame, key.registrator);
   const contact = await getTelegramContact(key.registrator, gameSetting);
 
   if (gameSetting && !gameSetting.connectEnabled) {
@@ -140,46 +148,35 @@ export async function validateKey(game: string, userKey: string, serial: string,
   if (key.isFreeKey) {
     const tracker = await IpTracker.findOne({ keyId: key._id }).lean();
     if (tracker && tracker.generatorIp !== connectIp) {
-      // Invalidate the key but do NOT ban the generator IP.
-      // IP changes are common (WiFi→mobile data, ISP rotation, router restart)
-      // and CGNAT means one public IP is shared by many users.
       await Key.updateOne({ _id: key._id }, { status: 0 });
       return { status: false, reason: `Key invalidated - IP mismatch detected. Contact: ${contact}` };
     }
   }
 
   const now = new Date();
+  const update: Record<string, any> = {};
+  let finalExpiredDate = key.expiredDate;
 
   if (key.isFreeKey) {
-    // Free key dual-expiry logic:
-    // - Before first use: expiredDate is set to now+1day (unused grace period)
-    // - On first connect: replace expiredDate with now+1hour (active timer starts)
     const isFirstUse = !key.devices || key.devices.length === 0;
     if (isFirstUse) {
-      // First use — start the active timer now based on duration
-      let durationMs = 60 * 60 * 1000; // Default 1h
+      let durationMs = 60 * 60 * 1000;
       if (key.duration === '3h') durationMs = 3 * 60 * 60 * 1000;
-
-      const activeExpiry = new Date(now.getTime() + durationMs);
-      await Key.updateOne({ _id: key._id }, { expiredDate: activeExpiry });
-      key.expiredDate = activeExpiry;
+      finalExpiredDate = new Date(now.getTime() + durationMs);
+      update.expiredDate = finalExpiredDate;
     }
-    // If not first use, expiredDate is already the 1-hour active timer — leave it alone
   } else if (!key.expiredDate) {
-    // Standard paid key: set expiry on first connect
-    let expiredDate: Date;
     if (key.duration === '1h') {
-      expiredDate = new Date(now.getTime() + 60 * 60 * 1000);
+      finalExpiredDate = new Date(now.getTime() + 60 * 60 * 1000);
     } else if (key.duration === '3h') {
-      expiredDate = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+      finalExpiredDate = new Date(now.getTime() + 3 * 60 * 60 * 1000);
     } else {
-      expiredDate = new Date(now.getTime() + (key.duration as number) * 24 * 60 * 60 * 1000);
+      finalExpiredDate = new Date(now.getTime() + (key.duration as number) * 24 * 60 * 60 * 1000);
     }
-    await Key.updateOne({ _id: key._id }, { expiredDate });
-    key.expiredDate = expiredDate;
+    update.expiredDate = finalExpiredDate;
   }
 
-  if (key.expiredDate && new Date(key.expiredDate) < now) {
+  if (finalExpiredDate && new Date(finalExpiredDate) < now) {
     return { status: false, reason: `Expired Key, Contact: ${contact}` };
   }
 
@@ -188,11 +185,16 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: `Max Device Reached, Contact: ${contact}` };
   }
   if (shouldAdd) {
-    await Key.updateOne({ _id: key._id }, { $push: { devices: serial } });
+    update.$push = { devices: serial };
+  }
+
+  // Execute all updates in a single call to minimize latency
+  if (Object.keys(update).length > 0) {
+    await Key.updateOne({ _id: key._id }, update);
   }
 
   const { real, token } = generateTokenResult(game, userKey, serial);
-  const expiredStr = key.expiredDate ? new Date(key.expiredDate).toISOString().replace('T', ' ').substring(0, 19) : '';
+  const expiredStr = finalExpiredDate ? new Date(finalExpiredDate).toISOString().replace('T', ' ').substring(0, 19) : '';
 
   return {
     status: true,

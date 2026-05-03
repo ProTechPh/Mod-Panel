@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const body = {
-      game: formData.get('game') as string,
-      user_key: formData.get('user_key') as string,
-      serial: formData.get('serial') as string,
+      game: (formData.get('game') as string || '').trim(),
+      user_key: (formData.get('user_key') as string || '').trim(),
+      serial: (formData.get('serial') as string || '').trim(),
     };
 
     const parsed = connectSchema.safeParse(body);
