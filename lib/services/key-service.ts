@@ -9,6 +9,7 @@ import User from '@/lib/db/models/User';
 import GameSetting from '@/lib/db/models/GameSetting';
 import ServerConfig, { SingletonId } from '@/lib/db/models/ServerConfig';
 import IpTracker from '@/lib/db/models/IpTracker';
+import crypto from 'crypto';
 import type { Duration, KeyDoc, ServerConfigDoc, GameSettingDoc } from '@/types';
 
 let configCache: ServerConfigDoc | null = null;
@@ -213,7 +214,7 @@ export async function validateKey(game: string, userKey: string, serial: string,
       Floating: gameSetting?.features.floating ?? false,
       Memory: gameSetting?.features.memory ?? false,
       Setting: gameSetting?.features.setting ?? false,
-      patches: gameSetting?.patches || '',
+      patches: encryptPatches(gameSetting?.patches || ''),
       EXP: expiredStr,
       device: key.maxDevices,
       rng: Math.floor(Date.now() / 1000),
@@ -379,4 +380,18 @@ export async function deleteKeysByGame(game: string, registrator?: string) {
 
   const result = await Key.deleteMany(filter);
   return result.deletedCount;
+}
+function encryptPatches(text: string): string {
+  if (!text) return '';
+  try {
+    const key = 'Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E';
+    const crypto = require('crypto');
+    const cipher = crypto.createCipheriv('aes-256-ecb', Buffer.from(key), null);
+    let encrypted = cipher.update(text, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    return encrypted;
+  } catch (err) {
+    console.error('Encryption error:', err);
+    return '';
+  }
 }
