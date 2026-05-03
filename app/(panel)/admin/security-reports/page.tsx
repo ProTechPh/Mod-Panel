@@ -119,11 +119,13 @@ export default function SecurityReportsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Info className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
+                        <DialogTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Info className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle>Violation Details</DialogTitle>
