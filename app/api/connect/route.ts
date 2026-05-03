@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { validateKey } from '@/lib/services/key-service';
 import { connectSchema } from '@/lib/validators/key';
 import { getServerConfig } from '@/lib/services/server-config-service';
@@ -37,6 +38,8 @@ export async function POST(request: NextRequest) {
         game: (json.game || '').trim(),
         user_key: (json.user_key || '').trim(),
         serial: (json.serial || '').trim(),
+        ts: (json.ts || '').trim(),
+        sign: (json.sign || '').trim(),
       };
     } else {
       const formData = await request.formData();
@@ -44,7 +47,23 @@ export async function POST(request: NextRequest) {
         game: (formData.get('game') as string || '').trim(),
         user_key: (formData.get('user_key') as string || '').trim(),
         serial: (formData.get('serial') as string || '').trim(),
+        ts: (formData.get('ts') as string || '').trim(),
+        sign: (formData.get('sign') as string || '').trim(),
       };
+    }
+
+    if (!body.ts || !body.sign) {
+      return NextResponse.json({ status: false, reason: "Security Exception: 0xX_UNAUTHORIZED_REQ" });
+    }
+
+    const timestamp = Number(body.ts);
+    if (isNaN(timestamp) || Math.abs(Date.now() - timestamp) > 5 * 60 * 1000) {
+      return NextResponse.json({ status: false, reason: "Security Exception: 0xX_UNAUTHORIZED_REQ" });
+    }
+
+    const expectedSign = crypto.createHash('md5').update(`${body.game}-${body.user_key}-${body.serial}-${body.ts}-P7@t#R9q!w^X$mZ2&v*N(c)L_k`).digest('hex');
+    if (body.sign !== expectedSign) {
+      return NextResponse.json({ status: false, reason: "Security Exception: 0xX_UNAUTHORIZED_REQ" });
     }
 
     const parsed = connectSchema.safeParse(body);
