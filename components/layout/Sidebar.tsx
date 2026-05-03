@@ -14,7 +14,7 @@ const navItems = [
   { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ip-logs', label: 'IP Logs', icon: Network, minLevel: 1 },
-  { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 2 },
+  { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
   { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },

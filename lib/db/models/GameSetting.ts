@@ -27,6 +27,7 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
   telegramChannel: { type: String, default: '' },
   telegramGroup: { type: String, default: '' },
   features: { type: FeaturesSchema, default: () => ({}) },
+  patches: { type: String, default: '' },
   registrator: { type: String, required: true },
 }, { timestamps: true, collection: 'game_settings' });
 

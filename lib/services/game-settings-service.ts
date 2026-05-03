@@ -66,6 +66,7 @@ export async function updateGameSetting(gameCode: string, data: {
   telegramChannel?: string;
   telegramGroup?: string;
   features?: Record<string, boolean>;
+  patches?: string;
 }, registrator?: string) {
   await dbConnect();
   const filter: Record<string, unknown> = { gameCode: gameCode.toUpperCase() };

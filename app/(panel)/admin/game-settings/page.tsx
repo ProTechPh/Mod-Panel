@@ -28,6 +28,7 @@ interface GameSetting {
   telegramChannel: string;
   telegramGroup: string;
   features: Record<string, boolean>;
+  patches: string;
   registrator: string;
 }
 
@@ -58,7 +59,7 @@ export default function GameSettingsPage() {
 
   useEffect(() => { fetchGames(); }, [user]);
 
-  if (user?.level !== 1 && user?.level !== 2) return <p className="text-muted-foreground">Access denied</p>;
+  if (!user) return <p className="text-muted-foreground">Please log in</p>;
 
   const handleAdd = async () => {
     const res = await fetch('/api/game-settings', {
@@ -110,6 +111,7 @@ export default function GameSettingsPage() {
         telegramChannel: editGame.telegramChannel,
         telegramGroup: editGame.telegramGroup,
         features: editGame.features,
+        patches: editGame.patches,
       }),
     });
     if (res.ok) {
@@ -276,6 +278,16 @@ export default function GameSettingsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Patches (Lua)</Label>
+                <Textarea
+                  value={editGame.patches || ''}
+                  onChange={e => setEditGame({ ...editGame, patches: e.target.value })}
+                  placeholder="-- Custom Lua patches here..."
+                  className="font-mono text-xs h-32"
+                />
+                <p className="text-xs text-muted-foreground">This code will be executed on the client. Use <code>HexPatches.MemoryPatch</code> for memory edits.</p>
               </div>
               <Button onClick={handleSaveGame} size="sm">Save Game Settings</Button>
             </CardContent>
