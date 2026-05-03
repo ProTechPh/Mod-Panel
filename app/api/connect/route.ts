@@ -38,9 +38,10 @@ export async function POST(request: NextRequest) {
 
     const parsed = connectSchema.safeParse(body);
     if (!parsed.success) {
+      const errorMsg = parsed.error.issues.map(i => `${i.path}: ${i.message}`).join(', ');
       return NextResponse.json({
         status: false,
-        reason: 'Bad Parameter',
+        reason: `Invalid Parameters: ${errorMsg}`,
       });
     }
 
