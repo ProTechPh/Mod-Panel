@@ -111,15 +111,18 @@ export async function validateKey(game: string, userKey: string, serial: string,
     return { status: false, reason: config.maintenanceMessage || 'Under maintenance.' };
   }
 
-  // Normalize game to uppercase — keys are stored uppercase
-  const normalizedGame = game.toUpperCase();
-  const key = await Key.findOne({ game: normalizedGame, userKey }).lean() as KeyDoc | null;
+  // Find the key by userKey first to detect the correct game product
+  const key = await Key.findOne({ userKey }).lean() as KeyDoc | null;
   if (!key) {
     return { status: false, reason: 'Incorrect Key' };
   }
 
+  // Use the actual game product from the key record
+  const normalizedGame = key.game.toUpperCase();
+  const activeGame = normalizedGame; // Use this for game setting lookup
+
   const games = await getGameSettings();
-  const gameSetting = games.get(`${game.toUpperCase()}|${key.registrator}`);
+  const gameSetting = games.get(`${activeGame}|${key.registrator}`);
 
   const contact = await getTelegramContact(key.registrator, gameSetting);
 
