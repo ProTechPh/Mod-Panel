@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
-import { Clock, ShieldAlert } from 'lucide-react';
+import { Clock, ShieldAlert, Zap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface ServerConfig {
   maintenanceStatus: string;
@@ -16,6 +17,7 @@ interface ServerConfig {
   maintenanceStartedAt: string | null;
   announcement: string;
   announcementStatus: string;
+  freeKeyAdLink: string;
 }
 
 function useElapsed(startedAt: string | null, isOn: boolean) {
@@ -121,6 +123,26 @@ export default function ServerPage() {
     }
   };
 
+  const handleSaveAdsLink = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/server-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ freeKeyAdLink: config.freeKeyAdLink }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setConfig(updated);
+        toast.success('Ads Link saved');
+      } else {
+        toast.error('Failed to save ads link');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const isOn = config.maintenanceStatus === 'on';
   const isAnnOn = config.announcementStatus === 'on';
 
@@ -200,6 +222,33 @@ export default function ServerPage() {
             />
             <Button onClick={handleSaveAnnouncement} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
               {saving ? 'Saving...' : 'Update Announcement'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/50 border-purple-500/60 bg-purple-500/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Zap className="h-4 w-4 text-purple-500" />
+            Free Key Ads Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Global Ads Shortener Link</Label>
+            <Input
+              value={config.freeKeyAdLink || ''}
+              onChange={e => setConfig({ ...config, freeKeyAdLink: e.target.value })}
+              placeholder="e.g., https://reshortfly.com/api?api=TOKEN&url="
+              className="text-xs"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              This link will be used for all Free Key generation and extension requests across all resellers. 
+              Must end with <code>&url=</code> to support dynamic shortening.
+            </p>
+            <Button onClick={handleSaveAdsLink} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
+              {saving ? 'Saving...' : 'Update Global Ads Link'}
             </Button>
           </div>
         </CardContent>

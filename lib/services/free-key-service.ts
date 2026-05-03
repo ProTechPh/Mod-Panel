@@ -155,13 +155,25 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'VPN/Proxy detected. Free keys are not available for VPN users.' };
   }
 
-  // For 3h keys, we return an adUrl with a claim token. 
-  // The key is ONLY created after they return from the ad link.
+  // For 3h keys (with ads), we return an adUrl with a claim token. 
   if (duration === '3h') {
     const claimToken = await createClaimToken({ game, duration, registrator, ip });
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
-    const adUrl = await shortenUrl(targetUrl);
+    
+    // Fetch global ad link from server config
+    const ServerConfig = (await import('@/lib/db/models/ServerConfig')).default;
+    const serverConfig = await ServerConfig.findOne({}).lean();
+    
+    let adUrl: string | null = null;
+    const globalAdLink = serverConfig?.freeKeyAdLink;
+    
+    if (globalAdLink && globalAdLink.includes('&url=')) {
+      adUrl = `${globalAdLink}${encodeURIComponent(targetUrl)}${globalAdLink.includes('format=text') ? '' : '&format=text'}`;
+    } else {
+      adUrl = await shortenUrl(targetUrl);
+    }
+    
     return { adUrl };
   }
 
@@ -293,7 +305,19 @@ export async function generateExtendToken(game: string, ip: string, registrator:
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const targetUrl = `${baseUrl}/${registrator}/free-key?extendToken=${encodeURIComponent(claimToken)}`;
-  const adUrl = await shortenUrl(targetUrl);
+  
+  // Fetch global ad link from server config
+  const ServerConfig = (await import('@/lib/db/models/ServerConfig')).default;
+  const serverConfig = await ServerConfig.findOne({}).lean();
+  
+  let adUrl: string | null = null;
+  const globalAdLink = serverConfig?.freeKeyAdLink;
+
+  if (globalAdLink && globalAdLink.includes('&url=')) {
+    adUrl = `${globalAdLink}${encodeURIComponent(targetUrl)}${globalAdLink.includes('format=text') ? '' : '&format=text'}`;
+  } else {
+    adUrl = await shortenUrl(targetUrl);
+  }
 
   return { adUrl };
 }

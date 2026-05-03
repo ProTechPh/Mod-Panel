@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
-import { listAppLinks, addAppLink, deleteAppLink, getLatestModPanelRelease } from '@/lib/services/app-link-service';
+import { listAppLinks, addAppLink, deleteAppLink } from '@/lib/services/app-link-service';
 import { listGameSettings } from '@/lib/services/game-settings-service';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [appLinks, games, modPanelRelease] = await Promise.all([
+  const [appLinks, games] = await Promise.all([
     listAppLinks(),
     listGameSettings(user.level === 1 ? undefined : user.username),
-    getLatestModPanelRelease(),
   ]);
 
   const gameLinks = games
@@ -23,9 +22,7 @@ export async function GET(request: NextRequest) {
       registrator: g.registrator,
     }));
 
-  const modPanelLink = modPanelRelease ? [modPanelRelease] : [];
-
-  return NextResponse.json([...modPanelLink, ...appLinks, ...gameLinks]);
+  return NextResponse.json([...appLinks, ...gameLinks]);
 }
 
 export async function POST(request: NextRequest) {

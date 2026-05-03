@@ -44,4 +44,6 @@ next-env.d.ts
 .logs/*
 
 # Android projects
-/PROTECH NEW UI/
+/PROTECH MOD/
+# Lua projects
+/PROTECH INJECTOR/
