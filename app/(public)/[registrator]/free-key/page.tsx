@@ -222,7 +222,7 @@ export default function FreeKeyPage() {
           .then(d => {
             if (d.ip) setIpAddress(d.ip);
           })
-          .catch(() => {});
+          .catch(() => { });
       });
 
     fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
@@ -478,11 +478,10 @@ export default function FreeKeyPage() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 transition-colors ${
-                  tab === t.id
+                className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 transition-colors ${tab === t.id
                     ? 'bg-primary text-primary-foreground'
                     : 'hover:bg-muted text-muted-foreground'
-                }`}
+                  }`}
               >
                 {t.icon}
                 {t.label}
@@ -802,7 +801,7 @@ export default function FreeKeyPage() {
               <p className="text-xs text-muted-foreground text-center">
                 Download the official mod files for your selected games.
               </p>
-              
+
               <div className="space-y-2">
                 {games.filter(g => g.downloadLink).length === 0 ? (
                   <p className="text-center text-muted-foreground py-8 text-sm">No download links available.</p>
@@ -879,8 +878,8 @@ export default function FreeKeyPage() {
                         <div className={cn(
                           "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold",
                           i === 0 ? "bg-amber-500 text-white" :
-                          i === 1 ? "bg-slate-400 text-white" :
-                          i === 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
+                            i === 1 ? "bg-slate-400 text-white" :
+                              i === 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
                         )}>
                           #{i + 1}
                         </div>
@@ -897,9 +896,9 @@ export default function FreeKeyPage() {
                   ))}
                 </div>
               )}
-              
+
               <p className="text-[10px] text-center text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
-                Supporting us by watching ads helps keep the service free. Top users get our special appreciation!
+                Supporting us by claiming keys with ads helps keep the service free. Top users get our special appreciation!
               </p>
             </div>
           )}
