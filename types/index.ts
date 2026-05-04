@@ -136,6 +136,7 @@ export interface IpTrackerDoc {
   isProxy: boolean;
   isBanned: boolean;
   banReason: string;
+  isAdClaim: boolean;
 }
 
 export interface HistoryDoc {

@@ -13,11 +13,13 @@ const IpTrackerSchema = new Schema<IpTrackerDoc & Document>({
   isProxy: { type: Boolean, default: false },
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
+  isAdClaim: { type: Boolean, default: false },
 }, { collection: 'ip_tracker' });
 
 IpTrackerSchema.index({ ipAddress: 1, createdAt: -1 });
 IpTrackerSchema.index({ keyId: 1 });
 IpTrackerSchema.index({ ipAddress: 1, isBanned: 1 });
 IpTrackerSchema.index({ userId: 1 });
+IpTrackerSchema.index({ isAdClaim: 1, ipAddress: 1 });
 
 export default mongoose.models.IpTracker || mongoose.model<IpTrackerDoc & Document>('IpTracker', IpTrackerSchema);

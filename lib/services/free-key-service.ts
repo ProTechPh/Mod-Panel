@@ -189,6 +189,7 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     org: vpnCheck.org,
     isVpn: false,
     isProxy: false,
+    isAdClaim: false,
   });
 
   return { key: keyString };
@@ -252,6 +253,7 @@ export async function claimFreeKey(token: string, currentIp: string) {
     org: '',
     isVpn: false,
     isProxy: false,
+    isAdClaim: true,
   });
 
   return { key: keyString, game };
@@ -327,6 +329,19 @@ export async function extendFreeKey(token: string, currentIp: string) {
   // Add 1 hour to the current expiry
   const newExpiry = new Date(currentExpiry.getTime() + 60 * 60 * 1000);
   await Key.updateOne({ _id: key._id }, { expiredDate: newExpiry });
+
+  // Track extension as an ad claim
+  await IpTracker.create({
+    userId: '0',
+    ipAddress: currentIp,
+    generatorIp: currentIp,
+    keyId: key._id,
+    isp: '',
+    org: '',
+    isVpn: false,
+    isProxy: false,
+    isAdClaim: true,
+  });
 
   return { success: true, game, newExpiry: newExpiry.toISOString() };
 }
@@ -409,6 +424,7 @@ export async function getMyFreeKeyHistory(ip: string, registrator: string) {
         status: key.status,
         isActivated,
         isExpired,
+        isAdClaim: !!tracker.isAdClaim,
       };
     });
 
@@ -436,4 +452,35 @@ export async function resetFreeKeyDevices(userKey: string, ip: string) {
   await Key.updateOne({ _id: key._id }, { devices: [], $inc: { deviceResetCount: 1 } });
 
   return { success: true, resetsRemaining: 2 - (resetsDone + 1) };
+}
+
+export async function getTopAdClaimers(limit: number = 10) {
+  await dbConnect();
+
+  const results = await IpTracker.aggregate([
+    { $match: { isAdClaim: true } },
+    {
+      $group: {
+        _id: '$ipAddress',
+        count: { $sum: 1 },
+        lastClaim: { $max: '$createdAt' }
+      }
+    },
+    { $sort: { count: -1, lastClaim: -1 } },
+    { $limit: limit },
+    {
+      $project: {
+        _id: 0,
+        ip: '$_id',
+        count: 1,
+        lastClaim: 1
+      }
+    }
+  ]);
+
+  // Mask IP for privacy
+  return results.map(r => ({
+    ...r,
+    maskedIp: r.ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, '$1.***.***.$4'),
+  }));
 }

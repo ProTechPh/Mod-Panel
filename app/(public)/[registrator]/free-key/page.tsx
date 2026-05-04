@@ -42,6 +42,13 @@ interface KeyHistoryEntry {
   status: number;
   isActivated: boolean;
   isExpired: boolean;
+  isAdClaim?: boolean;
+}
+
+interface TopUser {
+  maskedIp: string;
+  count: number;
+  lastClaim: string;
 }
 
 interface StoreInfo {
@@ -49,7 +56,7 @@ interface StoreInfo {
   isActive: boolean;
 }
 
-type Tab = 'key' | 'history' | 'downloads';
+type Tab = 'key' | 'history' | 'downloads' | 'top-users';
 
 function formatCountdown(targetIso: string | null): string {
   if (!targetIso) return '—';
@@ -105,6 +112,8 @@ export default function FreeKeyPage() {
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [ipAddress, setIpAddress] = useState<string>('');
+  const [topUsers, setTopUsers] = useState<TopUser[]>([]);
+  const [topUsersLoading, setTopUsersLoading] = useState(false);
 
   // Fetch key for the selected game
   const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
@@ -139,10 +148,24 @@ export default function FreeKeyPage() {
     }
   }, [registrator]);
 
+  const fetchTopUsers = useCallback(async () => {
+    setTopUsersLoading(true);
+    try {
+      const res = await fetch('/api/free-key/top-users?limit=10');
+      const data = await res.json();
+      setTopUsers(Array.isArray(data) ? data : []);
+    } catch {
+      setTopUsers([]);
+    } finally {
+      setTopUsersLoading(false);
+    }
+  }, []);
+
   // Fetch history when tab switches to history
   useEffect(() => {
     if (tab === 'history') fetchHistory();
-  }, [tab, fetchHistory]);
+    if (tab === 'top-users') fetchTopUsers();
+  }, [tab, fetchHistory, fetchTopUsers]);
 
   const handleExtendKey = async () => {
     if (!game) return;
@@ -383,6 +406,7 @@ export default function FreeKeyPage() {
       label: history.length > 0 ? `History (${history.length})` : 'History',
       icon: <History className="h-3.5 w-3.5" />,
     },
+    { id: 'top-users', label: 'Top Users', icon: <Zap className="h-3.5 w-3.5" /> },
     { id: 'downloads', label: 'Downloads', icon: <Download className="h-3.5 w-3.5" /> },
   ];
 
@@ -726,7 +750,14 @@ export default function FreeKeyPage() {
                           <span className="text-xs text-muted-foreground font-mono">#{history.length - i}</span>
                           <span className="text-xs font-medium">{entry.game}</span>
                         </div>
-                        <HistoryStatusBadge entry={entry} />
+                        <div className="flex items-center gap-2">
+                          <HistoryStatusBadge entry={entry} />
+                          {entry.isAdClaim ? (
+                            <span className="text-[10px] px-1 py-0 rounded bg-blue-500/10 text-blue-500 font-bold border border-blue-500/20">With Ads</span>
+                          ) : (
+                            <span className="text-[10px] px-1 py-0 rounded bg-gray-500/10 text-gray-500 font-bold border border-gray-500/20">No Ads</span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -807,6 +838,69 @@ export default function FreeKeyPage() {
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ══ TOP USERS TAB ════════════════════════════════════════ */}
+          {tab === 'top-users' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold">Top Ad Supporters</h3>
+                  <p className="text-[10px] text-muted-foreground">Top users claiming keys with ads</p>
+                </div>
+                <button
+                  onClick={fetchTopUsers}
+                  disabled={topUsersLoading}
+                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  {topUsersLoading
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : <RefreshCw className="h-3.5 w-3.5" />
+                  }
+                </button>
+              </div>
+
+              {topUsersLoading && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {!topUsersLoading && topUsers.length === 0 && (
+                <p className="text-center text-muted-foreground py-8 text-sm">No ad claims recorded yet.</p>
+              )}
+
+              {!topUsersLoading && topUsers.length > 0 && (
+                <div className="space-y-2">
+                  {topUsers.map((u, i) => (
+                    <div key={u.maskedIp} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold",
+                          i === 0 ? "bg-amber-500 text-white" :
+                          i === 1 ? "bg-slate-400 text-white" :
+                          i === 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
+                        )}>
+                          #{i + 1}
+                        </div>
+                        <div>
+                          <p className="text-xs font-mono font-bold">User {u.maskedIp}</p>
+                          <p className="text-[10px] text-muted-foreground">Last claim: {formatDate(u.lastClaim)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-primary">{u.count} Claims</p>
+                        <p className="text-[9px] text-muted-foreground">With Ads</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <p className="text-[10px] text-center text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
+                Supporting us by watching ads helps keep the service free. Top users get our special appreciation!
+              </p>
             </div>
           )}
 
