@@ -72,6 +72,22 @@ export default function KeysPage() {
     }
   };
 
+  const handleBulkDelete = async (filter: 'unused' | 'expired', label: string) => {
+    if (!confirm(`Delete ALL ${label} keys? This cannot be undone.`)) return;
+    const res = await fetch('/api/keys/bulk-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filter }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast.success(`Deleted ${data.deleted} ${label} keys`);
+      fetchKeys(search);
+    } else {
+      toast.error(data.error || `Failed to clear ${label} keys`);
+    }
+  };
+
   const formatDuration = (d: number | string) => {
     if (d === '1h') return '1 Hour';
     if (d === '3h') return '3 Hours';
@@ -89,15 +105,27 @@ export default function KeysPage() {
 
       <Card className="border-border/50">
         <CardHeader>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Search keys..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              className="max-w-sm"
-            />
-            <Button variant="outline" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search keys..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                className="max-w-sm"
+              />
+              <Button variant="outline" onClick={handleSearch}><Search className="h-4 w-4" /></Button>
+            </div>
+            {user?.level === 1 && (
+              <div className="flex gap-2">
+                <Button variant="destructive" size="sm" onClick={() => handleBulkDelete('unused', 'unused')}>
+                  <Trash2 className="h-4 w-4 mr-2" />Clear Unused
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => handleBulkDelete('expired', 'expired')}>
+                  <Trash2 className="h-4 w-4 mr-2" />Clear Expired
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
