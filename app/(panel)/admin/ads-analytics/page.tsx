@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Area, AreaChart } from 'recharts';
-import { AdClick, TrendingUp, Eye, Clock, ShieldAlert, Users, BarChart3, Zap } from 'lucide-react';
+import { MousePointerClick, TrendingUp, Eye, Clock, ShieldAlert, Users, BarChart3, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AdClaimTrend {
@@ -99,7 +99,7 @@ export default function AdsAnalyticsPage() {
   }
 
   const statsCards = [
-    { label: 'Total Ad Claims', value: analytics.totalAdClaims, icon: AdClick, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: 'Total Ad Claims', value: analytics.totalAdClaims, icon: MousePointerClick, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { label: '3h Key Claims', value: analytics.total3hClaims, icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10' },
     { label: 'Key Extensions', value: analytics.totalExtensions, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { label: 'Active 3h Keys', value: analytics.total3hActive, icon: Clock, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },

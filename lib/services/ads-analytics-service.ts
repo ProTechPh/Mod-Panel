@@ -228,11 +228,11 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   ]);
 
   const topSupporters: TopAdSupporter[] = topSupportersRaw.map(s => ({
-    maskedIp: s._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
+    maskedIp: (s as any)._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
     totalClaims: s.totalClaims,
     threeHourClaims: s.threeHourClaims,
     extensions: s.extensions,
-    lastClaim: s.lastClaim instanceof Date ? s.lastClaim.toISOString() : String(s.lastClaim),
+    lastClaim: (s as any).lastClaim instanceof Date ? (s as any).lastClaim.toISOString() : String((s as any).lastClaim),
   }));
 
   // Daily ad stats (revenue proxy: ad impressions = ad claims)
