@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, RotateCcw, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Trash2, RotateCcw, Search, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Key {
@@ -29,6 +30,8 @@ export default function KeysPage() {
   const [keys, setKeys] = useState<Key[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState<{ title: string; description: string; action: () => void } | null>(null);
 
   const fetchKeys = async (searchVal = '') => {
     setLoading(true);
@@ -49,17 +52,32 @@ export default function KeysPage() {
   // Owner (level 1) sees all keys, Admin (level 2) sees only their own
   if (user?.level !== 1 && user?.level !== 2) return <p className="text-muted-foreground">Access denied</p>;
 
+  const showConfirm = (title: string, description: string, action: () => void) => {
+    setConfirmData({ title, description, action });
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (confirmData?.action) confirmData.action();
+    setConfirmOpen(false);
+  };
+
   const handleSearch = () => fetchKeys(search);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this key?')) return;
-    const res = await fetch(`/api/keys/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      toast.success('Key deleted');
-      fetchKeys(search);
-    } else {
-      toast.error('Failed to delete key');
-    }
+  const handleDelete = (id: string) => {
+    showConfirm(
+      'Delete Key',
+      'Are you sure you want to delete this key? This action cannot be undone.',
+      async () => {
+        const res = await fetch(`/api/keys/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          toast.success('Key deleted');
+          fetchKeys(search);
+        } else {
+          toast.error('Failed to delete key');
+        }
+      }
+    );
   };
 
   const handleReset = async (id: string) => {
@@ -72,20 +90,25 @@ export default function KeysPage() {
     }
   };
 
-  const handleBulkDelete = async (filter: 'unused' | 'expired', label: string) => {
-    if (!confirm(`Delete ALL ${label} keys? This cannot be undone.`)) return;
-    const res = await fetch('/api/keys/bulk-delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filter }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      toast.success(`Deleted ${data.deleted} ${label} keys`);
-      fetchKeys(search);
-    } else {
-      toast.error(data.error || `Failed to clear ${label} keys`);
-    }
+  const handleBulkDelete = (filter: 'unused' | 'expired', label: string) => {
+    showConfirm(
+      `Clear ${label.charAt(0).toUpperCase() + label.slice(1)} Keys`,
+      `Are you sure you want to delete ALL ${label} keys? This action cannot be undone.`,
+      async () => {
+        const res = await fetch('/api/keys/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filter }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success(`Deleted ${data.deleted} ${label} keys`);
+          fetchKeys(search);
+        } else {
+          toast.error(data.error || `Failed to clear ${label} keys`);
+        }
+      }
+    );
   };
 
   const formatDuration = (d: number | string) => {
@@ -179,6 +202,27 @@ export default function KeysPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle>{confirmData?.title}</DialogTitle>
+            </div>
+          </DialogHeader>
+          <DialogDescription>{confirmData?.description}</DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleConfirm}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
