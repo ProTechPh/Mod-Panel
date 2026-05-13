@@ -120,6 +120,41 @@ export function DownloadSection() {
             </p>
           )}
         </div>
+
+        {/* Virtual Apps Section */}
+        <div className="mt-16">
+          <h3 className="section-title text-2xl font-bold tracking-tight text-center mb-8">
+            Virtual Apps
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {VIRTUAL_APPS.map((app, index) => (
+              <div key={index} className="download-card glass-card rounded-xl p-5 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="feature-icon-bg" style={{ backgroundColor: 'oklch(0.7 0.1 150 / 15%)' }}>
+                    <Shield className="size-4" style={{ color: 'oklch(0.7 0.1 150)' }} />
+                  </div>
+                  {app.recommended && (
+                    <span className="download-badge text-amber-400 bg-amber-400/10 border-amber-400/20">
+                      <Zap className="size-3" /> Recommended
+                    </span>
+                  )}
+                </div>
+                <h4 className="font-medium text-sm">{app.name}</h4>
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-2" 
+                  asChild
+                >
+                  <a href={app.url} target="_blank" rel="noopener noreferrer">
+                    <Download className="size-3 mr-2" />
+                    Download
+                  </a>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
