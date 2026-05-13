@@ -40,18 +40,19 @@ export async function handleUpdate(update: any) {
   if (!update.message?.text) return;
 
   const chatId = update.message.chat.id;
-  const telegramId = update.message.from.id;
   const text = update.message.text.trim();
 
+  // Always ensure commands are registered so / shows suggestions
+  await setBotCommands();
+
   if (text === '/start') {
-    await setBotCommands();
     await sendMessage(chatId, '<b>👋 Welcome!</b>\n\nAvailable commands:\n/top — Show top ad performers');
     return;
   }
 
   if (text === '/top') {
     try {
-      await sendMessage(chatId, '📊 Fetching top performers...');
+      await sendMessage(chatId, 'Fetching top performers...');
       const analytics = await getAdsAnalytics();
       const performers = analytics.topPerformers.slice(0, 10);
 
