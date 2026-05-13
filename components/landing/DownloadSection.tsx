@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
 import { Button } from '@/components/ui/button';
-import { Download, Smartphone } from 'lucide-react';
+import { Download, Smartphone, FileText, Zap } from 'lucide-react';
 import '@/components/landing/landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -13,6 +13,8 @@ interface DownloadLink {
   _id: string;
   appName: string;
   downloadUrl: string;
+  version?: string;
+  fileSize?: string;
 }
 
 export function DownloadSection() {
@@ -78,10 +80,24 @@ export function DownloadSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {links.map(link => (
-            <div key={link._id} className="download-card glass-card rounded-xl p-6 flex flex-col items-center gap-4">
-              <Smartphone className="size-8 text-muted-foreground" />
+            <div key={link._id} className="download-card glass-card rounded-xl p-6 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <div className="feature-icon-bg" style={{ backgroundColor: 'oklch(0.5 0.2 270 / 15%)' }}>
+                  <Smartphone className="size-5" style={{ color: 'oklch(0.5 0.2 270)' }} />
+                </div>
+                {link.version && (
+                  <span className="download-badge text-emerald-400">
+                    <Zap className="size-3" /> v{link.version}
+                  </span>
+                )}
+              </div>
               <h3 className="font-semibold">{link.appName}</h3>
-              <Button className="w-full" nativeButton={false} render={<a href={link.downloadUrl} target="_blank" rel="noopener noreferrer" />}>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <FileText className="size-3" /> {link.fileSize || 'N/A'}
+                </span>
+              </div>
+              <Button className="w-full mt-auto" nativeButton={false} render={<a href={link.downloadUrl} target="_blank" rel="noopener noreferrer" />}>
                 <Download className="size-4 mr-2" />
                 Download
               </Button>

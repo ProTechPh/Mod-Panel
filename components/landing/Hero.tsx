@@ -4,8 +4,6 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { APP_NAME } from '@/lib/constants/app';
 import '@/components/landing/landing.css';
 
@@ -101,19 +99,19 @@ export function Hero() {
           ref={taglineRef}
           className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto"
         >
-          Premium game mod management. Secure keys, real-time status, seamless downloads.
+          Dominate every match. Undetectable mods, instant activation, zero compromises.
         </p>
 
         <div ref={ctaRef} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/register"
-            className={cn(buttonVariants({ size: 'lg' }), 'min-w-36')}
+            className="hero-cta-primary inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/40 hover:scale-105 active:scale-95"
           >
             Get Started
           </Link>
           <Link
             href="/login"
-            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'min-w-36')}
+            className="hero-cta-secondary inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white/80 border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 hover:scale-105 active:scale-95"
           >
             Login
           </Link>

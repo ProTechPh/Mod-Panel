@@ -16,17 +16,18 @@ interface FeatureItem {
   description: string;
   icon: React.ReactNode;
   size: 'large' | 'small';
+  accent: string;
 }
 
 const FEATURES: FeatureItem[] = [
-  { name: 'ESP', description: 'See through walls with advanced overlay rendering', icon: <Eye className="size-5" />, size: 'large' },
-  { name: 'Aim', description: 'Precision targeting with customizable assist settings', icon: <Target className="size-5" />, size: 'large' },
-  { name: 'Silent Aim', description: 'Undetectable targeting that keeps you under the radar', icon: <Crosshair className="size-5" />, size: 'large' },
-  { name: 'Bullet Track', description: 'Smart bullet trajectory prediction and correction', icon: <CircleDot className="size-5" />, size: 'small' },
-  { name: 'Item', description: 'Enhanced loot visibility and item highlighting', icon: <Package className="size-5" />, size: 'small' },
-  { name: 'Memory', description: 'Direct memory access for reading game state data', icon: <Brain className="size-5" />, size: 'small' },
-  { name: 'Floating', description: 'Customizable floating overlay with live info panels', icon: <MoveUp className="size-5" />, size: 'small' },
-  { name: 'Setting', description: 'Full configuration panel for all mod parameters', icon: <Settings className="size-5" />, size: 'small' },
+  { name: 'ESP', description: 'See through walls with advanced overlay rendering', icon: <Eye className="size-5" />, size: 'large', accent: '#4ade80' },
+  { name: 'Aim', description: 'Precision targeting with customizable assist settings', icon: <Target className="size-5" />, size: 'large', accent: '#f87171' },
+  { name: 'Silent Aim', description: 'Undetectable targeting that keeps you under the radar', icon: <Crosshair className="size-5" />, size: 'large', accent: '#c084fc' },
+  { name: 'Bullet Track', description: 'Smart bullet trajectory prediction and correction', icon: <CircleDot className="size-5" />, size: 'small', accent: '#60a5fa' },
+  { name: 'Item', description: 'Enhanced loot visibility and item highlighting', icon: <Package className="size-5" />, size: 'small', accent: '#fbbf24' },
+  { name: 'Memory', description: 'Direct memory access for reading game state data', icon: <Brain className="size-5" />, size: 'small', accent: '#a78bfa' },
+  { name: 'Floating', description: 'Customizable floating overlay with live info panels', icon: <MoveUp className="size-5" />, size: 'small', accent: '#2dd4bf' },
+  { name: 'Setting', description: 'Full configuration panel for all mod parameters', icon: <Settings className="size-5" />, size: 'small', accent: '#94a3b8' },
 ];
 
 function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }) {
@@ -36,21 +37,24 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
     const el = cardRef.current;
     if (!el) return;
 
-    gsap.from(el, {
-      y: 60,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
-        toggleActions: 'play none none none',
-      },
-      delay: index * 0.08,
-    });
+    gsap.fromTo(el,
+      { y: 60, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+        delay: index * 0.08,
+      }
+    );
 
-    const xSet = gsap.quickTo(el, 'rotateY', { duration: 0.2, ease: 'power2.out' });
-    const ySet = gsap.quickTo(el, 'rotateX', { duration: 0.2, ease: 'power2.out' });
+    const xSet = gsap.quickTo(el, 'rotationY', { duration: 0.2, ease: 'power2.out' });
+    const ySet = gsap.quickTo(el, 'rotationX', { duration: 0.2, ease: 'power2.out' });
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
@@ -85,7 +89,11 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
       style={{ perspective: '800px' }}
     >
       <div className="tilt-card-inner flex flex-col gap-3">
-        <div className="text-muted-foreground">{feature.icon}</div>
+        <div className="feature-icon-glow" style={{ '--accent-color': feature.accent } as React.CSSProperties}>
+          <div className="feature-icon-bg" style={{ backgroundColor: feature.accent + '15' }}>
+            <span style={{ color: feature.accent }}>{feature.icon}</span>
+          </div>
+        </div>
         <h3 className="text-base font-semibold">{feature.name}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
       </div>

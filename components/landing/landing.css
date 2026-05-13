@@ -106,3 +106,101 @@
   .status-dot-active { animation: none; }
   .tilt-card-inner { transition: none; }
 }
+
+/* Feature icon backgrounds */
+.feature-icon-glow {
+  position: relative;
+  display: inline-block;
+}
+
+.feature-icon-glow::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.2;
+  filter: blur(12px);
+  transition: opacity 0.3s;
+}
+
+.feature-icon-glow:hover::before {
+  opacity: 0.4;
+}
+
+.feature-icon-bg {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: transform 0.2s;
+}
+
+.feature-icon-bg:hover {
+  transform: scale(1.05);
+}
+
+/* Hero CTA buttons */
+.hero-cta-primary {
+  background: linear-gradient(135deg, oklch(0.65 0.2 150), oklch(0.55 0.18 180));
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-cta-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.7 0.22 150), oklch(0.6 0.2 180));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.hero-cta-primary:hover::before {
+  opacity: 1;
+}
+
+.hero-cta-primary span,
+.hero-cta-primary svg {
+  position: relative;
+  z-index: 1;
+}
+
+/* Download badges */
+.download-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: oklch(0.25 0 0 / 60%);
+  border: 1px solid oklch(1 0 0 / 10%);
+}
+
+/* Spotlight cursor effect */
+.spotlight-cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    oklch(0.5 0.15 270 / 0.08),
+    transparent 40%
+  );
+}
+
+/* Scroll indicator */
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(8px); opacity: 0.5; }
+}
+
+.scroll-indicator {
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
