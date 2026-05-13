@@ -10,6 +10,7 @@ import { GrainOverlay } from './GrainOverlay';
 import { GradientOrbs } from './GradientOrbs';
 import { SpotlightCursor } from './SpotlightCursor';
 import { ScrollIndicator } from './ScrollIndicator';
+import { TikTokLiveSection } from './TikTokLiveSection';
 import '@/components/landing/landing.css';
 
 export default function LandingPage() {
@@ -29,6 +30,7 @@ export default function LandingPage() {
         <Features />
         <ServerStatus />
         <DownloadSection />
+        <TikTokLiveSection />
         <Footer />
       </div>
     </main>

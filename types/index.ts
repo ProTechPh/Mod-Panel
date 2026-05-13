@@ -214,3 +214,19 @@ export interface OrderDoc {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface TikTokLiveStreamerDoc {
+  _id: ObjectId;
+  key: string;
+  tiktokUsername: string;
+  streamerName: string;
+  contact: string;
+  status: 'pending' | 'active' | 'inactive' | 'expired';
+  registrator: string;
+  liveDuration: number;
+  lastLive: Date | null;
+  lastLiveDuration: number;
+  autoExtendEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

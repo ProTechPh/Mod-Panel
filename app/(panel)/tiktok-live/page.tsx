@@ -1,0 +1,424 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/components/shared/AuthProvider';
+import { toast } from 'sonner';
+import {
+  Plus, Trash2, Pencil, Check, Clock, User, Smartphone, AlertCircle, RefreshCw,
+  TrendingUp, Users, Calendar, MoreVertical
+} from 'lucide-react';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+
+interface Streamer {
+  _id: string;
+  key: string;
+  tiktokUsername: string;
+  streamerName: string;
+  contact: string;
+  status: 'pending' | 'active' | 'inactive' | 'expired';
+  registrator: string;
+  liveDuration: number;
+  lastLive: string;
+  lastLiveDuration: number;
+  autoExtendEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function TikTokLivePage() {
+  const { user } = useAuth();
+  const [streamers, setStreamers] = useState<Streamer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingStreamer, setEditingStreamer] = useState<Streamer | null>(null);
+
+  const [registrarForm, setRegistrarForm] = useState({
+    tiktokUsername: '',
+    streamerName: '',
+    contact: '',
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    fetchStreamers();
+  }, [user, filter]);
+
+  const fetchStreamers = async () => {
+    try {
+      setLoading(true);
+      const res = await await fetch('/api/tiktok-live-streamers');
+      if (res.ok) {
+        const data = await res.json();
+        setStreamers(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      toast.error('Failed to load streamers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredStreamers = streamers.filter(s => {
+    const matchFilter = filter === 'all' ? true : s.status === filter;
+    const matchSearch = s.tiktokUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.streamerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.key.includes(searchTerm);
+    return matchFilter && matchSearch;
+  });
+
+  const handleExtend = async (streamerId: string) => {
+    try {
+      const res = await fetch(`/api/tiktok-live-streamers/extend?id=${streamerId}`, { method: 'POST' });
+      if (res.ok) {
+        toast.success('Key extended successfully!');
+        fetchStreamers();
+      } else {
+        toast.error('Failed to extend key');
+      }
+    } catch (error) {
+      toast.error('Failed to extend key');
+    }
+  };
+
+  const handleDelete = async (streamerId: string) => {
+    if (!confirm('Delete this streamer?')) return;
+    try {
+      const res = await fetch(`/api/tiktok-live-streamers?id=${streamerId}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Streamer deleted');
+        fetchStreamers();
+      } else {
+        toast.error('Failed to delete streamer');
+      }
+    } catch (error) {
+      toast.error('Failed to delete streamer');
+    }
+  };
+
+  const handleToggleExtend = async (streamerId: string, current: boolean) => {
+    try {
+      const res = await fetch('/api/tiktok-live-streamers/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: streamerId,
+          autoExtendEnabled: !current,
+        }),
+      });
+      if (res.ok) {
+        toast.success(`Auto-extend ${!current ? 'enabled' : 'disabled'}`);
+        fetchStreamers();
+      }
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const startLive = async (streamerId: string) => {
+    try {
+      const res = await fetch('/api/tiktok-live-streamers/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: streamerId }),
+      });
+      if (res.ok) {
+        toast.success('Live session started!');
+        fetchStreamers();
+      }
+    } catch (error) {
+      toast.error('Failed to start live session');
+    }
+  };
+
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
+
+  const statusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      active: 'bg-green-500/15 text-green-400 border-green-500/30',
+      inactive: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
+      expired: 'bg-red-500/15 text-red-400 border-red-500/30',
+    };
+    return colors[status] || 'bg-muted text-muted-foreground';
+  };
+
+  if (!user || (user.level !== 1 && user.level !== 2)) {
+    return <div className="text-muted-foreground p-8">Access denied</div>;
+  }
+
+  return (
+    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">TikTok Live Streamers</h2>
+          <p className="text-muted-foreground">Manage your TikTok live streamers and their keys</p>
+        </div>
+        <Button onClick={() => setShowAddDialog(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Register Streamer
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Streamers</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{streamers.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              All registered streamers
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Streamers</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {streamers.filter(s => s.status === 'active').length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Currently live or recently active
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Live Time</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatTime(streamers.reduce((acc, s) => acc + s.liveDuration, 0))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Combined live duration
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="all" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+          </TabsList>
+          
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search streamers..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
+            <Select value={filter} onValueChange={v => setFilter(v as any)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <TabsContent value="all" className="space-y-4">
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : (
+            <Card className="border-border/50">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Streamer</TableHead>
+                      <TableHead>Key</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Live Time</TableHead>
+                      <TableHead>Last Live</TableHead>
+                      <TableHead>Auto-Extend</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStreamers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          No streamers found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredStreamers.map(streamer => (
+                        <TableRow key={streamer._id}>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{streamer.streamerName}</span>
+                              <span className="text-sm text-muted-foreground">@{streamer.tiktokUsername}</span>
+                              <span className="text-xs text-muted-foreground">{streamer.contact}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">{streamer.key}</TableCell>
+                          <TableCell>
+                            <Badge className={statusColor(streamer.status)}>
+                              {streamer.status.charAt(0).toUpperCase() + streamer.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{formatTime(streamer.liveDuration)}</TableCell>
+                          <TableCell>
+                            {streamer.lastLive ? (
+                              <div className="flex flex-col">
+                                <span className="text-sm">
+                                  {new Date(streamer.lastLive).toLocaleDateString()}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatTime(streamer.lastLiveDuration)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground italic">Never</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleExtend(streamer._id, streamer.autoExtendEnabled)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {streamer.autoExtendEnabled ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingStreamer(streamer);
+                                  setShowAddDialog(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startLive(streamer._id)}
+                              >
+                                <RefreshCw className="h-4 w-4 text-blue-500" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleExtend(streamer._id)}
+                                title="Extend Key"
+                              >
+                                <Clock className="h-4 w-4 text-purple-500" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(streamer._id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingStreamer ? 'Edit Streamer' : 'Register New Streamer'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label>TikTok Username</Label>
+              <Input
+                value={registrarForm.tiktokUsername}
+                onChange={e => setRegistrarForm({ ...registrarForm, tiktokUsername: e.target.value })}
+                placeholder="@username"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Display Name</Label>
+              <Input
+                value={registrarForm.streamerName}
+                onChange={e => setRegistrarForm({ ...registrarForm, streamerName: e.target.value })}
+                placeholder="Streamer name"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Contact</Label>
+              <Input
+                value={registrarForm.contact}
+                onChange={e => setRegistrarForm({ ...registrarForm, contact: e.target.value })}
+                placeholder="Telegram or phone"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowAddDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                // Handle save
+                setShowAddDialog(false);
+              }}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
