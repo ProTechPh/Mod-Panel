@@ -112,7 +112,7 @@ export default function LoginForm() {
     sessionStorage.setItem('telegram_auth_mode', 'login');
     const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID;
     const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${origin}&request_access=write`;
+    window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${origin}/auth/telegram/callback&request_access=write`;
   };
 
   return (
