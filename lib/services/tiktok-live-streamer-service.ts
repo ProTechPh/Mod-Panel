@@ -44,15 +44,32 @@ export async function getStreamerByKey(key: string) {
  * Generate a new streamer key without details
  */
 export async function generateStreamerKey(registrator: string): Promise<{ success: boolean; key?: string; error?: string }> {
+  let generatedKey = '';
+
   try {
     await dbConnect();
     
     // Generate a unique license key
-    const key = `TL-${generateKeyString(12)}`;
+    generatedKey = `TL-${generateKeyString(12)}`;
+    const defaultExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Create the matching key record so the public register page and cron jobs
+    // resolve the same source of truth.
+    await Key.create({
+      game: 'TIKTOK-LIVE',
+      userKey: generatedKey,
+      duration: 7,
+      maxDevices: 1,
+      devices: [],
+      status: 1,
+      registrator,
+      isFreeKey: false,
+      expiredDate: defaultExpiry,
+    });
     
     // Create a placeholder streamer profile
     const streamer = await TikTokLiveStreamer.create({
-      key,
+      key: generatedKey,
       registrator,
       tiktokUsername: 'Pending...',
       streamerName: 'New Streamer',
@@ -62,6 +79,10 @@ export async function generateStreamerKey(registrator: string): Promise<{ succes
     
     return { success: true, key: streamer.key };
   } catch (error) {
+    if (generatedKey) {
+      await Key.deleteOne({ userKey: generatedKey }).catch(() => undefined);
+      await TikTokLiveStreamer.deleteOne({ key: generatedKey }).catch(() => undefined);
+    }
     Logger.error('Key generation error', { error: error instanceof Error ? error.message : String(error) });
     return { success: false, error: 'Failed to generate key' };
   }
@@ -79,33 +100,30 @@ export async function registerStreamer(key: string, data: {
   try {
     await dbConnect();
     
-    // Check if key exists and belongs to registrator
-    const existingKey = await Key.findOne({ 
-      userKey: key,
-      registrator: data.registrator
-    }).lean();
-    
-    if (!existingKey) {
+    // The panel generates a placeholder streamer record, so registration should
+    // update that existing record instead of looking for a separate Key doc.
+    const existingStreamer = await TikTokLiveStreamer.findOne({
+      key,
+      registrator: data.registrator,
+    });
+
+    if (!existingStreamer) {
       return { success: false, error: 'Key not found or does not belong to this admin' };
     }
-    
-    // Check if streamer already registered with this key
-    const existingStreamer = await TikTokLiveStreamer.findOne({ key }).lean();
-    if (existingStreamer) {
+
+    if (existingStreamer.tiktokUsername !== 'Pending...' && existingStreamer.streamerName !== 'New Streamer') {
       return { success: false, error: 'This key is already registered for a live streamer' };
     }
-    
-    // Create streamer profile
-    const streamer = await TikTokLiveStreamer.create({
-      key,
-      tiktokUsername: data.tiktokUsername,
-      streamerName: data.streamerName,
-      contact: data.contact,
-      registrator: data.registrator,
-      status: 'pending',
-    });
-    
-    return { success: true, ...streamer.toObject() };
+
+    existingStreamer.tiktokUsername = data.tiktokUsername;
+    existingStreamer.streamerName = data.streamerName;
+    existingStreamer.contact = data.contact;
+    existingStreamer.status = 'pending';
+    existingStreamer.updatedAt = new Date();
+
+    await existingStreamer.save();
+
+    return { success: true, ...existingStreamer.toObject() };
   } catch (error) {
     Logger.error('Streamer registration error', { error: error instanceof Error ? error.message : String(error) });
     return { success: false, error: 'Failed to register streamer' };
