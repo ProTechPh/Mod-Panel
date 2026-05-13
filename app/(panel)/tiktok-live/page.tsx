@@ -41,7 +41,8 @@ export default function TikTokLivePage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [editingStreamer, setEditingStreamer] = useState<Streamer | null>(null);
   const [registrarForm, setRegistrarForm] = useState({
@@ -176,7 +177,7 @@ export default function TikTokLivePage() {
 
       if (res.ok) {
         toast.success(editingStreamer ? 'Streamer updated' : 'Streamer registered');
-        setShowAddDialog(false);
+        setShowEditDialog(false);
         fetchStreamers();
       } else {
         const data = await res.json();
@@ -214,20 +215,14 @@ export default function TikTokLivePage() {
           <h2 className="text-2xl font-bold tracking-tight">TikTok Live Streamers</h2>
           <p className="text-muted-foreground">Generate and manage license keys for TikTok live streamers</p>
         </div>
-        <Dialog open={showAddDialog} onOpenChange={(open) => {
-          setShowAddDialog(open);
+        <Dialog open={showGenerateDialog} onOpenChange={(open) => {
+          setShowGenerateDialog(open);
           if (!open) {
             setGeneratedKey(null);
-            setEditingStreamer(null);
-            setRegistrarForm({
-              tiktokUsername: '',
-              streamerName: '',
-              contact: ''
-            });
           }
         }}>
-          <DialogTrigger>
-            <Button onClick={() => setShowAddDialog(true)}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setShowGenerateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Generate Key
             </Button>
@@ -432,7 +427,7 @@ export default function TikTokLivePage() {
                                     streamerName: streamer.streamerName,
                                     contact: streamer.contact
                                   });
-                                  setShowAddDialog(true);
+                                  setShowEditDialog(true);
                                 }}
                               >
                                 <Pencil className="h-4 w-4" />
@@ -472,13 +467,11 @@ export default function TikTokLivePage() {
         </TabsContent>
       </Tabs>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editingStreamer ? 'Edit Streamer' : 'Register New Streamer'}
-            </DialogTitle>
+            <DialogTitle>Edit Streamer</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-1.5">
@@ -508,12 +501,12 @@ export default function TikTokLivePage() {
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => setShowAddDialog(false)}
+                onClick={() => setShowEditDialog(false)}
               >
                 Cancel
               </Button>
               <Button onClick={handleSave}>
-                Save
+                Save Changes
               </Button>
             </div>
           </div>
