@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
-import { listStreamers, deleteStreamer } from '@/lib/services/tiktok-live-streamer-service';
+import { listStreamers, deleteStreamer, generateStreamerKey } from '@/lib/services/tiktok-live-streamer-service';
 import { Logger } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
@@ -15,6 +15,19 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     Logger.error('List streamers error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to fetch streamers' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const user = await authenticate(request);
+  if (!user || user.level > 2) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const result = await generateStreamerKey(user.username);
+    return NextResponse.json(result);
+  } catch (error) {
+    Logger.error('Generate key error', { error: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ error: 'Failed to generate key' }, { status: 500 });
   }
 }
 

@@ -42,13 +42,7 @@ export default function TikTokLivePage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingStreamer, setEditingStreamer] = useState<Streamer | null>(null);
-
-  const [registrarForm, setRegistrarForm] = useState({
-    tiktokUsername: '',
-    streamerName: '',
-    contact: '',
-  });
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -58,7 +52,7 @@ export default function TikTokLivePage() {
   const fetchStreamers = async () => {
     try {
       setLoading(true);
-      const res = await await fetch('/api/tiktok-live-streamers');
+      const res = await fetch('/api/tiktok-live-streamers');
       if (res.ok) {
         const data = await res.json();
         setStreamers(Array.isArray(data) ? data : []);
@@ -70,25 +64,19 @@ export default function TikTokLivePage() {
     }
   };
 
-  const filteredStreamers = streamers.filter(s => {
-    const matchFilter = filter === 'all' ? true : s.status === filter;
-    const matchSearch = s.tiktokUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.streamerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.key.includes(searchTerm);
-    return matchFilter && matchSearch;
-  });
-
-  const handleExtend = async (streamerId: string) => {
+  const handleGenerateKey = async () => {
     try {
-      const res = await fetch(`/api/tiktok-live-streamers/extend?id=${streamerId}`, { method: 'POST' });
-      if (res.ok) {
-        toast.success('Key extended successfully!');
+      const res = await fetch('/api/tiktok-live-streamers', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setGeneratedKey(data.key);
+        toast.success('License key generated!');
         fetchStreamers();
       } else {
-        toast.error('Failed to extend key');
+        toast.error(data.error || 'Failed to generate key');
       }
     } catch (error) {
-      toast.error('Failed to extend key');
+      toast.error('Failed to generate key');
     }
   };
 
@@ -167,12 +155,57 @@ export default function TikTokLivePage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">TikTok Live Streamers</h2>
-          <p className="text-muted-foreground">Manage your TikTok live streamers and their keys</p>
+          <p className="text-muted-foreground">Generate and manage license keys for TikTok live streamers</p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Register Streamer
-        </Button>
+        <Dialog open={showAddDialog} onOpenChange={(open) => {
+          setShowAddDialog(open);
+          if (!open) setGeneratedKey(null);
+        }}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Generate Key
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Generate Streamer Key</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {!generatedKey ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Generating a new license key will create a pending entry in the list. 
+                    The streamer will use this key to register their own details.
+                  </p>
+                  <Button onClick={handleGenerateKey} className="w-full">
+                    Confirm Generation
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg flex flex-col items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New License Key</span>
+                    <code className="text-2xl font-bold tracking-widest text-primary">{generatedKey}</code>
+                  </div>
+                  <p className="text-xs text-center text-amber-500">
+                    Copy and send this key to the streamer. They must use it to complete their profile.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedKey);
+                      toast.success('Key copied to clipboard');
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}

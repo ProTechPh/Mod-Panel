@@ -41,6 +41,33 @@ export async function getStreamerByKey(key: string) {
 }
 
 /**
+ * Generate a new streamer key without details
+ */
+export async function generateStreamerKey(registrator: string): Promise<{ success: boolean; key?: string; error?: string }> {
+  try {
+    await dbConnect();
+    
+    // Generate a unique license key
+    const key = `TL-${generateKeyString(12)}`;
+    
+    // Create a placeholder streamer profile
+    const streamer = await TikTokLiveStreamer.create({
+      key,
+      registrator,
+      tiktokUsername: 'Pending...',
+      streamerName: 'New Streamer',
+      contact: 'N/A',
+      status: 'pending',
+    });
+    
+    return { success: true, key: streamer.key };
+  } catch (error) {
+    Logger.error('Key generation error', { error: error instanceof Error ? error.message : String(error) });
+    return { success: false, error: 'Failed to generate key' };
+  }
+}
+
+/**
  * Register a new streamer with their key
  */
 export async function registerStreamer(key: string, data: {
