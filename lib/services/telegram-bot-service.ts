@@ -63,8 +63,8 @@ export async function handleUpdate(update: any) {
       let message = '<b>🏆 Top Ad Performers</b>\n\n';
       performers.forEach((p, idx) => {
         const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
-        message += `${medal} <b>${p.registrator}</b>\n`;
-        message += `   Keys: ${p.totalKeys} | Active: ${p.activeKeys} | Claims: ${p.adClaims} | $${p.revenueEstimate}\n\n`;
+        message += `${medal} <b>${p.registrator}</b> (IP)\n`;
+        message += `   Keys: ${p.totalKeys} | Active: ${p.activeKeys} | Claims: ${p.adClaims}\n\n`;
       });
 
       await sendMessage(chatId, message);

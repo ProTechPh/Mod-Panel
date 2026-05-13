@@ -29,7 +29,6 @@ export interface TopAdPerformer {
   activeKeys: number;
   adClaims: number;
   extensions: number;
-  revenueEstimate: number;
   lastActivity: string;
 }
 
@@ -246,17 +245,26 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
     lastClaim: (s as any).lastClaim instanceof Date ? (s as any).lastClaim.toISOString() : String((s as any).lastClaim),
   }));
 
-  // Top performers by registrator (users who generated the most free keys/ad claims)
-  const topPerformersRaw = await Key.aggregate<TopAdPerformer>([
-    { $match: { isFreeKey: true } },
+  // Top performers by IP (end users who claim the most free keys via ads)
+  const topPerformersRaw = await IpTracker.aggregate<TopAdPerformer>([
+    { $match: { isAdClaim: true, isBanned: false } },
+    {
+      $lookup: {
+        from: 'keys',
+        localField: 'keyId',
+        foreignField: '_id',
+        as: 'keyInfo',
+      },
+    },
+    { $unwind: { path: '$keyInfo', preserveNullAndEmptyArrays: true } },
     {
       $group: {
-        _id: '$registrator',
+        _id: '$ipAddress',
         totalKeys: { $sum: 1 },
         activeKeys: {
           $sum: {
             $cond: [
-              { $and: [{ $eq: ['$status', 1] }, { $gt: ['$expiredDate', now] }] },
+              { $and: [{ $eq: ['$keyInfo.status', 1] }, { $gt: ['$keyInfo.expiredDate', now] }] },
               1,
               0,
             ],
@@ -264,15 +272,15 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
         },
         adClaims: {
           $sum: {
-            $cond: [{ $ne: ['$duration', '1h'] }, 1, 0],
+            $cond: [{ $ne: ['$keyInfo.duration', '1h'] }, 1, 0],
           },
         },
         extensions: {
           $sum: {
-            $cond: [{ $eq: ['$duration', '1h'] }, 1, 0],
+            $cond: [{ $eq: ['$keyInfo.duration', '1h'] }, 1, 0],
           },
         },
-        lastActivity: { $max: '$updatedAt' },
+        lastActivity: { $max: '$createdAt' },
       },
     },
     { $sort: { totalKeys: -1 } },
@@ -280,12 +288,11 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   ]);
 
   const topPerformers: TopAdPerformer[] = topPerformersRaw.map(p => ({
-    registrator: (p as any)._id,
+    registrator: (p as any)._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
     totalKeys: p.totalKeys,
     activeKeys: p.activeKeys,
     adClaims: p.adClaims,
     extensions: p.extensions,
-    revenueEstimate: Math.round(p.totalKeys * 0.5 * 100) / 100, // $0.50 per key estimate
     lastActivity: (p as any).lastActivity instanceof Date ? (p as any).lastActivity.toISOString() : String((p as any).lastActivity),
   }));
 

@@ -283,12 +283,11 @@ export default function AdsAnalyticsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
-                  <TableHead>Registrator</TableHead>
+                  <TableHead>IP Address</TableHead>
                   <TableHead className="text-right">Total Keys</TableHead>
                   <TableHead className="text-right">Active</TableHead>
                   <TableHead className="text-right">Ad Claims</TableHead>
                   <TableHead className="text-right">Extensions</TableHead>
-                  <TableHead className="text-right">Est. Revenue</TableHead>
                   <TableHead className="text-right">Last Activity</TableHead>
                 </TableRow>
               </TableHeader>
@@ -310,9 +309,6 @@ export default function AdsAnalyticsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/30">{performer.extensions}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30">${performer.revenueEstimate}</Badge>
                     </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">
                       {new Date(performer.lastActivity).toLocaleDateString()}
