@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   
   try {
-    const streamers = await listStreamers(user.username);
+    // Owners (1) and Admins (2) see all streamers, Resellers (3) see only their own
+    const registrator = user.level <= 2 ? undefined : user.username;
+    const streamers = await listStreamers(registrator);
     return NextResponse.json(streamers);
   } catch (error) {
     Logger.error('List streamers error', { error: error instanceof Error ? error.message : String(error) });

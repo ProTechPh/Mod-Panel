@@ -11,6 +11,7 @@ const navItems = [
   { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
   { href: '/history', label: 'History', icon: History, minLevel: 3 },
+  { href: '/tiktok-live', label: 'TikTok Live', icon: Smartphone, minLevel: 3 },
   { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ip-logs', label: 'IP Logs', icon: Network, minLevel: 1 },
