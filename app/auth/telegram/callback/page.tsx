@@ -19,6 +19,11 @@ function TelegramCallbackContent() {
       return;
     }
 
+    // For popup windows: try to close if opened by another window
+    if (window.opener && location.search.length === 0 && !location.hash) {
+      window.close();
+    }
+
     const mode = sessionStorage.getItem('telegram_auth_mode') || 'login';
     sessionStorage.removeItem('telegram_auth_mode');
 
@@ -82,6 +87,12 @@ function TelegramCallbackContent() {
             toast.success('Telegram account connected');
             await refreshUser();
             router.replace('/settings');
+            // Auto-close popup after successful connection
+            setTimeout(() => {
+              if (window.opener) {
+                window.close();
+              }
+            }, 1500);
             return;
           }
 
