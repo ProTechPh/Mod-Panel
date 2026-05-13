@@ -197,6 +197,42 @@ export async function checkExpiration() {
   return result.modifiedCount;
 }
 
+export async function generateResetToken(identifier: string) {
+  await dbConnect();
+  const user = await User.findOne({
+    $or: [{ username: identifier }, { email: identifier }],
+  });
+  if (!user) return null;
+
+  const { randomBytes } = await import('crypto');
+  const token = randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { resetLinkToken: token, resetTokenExpiry: expiry } }
+  );
+
+  return { username: user.username, email: user.email, token };
+}
+
+export async function resetPasswordWithToken(token: string, newPassword: string) {
+  await dbConnect();
+  const user = await User.findOne({
+    resetLinkToken: token,
+    resetTokenExpiry: { $gt: new Date() },
+  });
+  if (!user) return null;
+
+  const hashed = await hashPassword(newPassword);
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { password: hashed }, $unset: { resetLinkToken: 1, resetTokenExpiry: 1 } }
+  );
+
+  return { username: user.username };
+}
+
 // Export escapeRegex for other modules to use
 export { escapeRegex };
 

@@ -27,6 +27,14 @@ export const RATE_LIMIT_TIERS = {
   reportViolation: { windowMs: 60 * 1000, maxRequests: 10, blockDurationMs: 15 * 60 * 1000 },
   public: { windowMs: 60 * 1000, maxRequests: 60, blockDurationMs: 5 * 60 * 1000 },
   authenticated: { windowMs: 60 * 1000, maxRequests: 120, blockDurationMs: 2 * 60 * 1000 },
+  // keyGenerate: key creation costs saldo — limit to prevent abuse / accidental spam
+  keyGenerate: { windowMs: 60 * 1000, maxRequests: 10, blockDurationMs: 5 * 60 * 1000 },
+  // keyBulkOps: bulk delete / export — expensive operations, very strict
+  keyBulkOps: { windowMs: 60 * 1000, maxRequests: 5, blockDurationMs: 10 * 60 * 1000 },
+  // passwordChange: security-sensitive — strict per-user limit
+  passwordChange: { windowMs: 60 * 60 * 1000, maxRequests: 5, blockDurationMs: 30 * 60 * 1000 },
+  // admin: admin panel mutations — prevent accidental or malicious bulk operations
+  admin: { windowMs: 60 * 1000, maxRequests: 30, blockDurationMs: 5 * 60 * 1000 },
 } as const;
 
 const store = new Map<string, RateLimitEntry>();
@@ -76,6 +84,13 @@ export function checkRateLimit(
   return { allowed: true, remaining: config.maxRequests - entry.timestamps.length, retryAfterMs: 0 };
 }
 
+export function checkUserRateLimit(
+  userId: string,
+  config: RateLimitConfig,
+): { allowed: boolean; remaining: number; retryAfterMs: number } {
+  return checkRateLimit(`user:${userId}`, config);
+}
+
 export function getRateLimitTier(pathname: string): RateLimitConfig {
   if (
     pathname === '/api/auth/login' ||
@@ -108,4 +123,36 @@ export function getRateLimitTier(pathname: string): RateLimitConfig {
     return RATE_LIMIT_TIERS.public;
   }
   return RATE_LIMIT_TIERS.authenticated;
+}
+
+export function getUserRateLimitTier(pathname: string): RateLimitConfig | null {
+  if (
+    pathname === '/api/keys/generate' ||
+    pathname === '/api/keys/extend' ||
+    pathname === '/api/keys/reset'
+  ) {
+    return RATE_LIMIT_TIERS.keyGenerate;
+  }
+  if (
+    pathname === '/api/keys/bulk-delete' ||
+    pathname === '/api/keys/export'
+  ) {
+    return RATE_LIMIT_TIERS.keyBulkOps;
+  }
+  if (
+    pathname === '/api/auth/change-password' ||
+    pathname === '/api/auth/forgot-password' ||
+    pathname === '/api/auth/reset-password'
+  ) {
+    return RATE_LIMIT_TIERS.passwordChange;
+  }
+  if (
+    pathname.startsWith('/api/admin/') ||
+    pathname.startsWith('/api/users') ||
+    pathname === '/api/game-settings' ||
+    pathname === '/api/server-config'
+  ) {
+    return RATE_LIMIT_TIERS.admin;
+  }
+  return null;
 }

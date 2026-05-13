@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { checkRateLimit, getRateLimitTier } from '@/lib/rate-limit';
+import { checkRateLimit, checkUserRateLimit, getRateLimitTier, getUserRateLimitTier } from '@/lib/rate-limit';
 import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/connect', '/download', '/auth/telegram/callback', '/store-terms'];
-const API_PUBLIC = ['/api/ip', '/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/report-violation', '/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', '/api/cron/check-telegram'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/connect', '/download', '/auth/telegram/callback', '/store-terms'];
+const API_PUBLIC = ['/api/ip', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/report-violation', '/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', '/api/cron/check-telegram'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -131,7 +131,26 @@ export async function proxy(request: NextRequest) {
 
     try {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(AUTH_SECRET!));
-      requestHeaders.set('x-user-id', payload.userId as string);
+      const userId = payload.userId as string;
+
+      // Apply user-ID-based rate limiting for sensitive endpoints
+      const userTier = getUserRateLimitTier(pathname);
+      if (userTier) {
+        const userRateKey = `${userId}_${userTier.maxRequests}_${userTier.windowMs}`;
+        const userRateResult = checkUserRateLimit(userRateKey, userTier);
+        if (!userRateResult.allowed) {
+          const response = NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            { status: 429 },
+          );
+          response.headers.set('Retry-After', String(Math.ceil(userRateResult.retryAfterMs / 1000)));
+          response.headers.set('X-RateLimit-Remaining', '0');
+          addSecurityHeaders(response);
+          return response;
+        }
+      }
+
+      requestHeaders.set('x-user-id', userId);
       requestHeaders.set('x-username', payload.username as string);
       requestHeaders.set('x-user-level', String(payload.level));
       const response = NextResponse.next({ request: { headers: requestHeaders } });

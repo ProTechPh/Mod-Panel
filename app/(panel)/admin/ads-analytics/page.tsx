@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Area, AreaChart } from 'recharts';
-import { MousePointerClick, TrendingUp, Eye, Clock, ShieldAlert, Users, BarChart3, Zap } from 'lucide-react';
+import { MousePointerClick, TrendingUp, Eye, Clock, ShieldAlert, Users, BarChart3, Zap, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AdClaimTrend {
@@ -30,6 +30,16 @@ interface TopAdSupporter {
   lastClaim: string;
 }
 
+interface TopAdPerformer {
+  registrator: string;
+  totalKeys: number;
+  activeKeys: number;
+  adClaims: number;
+  extensions: number;
+  revenueEstimate: number;
+  lastActivity: string;
+}
+
 interface DailyRevenue {
   date: string;
   adImpressions: number;
@@ -45,6 +55,7 @@ interface AdsAnalytics {
   adClaimTrends: AdClaimTrend[];
   gameAdStats: GameAdStats[];
   topSupporters: TopAdSupporter[];
+  topPerformers: TopAdPerformer[];
   dailyRevenue: DailyRevenue[];
 }
 
@@ -251,6 +262,65 @@ export default function AdsAnalyticsPage() {
                 </Table>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Top Ad Performers */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Crown className="h-5 w-5 text-amber-400" />
+            Top Ad Performers
+            <span className="ml-auto text-xs text-muted-foreground font-normal">by total free keys generated</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {analytics.topPerformers.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No data yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Registrator</TableHead>
+                  <TableHead className="text-right">Total Keys</TableHead>
+                  <TableHead className="text-right">Active</TableHead>
+                  <TableHead className="text-right">Ad Claims</TableHead>
+                  <TableHead className="text-right">Extensions</TableHead>
+                  <TableHead className="text-right">Est. Revenue</TableHead>
+                  <TableHead className="text-right">Last Activity</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {analytics.topPerformers.map((performer, idx) => (
+                  <TableRow key={performer.registrator}>
+                    <TableCell>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                    </TableCell>
+                    <TableCell className="font-medium">{performer.registrator}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="secondary">{performer.totalKeys}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge className="bg-green-500/10 text-green-500 border-green-500/30">{performer.activeKeys}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">{performer.adClaims}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/30">{performer.extensions}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30">${performer.revenueEstimate}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-muted-foreground">
+                      {new Date(performer.lastActivity).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

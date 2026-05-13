@@ -7,6 +7,7 @@ import StatusPieChart from '@/components/dashboard/StatusPieChart';
 import GameDistChart from '@/components/dashboard/GameDistChart';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 import TopPerformers from '@/components/dashboard/TopPerformers';
+import ExpiryNotificationBanner from '@/components/dashboard/ExpiryNotificationBanner';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -39,6 +40,8 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">Welcome back, {user?.fullname || user?.username}</p>
       </div>
+
+      <ExpiryNotificationBanner />
 
       <StatsCards stats={analytics?.keyStats} />
 

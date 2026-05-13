@@ -23,6 +23,16 @@ export interface TopAdSupporter {
   lastClaim: string;
 }
 
+export interface TopAdPerformer {
+  registrator: string;
+  totalKeys: number;
+  activeKeys: number;
+  adClaims: number;
+  extensions: number;
+  revenueEstimate: number;
+  lastActivity: string;
+}
+
 export interface DailyRevenue {
   date: string;
   adImpressions: number;
@@ -38,6 +48,7 @@ export interface AdsAnalytics {
   adClaimTrends: AdClaimTrend[];
   gameAdStats: GameAdStats[];
   topSupporters: TopAdSupporter[];
+  topPerformers: TopAdPerformer[];
   dailyRevenue: DailyRevenue[];
 }
 
@@ -235,6 +246,49 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
     lastClaim: (s as any).lastClaim instanceof Date ? (s as any).lastClaim.toISOString() : String((s as any).lastClaim),
   }));
 
+  // Top performers by registrator (users who generated the most free keys/ad claims)
+  const topPerformersRaw = await Key.aggregate<TopAdPerformer>([
+    { $match: { isFreeKey: true } },
+    {
+      $group: {
+        _id: '$registrator',
+        totalKeys: { $sum: 1 },
+        activeKeys: {
+          $sum: {
+            $cond: [
+              { $and: [{ $eq: ['$status', 1] }, { $gt: ['$expiredDate', now] }] },
+              1,
+              0,
+            ],
+          },
+        },
+        adClaims: {
+          $sum: {
+            $cond: [{ $ne: ['$duration', '1h'] }, 1, 0],
+          },
+        },
+        extensions: {
+          $sum: {
+            $cond: [{ $eq: ['$duration', '1h'] }, 1, 0],
+          },
+        },
+        lastActivity: { $max: '$updatedAt' },
+      },
+    },
+    { $sort: { totalKeys: -1 } },
+    { $limit: 20 },
+  ]);
+
+  const topPerformers: TopAdPerformer[] = topPerformersRaw.map(p => ({
+    registrator: (p as any)._id,
+    totalKeys: p.totalKeys,
+    activeKeys: p.activeKeys,
+    adClaims: p.adClaims,
+    extensions: p.extensions,
+    revenueEstimate: Math.round(p.totalKeys * 0.5 * 100) / 100, // $0.50 per key estimate
+    lastActivity: (p as any).lastActivity instanceof Date ? (p as any).lastActivity.toISOString() : String((p as any).lastActivity),
+  }));
+
   // Daily ad stats (revenue proxy: ad impressions = ad claims)
   const dailyRevenue = await IpTracker.aggregate<DailyRevenue>([
     {
@@ -274,6 +328,7 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
     adClaimTrends: mergedTrends,
     gameAdStats,
     topSupporters,
+    topPerformers,
     dailyRevenue,
   };
 }
