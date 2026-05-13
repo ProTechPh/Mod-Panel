@@ -221,12 +221,12 @@ export default function TikTokLivePage() {
             setGeneratedKey(null);
           }
         }}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setShowGenerateDialog(true)}>
+          <DialogTrigger render={
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
               Generate Key
             </Button>
-          </DialogTrigger>
+          } />
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Generate Streamer Key</DialogTitle>
