@@ -3,8 +3,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Download, Smartphone, FileText, Zap, Shield } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import '@/components/landing/landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -140,17 +141,18 @@ export function DownloadSection() {
                   )}
                 </div>
                 <h4 className="font-medium text-sm">{app.name}</h4>
-                <Button 
-                  size="sm"
-                  variant="outline"
-                  className="w-full mt-2" 
-                  asChild
+                <a 
+                  href={app.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "w-full mt-2"
+                  )}
                 >
-                  <a href={app.url} target="_blank" rel="noopener noreferrer">
-                    <Download className="size-3 mr-2" />
-                    Download
-                  </a>
-                </Button>
+                  <Download className="size-3 mr-2" />
+                  Download
+                </a>
               </div>
             ))}
           </div>

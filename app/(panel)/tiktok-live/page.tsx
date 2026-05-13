@@ -43,6 +43,21 @@ export default function TikTokLivePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [editingStreamer, setEditingStreamer] = useState<Streamer | null>(null);
+  const [registrarForm, setRegistrarForm] = useState({
+    tiktokUsername: '',
+    streamerName: '',
+    contact: ''
+  });
+
+  const filteredStreamers = streamers.filter(s => {
+    const matchesSearch = 
+      s.tiktokUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.streamerName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filter === 'all') return matchesSearch;
+    return s.status === filter && matchesSearch;
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -130,6 +145,48 @@ export default function TikTokLivePage() {
     }
   };
 
+  const handleExtend = async (id: string) => {
+    try {
+      const res = await fetch('/api/tiktok-live-streamers/extend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        toast.success('Key duration extended!');
+        fetchStreamers();
+      }
+    } catch (error) {
+      toast.error('Failed to extend key');
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const method = editingStreamer ? 'PUT' : 'POST';
+      const endpoint = editingStreamer 
+        ? `/api/tiktok-live-streamers?id=${editingStreamer._id}`
+        : '/api/tiktok-live-streamers';
+      
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registrarForm),
+      });
+
+      if (res.ok) {
+        toast.success(editingStreamer ? 'Streamer updated' : 'Streamer registered');
+        setShowAddDialog(false);
+        fetchStreamers();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to save');
+      }
+    } catch (error) {
+      toast.error('An error occurred while saving');
+    }
+  };
+
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -159,9 +216,17 @@ export default function TikTokLivePage() {
         </div>
         <Dialog open={showAddDialog} onOpenChange={(open) => {
           setShowAddDialog(open);
-          if (!open) setGeneratedKey(null);
+          if (!open) {
+            setGeneratedKey(null);
+            setEditingStreamer(null);
+            setRegistrarForm({
+              tiktokUsername: '',
+              streamerName: '',
+              contact: ''
+            });
+          }
         }}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button onClick={() => setShowAddDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Generate Key
@@ -362,6 +427,11 @@ export default function TikTokLivePage() {
                                 size="sm"
                                 onClick={() => {
                                   setEditingStreamer(streamer);
+                                  setRegistrarForm({
+                                    tiktokUsername: streamer.tiktokUsername,
+                                    streamerName: streamer.streamerName,
+                                    contact: streamer.contact
+                                  });
                                   setShowAddDialog(true);
                                 }}
                               >
@@ -442,10 +512,7 @@ export default function TikTokLivePage() {
               >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                // Handle save
-                setShowAddDialog(false);
-              }}>
+              <Button onClick={handleSave}>
                 Save
               </Button>
             </div>
