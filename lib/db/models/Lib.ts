@@ -11,7 +11,6 @@ const LibSchema = new Schema<LibDoc & Document>({
   uploadedAt: { type: Date, default: Date.now },
 }, { collection: 'libs' });
 
-LibSchema.index({ fileName: 1 }, { unique: true });
 LibSchema.index({ uploadedAt: -1 });
 LibSchema.index({ uploadedBy: 1 });
 
