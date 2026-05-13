@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { listGameSettings, addGameSetting, updateGameSetting } from '@/lib/services/game-settings-service';
 import User from '@/lib/db/models/User';
+import { Logger } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   } catch (error) {
-    console.error('Game settings error:', error);
+    Logger.error('Game settings error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

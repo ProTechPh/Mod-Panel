@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { getUser, updateUser } from '@/lib/services/user-service';
+import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   const user = await authenticate(request);
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, user: { fullname: updated.fullname } });
   } catch (error) {
-    console.error('Update fullname error:', error);
+    Logger.error('Update fullname error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

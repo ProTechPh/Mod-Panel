@@ -28,5 +28,7 @@ KeySchema.index({ expiredDate: 1 });
 KeySchema.index({ createdAt: -1 });
 KeySchema.index({ devices: 1 });
 KeySchema.index({ registrator: 1, status: 1 });
+KeySchema.index({ game: 1, status: 1 });
+KeySchema.index({ isFreeKey: 1 });
 
 export default mongoose.models.Key || mongoose.model<KeyDoc & Document>('Key', KeySchema);

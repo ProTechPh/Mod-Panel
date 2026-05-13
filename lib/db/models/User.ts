@@ -26,5 +26,9 @@ UserSchema.index({ status: 1 });
 UserSchema.index({ uplink: 1 });
 UserSchema.index({ expirationDate: 1 });
 UserSchema.index({ telegramId: 1 }, { unique: true, partialFilterExpression: { telegramId: { $exists: true, $ne: null } } });
+UserSchema.index({ createdAt: -1 });
+UserSchema.index({ username: 1 });
+UserSchema.index({ email: 1 });
+UserSchema.index({ level: 1, status: 1 });
 
 export default mongoose.models.User || mongoose.model<UserDoc & Document>('User', UserSchema);

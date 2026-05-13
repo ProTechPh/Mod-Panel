@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTopAdClaimers } from '@/lib/services/free-key-service';
+import { Logger } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {

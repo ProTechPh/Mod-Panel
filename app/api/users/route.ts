@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { listUsers } from '@/lib/services/user-service';
 import { z } from 'zod/v4';
+import { Logger } from '@/lib/utils';
 
 const dataTablesQuery = z.object({
   draw: z.coerce.number().default(1),
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Users list error:', error);
+    Logger.error('Users list error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

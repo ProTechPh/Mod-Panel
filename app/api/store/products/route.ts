@@ -7,6 +7,7 @@ import {
   deleteProduct,
 } from '@/lib/services/store-service';
 import type { Duration } from '@/types';
+import { Logger } from '@/lib/utils';
 
 // GET /api/store/products?registrator=xxx  — public
 // GET /api/store/products                   — authenticated (all including inactive)
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error('Store products error:', error);
+    Logger.error('Store products error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

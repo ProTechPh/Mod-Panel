@@ -3,11 +3,12 @@ import Key from '@/lib/db/models/Key';
 import IpTracker from '@/lib/db/models/IpTracker';
 import { generateKeyString } from '@/lib/utils/device';
 import GameSetting from '@/lib/db/models/GameSetting';
+import { Logger } from '@/lib/utils';
 
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) {
-    console.warn('TURNSTILE_SECRET_KEY is not set. Free key requests will be rejected.');
+    Logger.warn('TURNSTILE_SECRET_KEY is not set. Free key requests will be rejected.');
     return false;
   }
 
@@ -59,7 +60,8 @@ import { shortenUrl } from './reshortfly-service';
 
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'b6e7f8a9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5');
+// Use AUTH_SECRET as the JWT secret for consistency across the codebase
+const JWT_SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 
 async function createClaimToken(payload: any) {
   return await new SignJWT(payload)

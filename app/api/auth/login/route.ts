@@ -5,6 +5,7 @@ import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 import { loginSchema } from '@/lib/validators/auth';
 import { recordFailedAttempt, clearFailedAttempts } from '@/lib/auth/brute-force';
 import { verifyTurnstile } from '@/lib/auth/turnstile';
+import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-client-ip') || 'unknown';
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return setAuthCookies(response, user.userId, user.username, user.level);
   } catch (error) {
-    console.error('Login error:', error);
+    Logger.error('Login error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

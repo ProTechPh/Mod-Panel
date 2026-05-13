@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateKey } from '@/lib/services/key-service';
 import { connectSchema } from '@/lib/validators/key';
 import { getServerConfig } from '@/lib/services/server-config-service';
+import { Logger } from '@/lib/utils';
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Mod Panel';
 const LICENSE_KEY = process.env.LICENSE_KEY || '5G7B3F8J2H';

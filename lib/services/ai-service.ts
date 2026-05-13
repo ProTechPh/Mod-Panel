@@ -1,3 +1,5 @@
+import { Logger } from '@/lib/utils';
+
 const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY;
 const OLLAMA_API_URL = "https://ollama.com/api/chat"; // As per user's request
 const MODEL = "deepseek-v4-flash:cloud";
@@ -34,7 +36,7 @@ export async function askAI(prompt: string): Promise<string> {
     const data = await response.json();
     return data.message?.content || data.choices?.[0]?.message?.content || "";
   } catch (error) {
-    console.error("AI Service Error:", error);
+    Logger.error("AI Service Error", { error: error instanceof Error ? error.message : 'Unknown error' });
     throw error;
   }
 }
@@ -49,7 +51,7 @@ export async function verifyModderAnswer(question: string, answer: string): Prom
   
   const result = await askAI(prompt);
   const cleanResult = result.trim().toUpperCase();
-  console.log(`AI Verification Result for "${answer}":`, cleanResult);
+  Logger.info(`AI Verification Result for "${answer}"`, { cleanResult });
   
   return cleanResult.includes("YES");
 }

@@ -12,5 +12,8 @@ const ReferralSchema = new Schema<ReferralDoc & Document>({
 }, { timestamps: true, collection: 'referrals' });
 
 ReferralSchema.index({ createdBy: 1 });
+ReferralSchema.index({ code: 1 });
+ReferralSchema.index({ usedBy: 1 });
+ReferralSchema.index({ level: 1 });
 
 export default mongoose.models.Referral || mongoose.model<ReferralDoc & Document>('Referral', ReferralSchema);

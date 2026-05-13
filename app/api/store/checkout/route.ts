@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProduct, getStore, createOrder } from '@/lib/services/store-service';
 import { createCheckoutSession, isPayMongoConfigured } from '@/lib/services/paymongo-service';
 import Order from '@/lib/db/models/Order';
+import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {

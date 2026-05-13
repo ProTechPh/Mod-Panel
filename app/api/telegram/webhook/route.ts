@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleUpdate, setBotCommands } from '@/lib/services/telegram-bot-service';
+import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Telegram webhook error:', error);
+    Logger.error('Telegram webhook error', { error: error instanceof Error ? error.message : String(error) });
     // Always return 200 to Telegram so it doesn't keep retrying failed updates
     return NextResponse.json({ success: true });
   }

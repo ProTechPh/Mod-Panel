@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { listAppLinks, addAppLink, deleteAppLink } from '@/lib/services/app-link-service';
 import { listGameSettings } from '@/lib/services/game-settings-service';
+import { Logger } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
     const link = await addAppLink(body.appName, body.downloadUrl);
     return NextResponse.json(link, { status: 201 });
   } catch (error) {
-    console.error('App link error:', error);
+    Logger.error('App link error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

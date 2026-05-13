@@ -21,5 +21,7 @@ IpTrackerSchema.index({ keyId: 1 });
 IpTrackerSchema.index({ ipAddress: 1, isBanned: 1 });
 IpTrackerSchema.index({ userId: 1 });
 IpTrackerSchema.index({ isAdClaim: 1, ipAddress: 1 });
+// TTL index to automatically clean up old unbanned entries after 7 days
+IpTrackerSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60, partialFilterExpression: { isBanned: false } });
 
 export default mongoose.models.IpTracker || mongoose.model<IpTrackerDoc & Document>('IpTracker', IpTrackerSchema);

@@ -5,6 +5,7 @@ import { generateKeyString } from '@/lib/utils/device';
 import Key from '@/lib/db/models/Key';
 import User from '@/lib/db/models/User';
 import dbConnect from '@/lib/db/connection';
+import { Logger } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const payload = JSON.parse(rawBody);
     const eventType: string = payload?.data?.attributes?.type || '';
-    console.log('PayMongo webhook event:', eventType);
+    Logger.info('PayMongo webhook event', { eventType });
 
     // We only care about successful checkout sessions
     if (eventType !== 'checkout_session.payment.paid') {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     const sessionId: string = sessionData?.id || '';
 
     if (!sessionId) {
-      console.warn('PayMongo webhook: no sessionId in checkout_session.payment.paid event');
+      Logger.warn('PayMongo webhook: no sessionId in checkout_session.payment.paid event');
       return NextResponse.json({ received: true });
     }
 
@@ -47,18 +48,18 @@ export async function POST(request: NextRequest) {
     const paymentIntentId: string =
       sessionData?.attributes?.payment_intent?.id || '';
 
-    console.log('PayMongo webhook: sessionId', sessionId, 'paymentIntentId', paymentIntentId);
+    Logger.info('PayMongo webhook: sessionId and payment intent ID', { sessionId, paymentIntentId });
 
     // Find our order
     const order = await getOrderBySessionId(sessionId);
     if (!order) {
-      console.warn('PayMongo webhook: no order found for session', sessionId);
+      Logger.warn('PayMongo webhook: no order found for session', { sessionId });
       return NextResponse.json({ received: true });
     }
 
     // Idempotency: skip if already paid
     if (order.status === 'paid') {
-      console.log('PayMongo webhook: order already paid, skipping', order._id);
+      Logger.info('PayMongo webhook: order already paid, skipping', { orderId: order._id.toString() });
       return NextResponse.json({ received: true });
     }
 
@@ -85,10 +86,10 @@ export async function POST(request: NextRequest) {
       { $inc: { saldo: -order.price } }
     );
 
-    console.log(`PayMongo webhook: order ${order._id} paid ✓ key generated`);
+    Logger.info(`PayMongo webhook: order ${order._id} paid and key generated`);
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('PayMongo webhook error:', error);
+    Logger.error('PayMongo webhook error', { error: error instanceof Error ? error.message : String(error) });
     // Return 200 so PayMongo doesn't retry endlessly on our bugs
     return NextResponse.json({ received: true });
   }

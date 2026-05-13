@@ -9,7 +9,9 @@ import User from '@/lib/db/models/User';
 import GameSetting from '@/lib/db/models/GameSetting';
 import ServerConfig, { SingletonId } from '@/lib/db/models/ServerConfig';
 import crypto from 'crypto';
+import { createCipheriv, createDecipheriv } from 'crypto';
 import type { Duration, KeyDoc, ServerConfigDoc, GameSettingDoc } from '@/types';
+import { Logger } from '@/lib/utils';
 
 let configCache: ServerConfigDoc | null = null;
 let configCacheExpiry = 0;
@@ -376,15 +378,21 @@ export async function deleteKeysByGame(game: string, registrator?: string) {
 }
 function encryptPatches(text: string): string {
   if (!text) return '';
+  
   try {
-    const key = 'Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E';
+    const key = process.env.ENCRYPTION_KEY;
+    if (!key) {
+      Logger.warn('ENCRYPTION_KEY is not set');
+      return '';
+    }
+    
     const crypto = require('crypto');
     const cipher = crypto.createCipheriv('aes-256-ecb', Buffer.from(key), null);
     let encrypted = cipher.update(text, 'utf8', 'base64');
     encrypted += cipher.final('base64');
     return encrypted;
   } catch (err) {
-    console.error('Encryption error:', err);
+    Logger.error('Encryption failed', { error: err instanceof Error ? err.message : 'Unknown error' });
     return '';
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { getStore, upsertStore } from '@/lib/services/store-service';
+import { Logger } from '@/lib/utils';
 
 // GET /api/store?registrator=xxx  — public (for public store page)
 // GET /api/store                   — authenticated (own store)

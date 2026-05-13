@@ -34,5 +34,8 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
 
 GameSettingSchema.index({ gameCode: 1, registrator: 1 }, { unique: true });
 GameSettingSchema.index({ registrator: 1 });
+GameSettingSchema.index({ gameCode: 1 });
+GameSettingSchema.index({ isEnabled: 1, registrator: 1 });
+GameSettingSchema.index({ maintenanceStartedAt: 1 });
 
 export default mongoose.models.GameSetting || mongoose.model<GameSettingDoc & Document>('GameSetting', GameSettingSchema);
