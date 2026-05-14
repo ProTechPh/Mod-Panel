@@ -39,24 +39,21 @@ export function Hero() {
 
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-      tl.from(letters, {
-        y: 40,
-        opacity: 0,
-        rotationX: -90,
-        stagger: 0.04,
-        duration: 0.8,
-      })
-        .from(tagline, { y: 20, opacity: 0, duration: 0.6 }, '-=0.3');
+      tl.fromTo(letters,
+        { y: 40, opacity: 0, rotationX: -90 },
+        { y: 0, opacity: 1, rotationX: 0, stagger: 0.04, duration: 0.8 }
+      )
+        .fromTo(tagline,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6 },
+          '-=0.3'
+        );
 
       if (ctaButtons.length > 0) {
-        tl.from(
+        tl.fromTo(
           ctaButtons,
-          {
-            y: 30,
-            autoAlpha: 0,
-            stagger: 0.1,
-            duration: 0.5,
-          },
+          { y: 30, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, stagger: 0.1, duration: 0.5 },
           '-=0.3'
         );
       }

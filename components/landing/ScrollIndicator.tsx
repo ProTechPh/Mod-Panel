@@ -12,13 +12,10 @@ export function ScrollIndicator() {
     const el = ref.current;
     if (!el) return;
 
-    gsap.from(el, {
-      opacity: 0,
-      y: -20,
-      duration: 0.8,
-      delay: 1.2,
-      ease: 'power2.out',
-    });
+    gsap.fromTo(el,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.8, delay: 1.2, ease: 'power2.out' }
+    );
   }, { scope: ref });
 
   return (
