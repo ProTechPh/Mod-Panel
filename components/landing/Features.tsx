@@ -32,10 +32,12 @@ const FEATURES: FeatureItem[] = [
 
 function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     const el = cardRef.current;
-    if (!el) return;
+    const inner = innerRef.current;
+    if (!el || !inner) return;
 
     gsap.fromTo(el,
       { y: 60, opacity: 0 },
@@ -53,8 +55,8 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
       }
     );
 
-    const xSet = gsap.quickTo(el, 'rotationY', { duration: 0.2, ease: 'power2.out' });
-    const ySet = gsap.quickTo(el, 'rotationX', { duration: 0.2, ease: 'power2.out' });
+    const xSet = gsap.quickTo(inner, 'rotationY', { duration: 0.2, ease: 'power2.out' });
+    const ySet = gsap.quickTo(inner, 'rotationX', { duration: 0.2, ease: 'power2.out' });
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
@@ -75,6 +77,8 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
     return () => {
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('mouseleave', handleMouseLeave);
+      xSet(0);
+      ySet(0);
     };
   }, { scope: cardRef });
 
@@ -88,7 +92,7 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
       className={`tilt-card glass-card rounded-xl p-6 ${sizeClass}`}
       style={{ perspective: '800px' }}
     >
-      <div className="tilt-card-inner flex flex-col gap-3">
+      <div className="tilt-card-inner flex flex-col gap-3" ref={innerRef}>
         <div className="feature-icon-glow" style={{ '--accent-color': feature.accent } as React.CSSProperties}>
           <div className="feature-icon-bg" style={{ backgroundColor: feature.accent + '15' }}>
             <span style={{ color: feature.accent }}>{feature.icon}</span>

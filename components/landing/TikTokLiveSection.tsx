@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
 import { Button } from '@/components/ui/button';
@@ -324,8 +325,9 @@ export function TikTokLiveSection() {
                 </div>
                 <Button
                   size="sm"
+                  nativeButton={false}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs"
-                  onClick={() => window.location.href = '/tiktok-live/register'}
+                  render={<Link href="/tiktok-live/register" />}
                 >
                   Register Now
                   <ChevronRight className="size-3.5 ml-1" />
