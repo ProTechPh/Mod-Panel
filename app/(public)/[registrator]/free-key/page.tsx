@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -32,6 +32,7 @@ interface KeyStatus {
   expiredDate: string | null;
   deviceCount: number;
   resetsRemaining: number;
+  duration: string;
 }
 
 interface KeyHistoryEntry {
@@ -85,6 +86,19 @@ function HistoryStatusBadge({ entry }: { entry: KeyHistoryEntry }) {
 
 export default function FreeKeyPage() {
   const { registrator } = useParams<{ registrator: string }>();
+
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <FreeKeyContent registrator={registrator} />
+    </Suspense>
+  );
+}
+
+function FreeKeyContent({ registrator }: { registrator: string }) {
   const searchParams = useSearchParams();
   const { theme, toggleTheme } = useTheme();
 
@@ -392,7 +406,10 @@ export default function FreeKeyPage() {
     if (!keyStatus) return '—';
     if (keyStatus.status === 0) return 'Suspended';
     if (keyStatus.isExpired) return 'Expired';
-    if (keyStatus.isActivated) return 'Active – 1h timer running';
+    if (keyStatus.isActivated) {
+      const dur = keyStatus.duration === '3h' ? '3h' : '1h';
+      return `Active – ${dur} timer running`;
+    }
     return 'Unused – grace period (1 day)';
   };
 

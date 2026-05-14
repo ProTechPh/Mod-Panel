@@ -32,7 +32,7 @@ export function extractClientIp(request: NextRequest, trustedProxies: string[]):
   const cfIp = request.headers.get('cf-connecting-ip');
   if (cfIp) return cfIp;
 
-
-  // Generate a random ID if 'unknown' to avoid punishing all users for one IP parsing failure
-  return 'unknown-' + Math.random().toString(36).substring(2, 9);
+  // No identifiable IP — return a consistent value so all unknown users
+  // share the same bucket rather than each getting a unique bypass ID
+  return 'unknown';
 }

@@ -82,6 +82,11 @@ async function verifyClaimToken(token: string) {
 export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string, duration: '1h' | '3h' = '1h') {
   await dbConnect();
 
+  // Reject requests with unidentifiable IPs
+  if (!ip || ip === 'unknown') {
+    return { error: 'Unable to verify your IP address. Please try again.' };
+  }
+
   const gameSetting = await GameSetting.findOne({
     gameCode: game.toUpperCase(),
     registrator,
@@ -125,17 +130,8 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   }
 
 
-  let vpnCheck = { isVpn: false, isProxy: false, isp: '', org: '' };
-  if (existingTrackers.length > 0) {
-    vpnCheck = {
-      isVpn: existingTrackers[0].isVpn || false,
-      isProxy: existingTrackers[0].isProxy || false,
-      isp: existingTrackers[0].isp || '',
-      org: existingTrackers[0].org || '',
-    };
-  } else {
-    vpnCheck = await checkVpn(ip);
-  }
+  // Always perform a fresh VPN check — don't reuse stale results
+  const vpnCheck = await checkVpn(ip);
   if (vpnCheck.isVpn || vpnCheck.isProxy) {
     const tracker = await IpTracker.findOne({ ipAddress: ip }).lean();
     if (tracker) {
@@ -164,7 +160,7 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
     const adUrl = await shortenUrl(targetUrl);
-    return { adUrl };
+    return { adUrl: adUrl || targetUrl };
   }
 
   // 1h keys are created immediately as before
@@ -200,6 +196,10 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
 export async function claimFreeKey(token: string, currentIp: string) {
   await dbConnect();
 
+  if (!currentIp || currentIp === 'unknown') {
+    return { error: 'Unable to verify your IP address. Please try again.' };
+  }
+
   const payload = await verifyClaimToken(token);
   if (!payload || typeof payload !== 'object') {
     return { error: 'Invalid or expired claim token' };
@@ -209,6 +209,18 @@ export async function claimFreeKey(token: string, currentIp: string) {
 
   if (originalIp !== currentIp) {
     return { error: 'IP mismatch. You must claim the key from the same IP that generated the request.' };
+  }
+
+  // Verify the game is still enabled for free keys (admin may have disabled it)
+  const gameSetting = await GameSetting.findOne({
+    gameCode: game.toUpperCase(),
+    registrator,
+    isEnabled: true,
+    freeKeyEnabled: true,
+  }).lean();
+
+  if (!gameSetting) {
+    return { error: 'Free keys are no longer available for this game. The offer may have ended.' };
   }
 
   // Final check for existing active keys to prevent double-claiming or bypassing limits
@@ -227,7 +239,7 @@ export async function claimFreeKey(token: string, currentIp: string) {
     
     const now = new Date();
     if (existingKey && existingKey.expiredDate && new Date(existingKey.expiredDate) > now) {
-      return { key: existingKey.userKey }; // Return existing key if still active
+      return { key: existingKey.userKey, game: existingKey.game }; // Return existing key if still active
     }
   }
 
@@ -264,6 +276,10 @@ export async function claimFreeKey(token: string, currentIp: string) {
 export async function generateExtendToken(game: string, ip: string, registrator: string) {
   await dbConnect();
 
+  if (!ip || ip === 'unknown') {
+    return { error: 'Unable to verify your IP address. Please try again.' };
+  }
+
   // Find the active key for this IP and game
   const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
     .sort({ createdAt: -1 })
@@ -286,6 +302,12 @@ export async function generateExtendToken(game: string, ip: string, registrator:
     return { error: 'Only active (non-expired) keys can be extended' };
   }
 
+  // Check extension limit early so users don't watch ads only to be rejected
+  const extensionCount = await IpTracker.countDocuments({ keyId: key._id, isAdClaim: true });
+  if (extensionCount >= 3) {
+    return { error: 'Maximum extensions reached (3). Generate a new key after this one expires.' };
+  }
+
   // Create a claim token for extension
   const claimToken = await createClaimToken({
     type: 'extend',
@@ -299,11 +321,15 @@ export async function generateExtendToken(game: string, ip: string, registrator:
   const targetUrl = `${baseUrl}/${registrator}/free-key?extendToken=${encodeURIComponent(claimToken)}`;
   const adUrl = await shortenUrl(targetUrl);
 
-  return { adUrl };
+  return { adUrl: adUrl || targetUrl };
 }
 
 export async function extendFreeKey(token: string, currentIp: string) {
   await dbConnect();
+
+  if (!currentIp || currentIp === 'unknown') {
+    return { error: 'Unable to verify your IP address. Please try again.' };
+  }
 
   const payload = await verifyClaimToken(token);
   if (!payload || typeof payload !== 'object' || (payload as any).type !== 'extend') {
@@ -326,6 +352,12 @@ export async function extendFreeKey(token: string, currentIp: string) {
 
   if (currentExpiry <= now) {
     return { error: 'Key has already expired and cannot be extended' };
+  }
+
+  // Limit extensions to 3 per key to prevent indefinite extension
+  const extensionCount = await IpTracker.countDocuments({ keyId: key._id, isAdClaim: true });
+  if (extensionCount >= 3) {
+    return { error: 'Maximum extensions reached (3). Generate a new key after this one expires.' };
   }
 
   // Add 1 hour to the current expiry
@@ -388,6 +420,7 @@ export async function getMyFreeKey(ip: string, registrator: string, game: string
     expiredDate: key.expiredDate ? new Date(key.expiredDate).toISOString() : null,
     deviceCount: key.devices?.length ?? 0,
     resetsRemaining,
+    duration: key.duration || '1h',
   };
 }
 
@@ -436,6 +469,9 @@ export async function getMyFreeKeyHistory(ip: string, registrator: string) {
 export async function resetFreeKeyDevices(userKey: string, ip: string) {
   await dbConnect();
 
+  if (!ip || ip === 'unknown') {
+    return { error: 'Unable to verify your IP address. Please try again.' };
+  }
 
   const key = await Key.findOne({ userKey, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
   if (!key) return { error: 'Key not found' };

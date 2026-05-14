@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
 
   const result = await getMyFreeKey(ip, registrator, game);
   if ('error' in result) {
-    return NextResponse.json({ error: result.error }, { status: 404 });
+    // "No key found" is a normal state, not an error — return 200 with null
+    return NextResponse.json(null);
   }
 
   return NextResponse.json(result);
