@@ -179,6 +179,40 @@ export async function markOrderFailed(orderId: string) {
   await Order.findByIdAndUpdate(orderId, { status: 'failed' });
 }
 
+export async function markOrderExpired(orderId: string) {
+  await dbConnect();
+  await Order.findByIdAndUpdate(orderId, { status: 'expired' });
+}
+
+export async function deleteOrder(orderId: string) {
+  await dbConnect();
+  const result = await Order.deleteOne({ _id: orderId });
+  return result.deletedCount > 0;
+}
+
+export async function deleteOrdersByStatus(status: string, olderThanMinutes = 60) {
+  await dbConnect();
+  const cutoff = new Date(Date.now() - olderThanMinutes * 60 * 1000);
+  const result = await Order.deleteMany({
+    status,
+    createdAt: { $lt: cutoff },
+  });
+  return result.deletedCount;
+}
+
+export async function expireStalePendingOrders(olderThanMinutes = 30) {
+  await dbConnect();
+  const cutoff = new Date(Date.now() - olderThanMinutes * 60 * 1000);
+  const result = await Order.updateMany(
+    {
+      status: 'pending',
+      createdAt: { $lt: cutoff },
+    },
+    { status: 'expired' }
+  );
+  return result.modifiedCount;
+}
+
 export async function listOrders(registrator: string | null, limit = 50) {
   await dbConnect();
   const filter: Record<string, unknown> = {};

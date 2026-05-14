@@ -249,6 +249,26 @@ export default function StorePage() {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm('Delete this order? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/store/orders', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o._id !== orderId));
+        toast.success('Order deleted');
+      } else {
+        const e = await res.json();
+        toast.error(e.error || 'Failed to delete order');
+      }
+    } catch {
+      toast.error('Failed to delete order');
+    }
+  };
+
   const downloadReceipt = async (o: Order) => {
     const cardEl = document.getElementById(`receipt-template-${o._id}`);
     if (!cardEl) return;
@@ -653,6 +673,15 @@ export default function StorePage() {
                     <div className="text-right shrink-0">
                       <p className="font-semibold text-primary">₱{o.price.toFixed(0)}</p>
                       <p className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString()}</p>
+                      {o.status !== 'paid' && (
+                        <button
+                          onClick={() => deleteOrder(o._id)}
+                          className="mt-1 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Delete order"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -700,7 +729,7 @@ export default function StorePage() {
 
                   <div className="mt-10 text-center relative z-10">
                     <p className="text-[13px] text-gray-500 font-medium">Thank you for your purchase!</p>
-                    <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+                    <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {o._id.slice(-12).toUpperCase()}</p>
                   </div>
 
                   <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0051e5 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

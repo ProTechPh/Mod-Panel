@@ -65,14 +65,21 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session) {
+      // Mark order as failed since we couldn't create a payment session
+      await Order.findByIdAndUpdate(order._id, { status: 'failed' });
       return NextResponse.json({ error: 'Failed to create payment session. Check PayMongo configuration.' }, { status: 502 });
     }
 
     // 7. Update order with session ID
-    await Order.findByIdAndUpdate(order._id, {
+    const updated = await Order.findByIdAndUpdate(order._id, {
       paymongoCheckoutSessionId: session.id,
       paymongoPaymentIntentId: session.paymentIntentId,
     });
+
+    if (!updated) {
+      Logger.error('Checkout: failed to update order with session ID', { orderId: order._id, sessionId: session.id });
+      return NextResponse.json({ error: 'Failed to finalize order. Please try again.' }, { status: 500 });
+    }
 
     return NextResponse.json({
       checkoutUrl: session.checkoutUrl,

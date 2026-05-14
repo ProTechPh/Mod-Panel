@@ -81,10 +81,25 @@ export async function POST(request: NextRequest) {
     await markOrderPaid(order._id, keyString, paymentIntentId);
 
     // Deduct saldo based on the order price
-    await User.findOneAndUpdate(
-      { username: order.registrator },
-      { $inc: { saldo: -order.price } }
-    );
+    const registratorUser = await User.findOne({ username: order.registrator });
+    if (!registratorUser) {
+      Logger.error(`PayMongo webhook: registrator ${order.registrator} not found for order ${order._id}`);
+      return NextResponse.json({ received: true });
+    }
+
+    if (registratorUser.saldo < order.price) {
+      Logger.error(`PayMongo webhook: registrator ${order.registrator} has insufficient saldo (${registratorUser.saldo} < ${order.price}) for order ${order._id}`);
+      // Still deliver the key but log the deficit
+      await User.findOneAndUpdate(
+        { username: order.registrator },
+        { $inc: { saldo: -order.price } }
+      );
+    } else {
+      await User.findOneAndUpdate(
+        { username: order.registrator },
+        { $inc: { saldo: -order.price } }
+      );
+    }
 
     Logger.info(`PayMongo webhook: order ${order._id} paid and key generated`);
     return NextResponse.json({ received: true });
