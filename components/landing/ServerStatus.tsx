@@ -31,18 +31,18 @@ function StatCard({ icon, label, value, accentColor, index }: {
     const card = cardRef.current;
     if (!card) return;
 
-    gsap.from(card, {
-      y: 40,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 88%',
-        toggleActions: 'play none none none',
-      },
-      delay: index * 0.1,
-    });
+    gsap.fromTo(card,
+      { y: 40, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 88%',
+          toggleActions: 'play none none none',
+        },
+        delay: index * 0.1,
+      }
+    );
   }, { scope: cardRef });
 
   return (

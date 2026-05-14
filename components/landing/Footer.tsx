@@ -16,17 +16,17 @@ export function Footer() {
     const footer = footerRef.current;
     if (!footer) return;
 
-    gsap.from(footer, {
-      y: 20,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: footer,
-        start: 'top 90%',
-        toggleActions: 'play none none none',
-      },
-    });
+    gsap.fromTo(footer,
+      { y: 20, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: {
+          trigger: footer,
+          start: 'top 90%',
+          toggleActions: 'play none none none',
+        },
+      }
+    );
   }, { scope: footerRef });
 
   return (

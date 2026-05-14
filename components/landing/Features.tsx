@@ -115,17 +115,17 @@ export function Features() {
     const title = section.querySelector('.section-title');
     if (!title) return;
 
-    gsap.from(title, {
-      y: 30,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: section,
-        start: 'top 80%',
-        toggleActions: 'play none none none',
-      },
-    });
+    gsap.fromTo(title,
+      { y: 30, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      }
+    );
   }, { scope: sectionRef });
 
   const heroFeatures = FEATURES.filter(f => f.size === 'large');

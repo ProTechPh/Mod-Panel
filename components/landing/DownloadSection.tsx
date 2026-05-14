@@ -47,34 +47,33 @@ export function DownloadSection() {
 
       const title = section.querySelector('.section-title');
       if (title) {
-        gsap.from(title, {
-          y: 30,
-          opacity: 0,
-          duration: 0.6,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
-        });
+        gsap.fromTo(title,
+          { y: 30, opacity: 0 },
+          {
+            y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
       }
 
       const cards = section.querySelectorAll('.download-card');
       if (cards.length === 0) return;
 
-      gsap.from(cards, {
-        y: 30,
-        opacity: 0,
-        stagger: 0.1,
-        duration: 0.5,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 75%',
-          toggleActions: 'play none none none',
-        },
-      });
+      gsap.fromTo(cards,
+        { y: 30, opacity: 0 },
+        {
+          y: 0, opacity: 1, stagger: 0.1, duration: 0.5, ease: 'power2.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 75%',
+            toggleActions: 'play none none none',
+          },
+        }
+      );
     }, sectionRef);
 
     return () => ctx.revert();
