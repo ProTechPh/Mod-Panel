@@ -13,7 +13,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import {
   Plus, Trash2, Pencil, Check, Clock, User, Smartphone, AlertCircle, RefreshCw,
-  TrendingUp, Users, Calendar, MoreVertical
+  TrendingUp, Users, Calendar
 } from 'lucide-react';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
@@ -72,8 +72,11 @@ export default function TikTokLivePage() {
       if (res.ok) {
         const data = await res.json();
         setStreamers(Array.isArray(data) ? data : []);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to load streamers');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to load streamers');
     } finally {
       setLoading(false);
@@ -91,7 +94,7 @@ export default function TikTokLivePage() {
       } else {
         toast.error(data.error || 'Failed to generate key');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to generate key');
     }
   };
@@ -100,20 +103,21 @@ export default function TikTokLivePage() {
     if (!confirm('Delete this streamer?')) return;
     try {
       const res = await fetch(`/api/tiktok-live-streamers?id=${streamerId}`, { method: 'DELETE' });
+      const data = await res.json();
       if (res.ok) {
         toast.success('Streamer deleted');
         fetchStreamers();
       } else {
-        toast.error('Failed to delete streamer');
+        toast.error(data.error || 'Failed to delete streamer');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete streamer');
     }
   };
 
   const handleToggleExtend = async (streamerId: string, current: boolean) => {
     try {
-      const res = await fetch('/api/tiktok-live-streamers/status', {
+      const res = await fetch('/api/tiktok-live-streamers/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -121,12 +125,15 @@ export default function TikTokLivePage() {
           autoExtendEnabled: !current,
         }),
       });
+      const data = await res.json();
       if (res.ok) {
         toast.success(`Auto-extend ${!current ? 'enabled' : 'disabled'}`);
         fetchStreamers();
+      } else {
+        toast.error(data.error || 'Failed to update auto-extend');
       }
-    } catch (error) {
-      toast.error('Failed to update status');
+    } catch {
+      toast.error('Failed to update auto-extend');
     }
   };
 
@@ -137,42 +144,49 @@ export default function TikTokLivePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: streamerId }),
       });
+      const data = await res.json();
       if (res.ok) {
         toast.success('Live session started!');
+        if (data.extended) toast.success('Key auto-extended by 7 days!');
         fetchStreamers();
+      } else {
+        toast.error(data.error || 'Failed to start live session');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to start live session');
     }
   };
 
-  const handleExtend = async (id: string) => {
+  const handleExtend = async (id: string, key: string) => {
     try {
       const res = await fetch('/api/tiktok-live-streamers/extend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ key }),
       });
+      const data = await res.json();
       if (res.ok) {
         toast.success('Key duration extended!');
         fetchStreamers();
+      } else {
+        toast.error(data.error || 'Failed to extend key');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to extend key');
     }
   };
 
   const handleSave = async () => {
     try {
-      const method = editingStreamer ? 'PUT' : 'POST';
-      const endpoint = editingStreamer 
-        ? `/api/tiktok-live-streamers?id=${editingStreamer._id}`
-        : '/api/tiktok-live-streamers';
-      
-      const res = await fetch(endpoint, {
-        method,
+      const res = await fetch('/api/tiktok-live-streamers/update', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registrarForm),
+        body: JSON.stringify({
+          id: editingStreamer?._id,
+          tiktokUsername: registrarForm.tiktokUsername,
+          streamerName: registrarForm.streamerName,
+          contact: registrarForm.contact,
+        }),
       });
 
       if (res.ok) {
@@ -442,7 +456,7 @@ export default function TikTokLivePage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleExtend(streamer._id)}
+                                onClick={() => handleExtend(streamer._id, streamer.key)}
                                 title="Extend Key"
                               >
                                 <Clock className="h-4 w-4 text-purple-500" />

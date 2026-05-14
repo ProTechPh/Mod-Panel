@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
-import { updateStreamer, extendKeyForStreamer } from '@/lib/services/tiktok-live-streamer-service';
+import { updateStreamer } from '@/lib/services/tiktok-live-streamer-service';
 import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
@@ -10,6 +10,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, ...data } = body;
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Streamer ID required' }, { status: 400 });
+    }
     
     if (data.autoExtendEnabled !== undefined) {
       // Toggle auto-extend
@@ -23,35 +27,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
     
+    if (data.tiktokUsername || data.streamerName || data.contact) {
+      // Update profile fields
+      const updateData: Record<string, string> = {};
+      if (data.tiktokUsername) updateData.tiktokUsername = data.tiktokUsername;
+      if (data.streamerName) updateData.streamerName = data.streamerName;
+      if (data.contact) updateData.contact = data.contact;
+      await updateStreamer(id, updateData);
+      return NextResponse.json({ success: true });
+    }
+    
     return NextResponse.json({ error: 'No valid data provided' }, { status: 400 });
   } catch (error) {
     Logger.error('Streamer update API error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Failed to update streamer' }, { status: 500 });
   }
 }
-
-export async function DELETE(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user || user.level !== 1) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  
-  try {
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-    
-    if (!id) {
-      return NextResponse.json({ error: 'Streamer ID required' }, { status: 400 });
-    }
-    
-    const deleted = await deleteStreamer(id);
-    if (!deleted) {
-      return NextResponse.json({ error: 'Streamer not found' }, { status: 404 });
-    }
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    Logger.error('Delete streamer error', { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ error: 'Failed to delete streamer' }, { status: 500 });
-  }
-}
-
-import { deleteStreamer } from '@/lib/services/tiktok-live-streamer-service';

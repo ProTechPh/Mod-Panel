@@ -118,7 +118,7 @@ export async function registerStreamer(key: string, data: {
     existingStreamer.tiktokUsername = data.tiktokUsername;
     existingStreamer.streamerName = data.streamerName;
     existingStreamer.contact = data.contact;
-    existingStreamer.status = 'pending';
+    existingStreamer.status = 'active';
     existingStreamer.updatedAt = new Date();
 
     await existingStreamer.save();
@@ -166,26 +166,39 @@ export async function startLiveSession(
 ): Promise<{ success: boolean; error?: string; extended?: boolean }> {
   try {
     await dbConnect();
-    const streamer = await TikTokLiveStreamer.findById(streamerId).lean();
+    const streamer = await TikTokLiveStreamer.findById(streamerId);
     if (!streamer) {
       return { success: false, error: 'Streamer not found' };
     }
-    
-    const now = new Date();
-    
-    // Update last live timestamp
-    await TikTokLiveStreamer.findByIdAndUpdate(streamerId, {
-      status: 'active',
-      lastLive: now,
-      lastLiveDuration: 0,
-    });
-    
-    // Auto extend if enabled
-    if (streamer.autoExtendEnabled) {
-      await extendKeyForStreamer(streamer.key, 7); // Extend by 7 days
+
+    // Prevent duplicate live sessions
+    if (streamer.status === 'active') {
+      return { success: false, error: 'Streamer is already live. End the current session first.' };
     }
-    
-    return { success: true, extended: streamer.autoExtendEnabled };
+
+    // Check key expiry before allowing live
+    const keyData = await Key.findOne({ userKey: streamer.key }).lean();
+    if (!keyData) {
+      return { success: false, error: 'License key not found' };
+    }
+    if (keyData.expiredDate && new Date(keyData.expiredDate) < new Date()) {
+      return { success: false, error: 'License key has expired. Extend the key first.' };
+    }
+
+    const now = new Date();
+    streamer.status = 'active';
+    streamer.lastLive = now;
+    streamer.lastLiveDuration = 0;
+    await streamer.save();
+
+    // Auto extend if enabled
+    let extended = false;
+    if (streamer.autoExtendEnabled) {
+      const result = await extendKeyForStreamer(streamer.key, 7);
+      extended = result.success;
+    }
+
+    return { success: true, extended };
   } catch (error) {
     Logger.error('Live session error', { error: error instanceof Error ? error.message : String(error) });
     return { success: false, error: 'Failed to start live session' };
@@ -201,18 +214,21 @@ export async function endLiveSession(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await dbConnect();
-    const streamer = await TikTokLiveStreamer.findById(streamerId).lean();
+    const streamer = await TikTokLiveStreamer.findById(streamerId);
     if (!streamer) {
       return { success: false, error: 'Streamer not found' };
     }
-    
-    const currentTotal = streamer.liveDuration || 0;
-    await TikTokLiveStreamer.findByIdAndUpdate(streamerId, {
-      liveDuration: currentTotal + durationMinutes,
-      lastLiveDuration: durationMinutes,
-      updatedAt: new Date(),
-    });
-    
+
+    if (streamer.status !== 'active') {
+      return { success: false, error: 'No active live session to end' };
+    }
+
+    streamer.liveDuration = (streamer.liveDuration || 0) + durationMinutes;
+    streamer.lastLiveDuration = durationMinutes;
+    streamer.status = 'inactive';
+    streamer.updatedAt = new Date();
+    await streamer.save();
+
     return { success: true };
   } catch (error) {
     Logger.error('End live session error', { error: error instanceof Error ? error.message : String(error) });
@@ -279,10 +295,155 @@ export async function getStreamerWithExpiry(key: string) {
 }
 
 /**
- * Delete streamer
+ * Delete streamer and their associated key
  */
 export async function deleteStreamer(streamerId: string) {
   await dbConnect();
+  const streamer = await TikTokLiveStreamer.findById(streamerId);
+  if (!streamer) return false;
+
+  // Clean up the associated Key document
+  await Key.deleteOne({ userKey: streamer.key }).catch(() => undefined);
+
   const result = await TikTokLiveStreamer.deleteOne({ _id: streamerId });
   return result.deletedCount > 0;
+}
+
+/**
+ * Authenticate a streamer by their license key.
+ * Returns the streamer profile if the key exists and is valid.
+ */
+export async function authenticateStreamer(key: string) {
+  await dbConnect();
+  const streamer = await TikTokLiveStreamer.findOne({ key }).lean();
+  if (!streamer) return null;
+
+  // Also check the Key collection for expiry
+  const keyData = await Key.findOne({ userKey: key }).lean();
+  if (!keyData) return null;
+
+  const isExpired = keyData.expiredDate && new Date(keyData.expiredDate) < new Date();
+
+  return {
+    _id: streamer._id.toString(),
+    key: streamer.key,
+    tiktokUsername: streamer.tiktokUsername,
+    streamerName: streamer.streamerName,
+    contact: streamer.contact,
+    status: isExpired ? 'expired' : streamer.status,
+    liveDuration: streamer.liveDuration,
+    lastLive: streamer.lastLive?.toISOString() || null,
+    lastLiveDuration: streamer.lastLiveDuration,
+    autoExtendEnabled: streamer.autoExtendEnabled,
+    registrator: streamer.registrator,
+    createdAt: streamer.createdAt?.toISOString(),
+    updatedAt: streamer.updatedAt?.toISOString(),
+    keyExpiry: keyData.expiredDate?.toISOString() || null,
+    keyStatus: keyData.status,
+  };
+}
+
+/**
+ * Get full streamer profile with key expiry info
+ */
+export async function getStreamerProfile(key: string) {
+  return authenticateStreamer(key);
+}
+
+/**
+ * Update streamer's own profile (limited fields)
+ */
+export async function updateStreamerProfile(
+  key: string,
+  data: { streamerName?: string; contact?: string }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await dbConnect();
+    const streamer = await TikTokLiveStreamer.findOne({ key });
+    if (!streamer) {
+      return { success: false, error: 'Streamer not found' };
+    }
+
+    if (data.streamerName) streamer.streamerName = data.streamerName;
+    if (data.contact) streamer.contact = data.contact;
+    streamer.updatedAt = new Date();
+    await streamer.save();
+
+    return { success: true };
+  } catch (error) {
+    Logger.error('Streamer profile update error', { error: error instanceof Error ? error.message : String(error) });
+    return { success: false, error: 'Failed to update profile' };
+  }
+}
+
+/**
+ * Streamer starts their own live session
+ */
+export async function streamerStartLive(key: string): Promise<{ success: boolean; error?: string; extended?: boolean }> {
+  try {
+    await dbConnect();
+    const streamer = await TikTokLiveStreamer.findOne({ key });
+    if (!streamer) {
+      return { success: false, error: 'Streamer not found' };
+    }
+
+    // Prevent duplicate live sessions
+    if (streamer.status === 'active') {
+      return { success: false, error: 'You are already live. End your current session first.' };
+    }
+
+    // Check key expiry before allowing live
+    const keyData = await Key.findOne({ userKey: key }).lean();
+    if (!keyData) {
+      return { success: false, error: 'License key not found' };
+    }
+    if (keyData.expiredDate && new Date(keyData.expiredDate) < new Date()) {
+      return { success: false, error: 'Your license key has expired. Please contact your admin to renew.' };
+    }
+
+    const now = new Date();
+    streamer.status = 'active';
+    streamer.lastLive = now;
+    streamer.lastLiveDuration = 0;
+    await streamer.save();
+
+    let extended = false;
+    if (streamer.autoExtendEnabled) {
+      const result = await extendKeyForStreamer(key, 7);
+      extended = result.success;
+    }
+
+    return { success: true, extended };
+  } catch (error) {
+    Logger.error('Streamer start live error', { error: error instanceof Error ? error.message : String(error) });
+    return { success: false, error: 'Failed to start live session' };
+  }
+}
+
+/**
+ * Streamer ends their own live session
+ */
+export async function streamerEndLive(key: string, durationMinutes: number): Promise<{ success: boolean; error?: string }> {
+  try {
+    await dbConnect();
+    const streamer = await TikTokLiveStreamer.findOne({ key });
+    if (!streamer) {
+      return { success: false, error: 'Streamer not found' };
+    }
+
+    if (streamer.status !== 'active') {
+      return { success: false, error: 'No active live session to end' };
+    }
+
+    streamer.liveDuration = (streamer.liveDuration || 0) + durationMinutes;
+    streamer.lastLiveDuration = durationMinutes;
+    streamer.status = 'inactive';
+    streamer.updatedAt = new Date();
+    await streamer.save();
+
+    return { success: true };
+  } catch (error) {
+    Logger.error('Streamer end live error', { error: error instanceof Error ? error.message : String(error) });
+    return { success: false, error: 'Failed to end live session' };
+  }
 }

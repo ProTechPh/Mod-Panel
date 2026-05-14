@@ -4,8 +4,8 @@ import { checkRateLimit, checkUserRateLimit, getRateLimitTier, getUserRateLimitT
 import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/connect', '/download', '/auth/telegram/callback', '/store-terms', '/tiktok-live/register'];
-const API_PUBLIC = ['/api/ip', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/report-violation', '/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', '/api/cron/check-telegram', '/api/tiktok-live-streamers/admins'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/connect', '/download', '/auth/telegram/callback', '/store-terms', '/tiktok-live/register', '/streamer/login'];
+const API_PUBLIC = ['/api/ip', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', '/api/report-violation', '/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status', '/api/store/webhook', '/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', '/api/cron/check-telegram', '/api/tiktok-live-streamers/admins', '/api/streamer/auth/login', '/api/streamer/auth/logout', '/api/streamers/public'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -121,6 +121,30 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
+    // Streamer API routes — verify st_access cookie
+    if (pathname.startsWith('/api/streamer/')) {
+      const streamerToken = request.cookies.get('st_access')?.value;
+      if (!streamerToken) {
+        const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        addSecurityHeaders(response);
+        return response;
+      }
+
+      try {
+        const { payload } = await jwtVerify(streamerToken, new TextEncoder().encode(AUTH_SECRET!));
+        requestHeaders.set('x-streamer-key', payload.streamerKey as string);
+        requestHeaders.set('x-streamer-id', payload.streamerId as string);
+        const response = NextResponse.next({ request: { headers: requestHeaders } });
+        response.headers.set('X-RateLimit-Remaining', String(rateResult.remaining));
+        addSecurityHeaders(response);
+        return response;
+      } catch {
+        const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        addSecurityHeaders(response);
+        return response;
+      }
+    }
+
     // Protected API routes — verify JWT
     const token = request.cookies.get('wp_access')?.value;
     if (!token) {
@@ -161,6 +185,30 @@ export async function proxy(request: NextRequest) {
       const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       addSecurityHeaders(response);
       return response;
+    }
+  }
+
+  // Streamer pages — verify st_access cookie
+  if (pathname.startsWith('/streamer/') && pathname !== '/streamer/login') {
+    if (!AUTH_SECRET) {
+      return NextResponse.redirect(new URL('/streamer/login', request.url));
+    }
+
+    const streamerPageToken = request.cookies.get('st_access')?.value;
+    if (!streamerPageToken) {
+      return NextResponse.redirect(new URL('/streamer/login', request.url));
+    }
+
+    try {
+      const { payload } = await jwtVerify(streamerPageToken, new TextEncoder().encode(AUTH_SECRET!));
+      requestHeaders.set('x-streamer-key', payload.streamerKey as string);
+      requestHeaders.set('x-streamer-id', payload.streamerId as string);
+      const response = NextResponse.next({ request: { headers: requestHeaders } });
+      response.headers.set('X-RateLimit-Remaining', String(rateResult.remaining));
+      addSecurityHeaders(response);
+      return response;
+    } catch {
+      return NextResponse.redirect(new URL('/streamer/login', request.url));
     }
   }
 
