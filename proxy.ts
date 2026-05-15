@@ -34,7 +34,7 @@ function addSecurityHeaders(response: NextResponse): void {
 }
 
 function isStaticAsset(pathname: string): boolean {
-  return pathname.startsWith('/_next') || /\.(jpg|jpeg|png|gif|svg|ico|webp|woff2?|ttf|eot|css|js|json|mp4|webm)$/i.test(pathname);
+  return pathname.startsWith('/_next') || /\.(jpg|jpeg|png|gif|svg|ico|webp|woff2?|ttf|eot|css|js|json|html|mp4|webm)$/i.test(pathname);
 }
 
 export async function proxy(request: NextRequest) {
