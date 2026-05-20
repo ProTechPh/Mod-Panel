@@ -32,9 +32,6 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
   registrator: { type: String, required: true },
   announcement: { type: String, default: '' },
   announcementStatus: { type: String, enum: ['on', 'off'], default: 'off' },
-  apkSha1: { type: String, default: '' },
-  apkSha256: { type: String, default: '' },
-  apkSignatureEnabled: { type: Boolean, default: false },
 }, { timestamps: true, collection: 'game_settings' });
 
 GameSettingSchema.index({ gameCode: 1, registrator: 1 }, { unique: true });

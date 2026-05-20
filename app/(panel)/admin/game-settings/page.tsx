@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Fingerprint, Megaphone } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Megaphone } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 
@@ -32,9 +32,6 @@ interface GameSetting {
   registrator: string;
   announcement: string;
   announcementStatus: string;
-  apkSha1: string;
-  apkSha256: string;
-  apkSignatureEnabled: boolean;
 }
 
 const FEATURE_LABELS: Record<string, string> = {
@@ -119,9 +116,6 @@ export default function GameSettingsPage() {
         patches: editGame.patches,
         announcement: editGame.announcement,
         announcementStatus: editGame.announcementStatus,
-        apkSha1: editGame.apkSha1,
-        apkSha256: editGame.apkSha256,
-        apkSignatureEnabled: editGame.apkSignatureEnabled,
       }),
     });
     if (res.ok) {
@@ -325,44 +319,6 @@ export default function GameSettingsPage() {
                   />
                 </div>
               </div>
-
-              {user.level <= 2 && (
-                <div className="space-y-4 border-t pt-4 mt-2">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Fingerprint className="h-4 w-4 text-muted-foreground" />
-                    APK Signature Verification
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={editGame.apkSignatureEnabled}
-                      onCheckedChange={v => setEditGame({ ...editGame, apkSignatureEnabled: v })}
-                    />
-                    <Label className="text-xs">Enable APK signature check</Label>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    When enabled, the server will reject connections from APKs whose SHA1/SHA256 do not match
-                    the values below. Get these from your original signed APK using <code className="text-xs bg-muted px-1 py-0.5 rounded">keytool</code>.
-                  </p>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Expected SHA1</Label>
-                    <Input
-                      value={editGame.apkSha1 || ''}
-                      onChange={e => setEditGame({ ...editGame, apkSha1: e.target.value })}
-                      placeholder="e.g. a1b2c3d4e5f6..."
-                      className="text-xs font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Expected SHA256</Label>
-                    <Input
-                      value={editGame.apkSha256 || ''}
-                      onChange={e => setEditGame({ ...editGame, apkSha256: e.target.value })}
-                      placeholder="e.g. d4e5f6a1b2c3..."
-                      className="text-xs font-mono"
-                    />
-                  </div>
-                </div>
-              )}
 
               <Button onClick={handleSaveGame} size="sm">Save Game Settings</Button>
             </CardContent>

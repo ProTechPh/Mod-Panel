@@ -12,10 +12,7 @@ const MAX_BODY_SIZE = 1024 * 1024;
 const MAX_AUTH_BODY_SIZE = 10 * 1024;
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
-// Dynamic API paths: /api/<registrator>/verify-apk
-const API_PUBLIC_REGEX = [
-  /^\/api\/[^/]+\/verify-apk$/,
-];
+const API_PUBLIC_REGEX: RegExp[] = [];
 
 // Sub-paths of API_PUBLIC entries are also public (e.g., /api/free-key/games)
 function isApiPublic(pathname: string): boolean {
