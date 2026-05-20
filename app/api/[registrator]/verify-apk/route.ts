@@ -49,10 +49,16 @@ export async function POST(
     const expectedSha1 = (gameSetting.apkSha1 || '').toLowerCase();
     const expectedSha256 = (gameSetting.apkSha256 || '').toLowerCase();
 
-    const sha1Match = !expectedSha1 || apkSha1 === expectedSha1;
-    const sha256Match = !expectedSha256 || apkSha256 === expectedSha256;
+    // If check is enabled but no hashes configured, reject (admin must configure first)
+    if (!expectedSha1 && !expectedSha256) {
+      return NextResponse.json({ status: false, reason: 'Signature check enabled but no hashes configured' });
+    }
 
-    if (sha1Match && sha256Match) {
+    const sha1Match = apkSha1 === expectedSha1;
+    const sha256Match = apkSha256 === expectedSha256;
+
+    // Require at least one non-empty expected hash to match
+    if ((expectedSha1 && sha1Match) || (expectedSha256 && sha256Match)) {
       return NextResponse.json({ status: true, reason: 'Signature valid' });
     }
 
