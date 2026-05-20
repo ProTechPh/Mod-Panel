@@ -88,6 +88,11 @@ export interface GameSettingDoc {
   patches: string;
   patchVersion: number;
   registrator: string;
+  announcement: string;
+  announcementStatus: 'on' | 'off';
+  apkSha1: string;
+  apkSha256: string;
+  apkSignatureEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

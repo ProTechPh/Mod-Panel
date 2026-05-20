@@ -17,11 +17,12 @@ function isApiPublic(pathname: string): boolean {
   return API_PUBLIC.some(p => pathname === p || pathname.startsWith(p + '/'));
 }
 
-// Dynamic public paths: /<registrator>/free-key, /<registrator>/store, /<registrator>/store/success
+// Dynamic public paths: /<registrator>/free-key, /<registrator>/store, /<registrator>/store/success, /<registrator>/announcement
 const PUBLIC_REGEX = [
   /^\/[^/]+\/free-key(?:\/)?$/,
   /^\/[^/]+\/store(?:\/)?$/,
   /^\/[^/]+\/store\/success(?:\/.*)?$/,
+  /^\/[^/]+\/announcement(?:\/)?$/,
 ];
 
 function addSecurityHeaders(response: NextResponse): void {

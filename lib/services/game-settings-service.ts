@@ -48,6 +48,11 @@ export async function addGameSetting(data: {
     telegramChannel: '',
     telegramGroup: '',
     features: { esp: false, item: false, silentAim: false, aim: false, bulletTrack: false, memory: false, floating: false, setting: false },
+    announcement: '',
+    announcementStatus: 'off',
+    apkSha1: '',
+    apkSha256: '',
+    apkSignatureEnabled: false,
   });
   clearConfigCache();
   return { ...game.toObject(), _id: game._id.toString() };

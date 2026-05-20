@@ -213,6 +213,8 @@ export async function validateKey(game: string, userKey: string, serial: string)
       EXP: expiredStr,
       device: key.maxDevices,
       rng: Math.floor(Date.now() / 1000),
+      registrator: key.registrator,
+      announcement: gameSetting?.announcementStatus === 'on' ? (gameSetting?.announcement || '') : '',
     },
   };
 }
