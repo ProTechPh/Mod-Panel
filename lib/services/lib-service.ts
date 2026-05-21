@@ -22,7 +22,7 @@ export async function getLib(id: string) {
   return sanitize(lib);
 }
 
-export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2) {
+export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free') {
   await dbConnect();
 
   const existing = await Lib.findOne({ fileName }).lean();
@@ -50,6 +50,7 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
     {
       fileName,
       displayName: fileName,
+      type: libType === 'paid' ? 'paid' : 'free',
       ftpUrl,
       fileSize,
       fileSizeBytes,
@@ -63,9 +64,13 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
 }
 
 
-export async function updateLib(id: string, updates: { displayName?: string }) {
+export async function updateLib(id: string, updates: { displayName?: string; type?: string }) {
   await dbConnect();
-  const lib = await Lib.findByIdAndUpdate(id, { $set: updates }, { new: true }).lean();
+  const setData: Record<string, any> = {};
+  if (updates.displayName !== undefined) setData.displayName = updates.displayName;
+  if (updates.type !== undefined) setData.type = updates.type === 'paid' ? 'paid' : 'free';
+  if (Object.keys(setData).length === 0) return getLib(id);
+  const lib = await Lib.findByIdAndUpdate(id, { $set: setData }, { new: true }).lean();
   if (!lib) return null;
   return sanitize(lib);
 }

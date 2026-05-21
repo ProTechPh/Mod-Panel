@@ -14,6 +14,7 @@ interface Lib {
   _id: string;
   fileName: string;
   displayName: string;
+  type: string;
   fileSize: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -106,9 +107,11 @@ export default function LibPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileName, setUploadFileName] = useState('');
+  const [uploadType, setUploadType] = useState<'free' | 'paid'>('free');
   const [snippetLib, setSnippetLib] = useState<Lib | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [editType, setEditType] = useState<'free' | 'paid'>('free');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLibs = async () => {
@@ -148,6 +151,7 @@ export default function LibPage() {
         formData.append('chunkIndex', String(i));
         formData.append('totalChunks', String(totalChunks));
         formData.append('totalSize', String(file.size));
+        formData.append('type', uploadType);
 
         const res = await fetch('/api/libs/upload', { method: 'POST', body: formData });
         if (!res.ok) {
@@ -171,15 +175,17 @@ export default function LibPage() {
     }
   };
 
-  const handleUpdate = async (id: string, displayName: string) => {
+  const handleUpdate = async (id: string, displayName: string, type?: string) => {
     try {
+      const body: Record<string, string> = { id, displayName };
+      if (type) body.type = type;
       const res = await fetch('/api/libs', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, displayName }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) { toast.error('Update failed'); return; }
-      toast.success('Display name updated');
+      toast.success('Library updated');
       setEditingId(null);
       fetchLibs();
     } catch {
@@ -203,16 +209,24 @@ export default function LibPage() {
       {snippetLib && <SnippetModal lib={snippetLib} onClose={() => setSnippetLib(null)} />}
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Library</h2>
-          <div>
-            <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload" />
-            <label htmlFor="lib-upload" className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer", uploading && "pointer-events-none opacity-50")}>
-                <Upload className="mr-2 h-4 w-4" />
-                {uploading ? 'Uploading...' : 'Upload .so'}
-            </label>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Library</h2>
+            <div className="flex items-center gap-2">
+              <select
+                value={uploadType}
+                onChange={e => setUploadType(e.target.value as 'free' | 'paid')}
+                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+              >
+                <option value="free">FREE</option>
+                <option value="paid">PAID</option>
+              </select>
+              <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload" />
+              <label htmlFor="lib-upload" className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer", uploading && "pointer-events-none opacity-50")}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {uploading ? 'Uploading...' : 'Upload .so'}
+              </label>
+            </div>
           </div>
-        </div>
 
         {uploading && (
           <div className="space-y-2 rounded-lg border border-border/50 bg-card p-4">
@@ -233,6 +247,7 @@ export default function LibPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>File Name</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Size</TableHead>
                   <TableHead>Uploaded By</TableHead>
                   <TableHead>Uploaded</TableHead>
@@ -241,7 +256,7 @@ export default function LibPage() {
               </TableHeader>
               <TableBody>
                 {libs.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No files</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No files</TableCell></TableRow>
                 ) : libs.map(lib => (
                   <TableRow key={lib._id}>
                     <TableCell className="font-mono">
@@ -254,17 +269,35 @@ export default function LibPage() {
                             className="h-7 w-40 rounded border border-border bg-background px-2 text-xs font-mono outline-none focus:border-primary"
                             autoFocus
                             onKeyDown={e => {
-                              if (e.key === 'Enter') handleUpdate(lib._id, editValue);
+                              if (e.key === 'Enter') handleUpdate(lib._id, editValue, editType);
                               if (e.key === 'Escape') setEditingId(null);
                             }}
                           />
-                          <Button variant="ghost" size="sm" onClick={() => handleUpdate(lib._id, editValue)} className="h-7 w-7">
+                          <select
+                            value={editType}
+                            onChange={e => setEditType(e.target.value as 'free' | 'paid')}
+                            className="h-7 rounded border border-border bg-background px-1 text-xs outline-none focus:border-primary"
+                          >
+                            <option value="free">FREE</option>
+                            <option value="paid">PAID</option>
+                          </select>
+                          <Button variant="ghost" size="sm" onClick={() => handleUpdate(lib._id, editValue, editType)} className="h-7 w-7">
                             <Save className="h-3 w-3 text-green-500" />
                           </Button>
                         </div>
                       ) : (
                         <span className="cursor-default">{lib.displayName || lib.fileName}</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "inline-block rounded px-2 py-0.5 text-[11px] font-semibold leading-none",
+                        lib.type === 'paid'
+                          ? "bg-amber-500/15 text-amber-500"
+                          : "bg-emerald-500/15 text-emerald-500"
+                      )}>
+                        {lib.type === 'paid' ? 'PAID' : 'FREE'}
+                      </span>
                     </TableCell>
                     <TableCell>{lib.fileSize}</TableCell>
                     <TableCell>{lib.uploadedBy}</TableCell>
@@ -274,8 +307,8 @@ export default function LibPage() {
                         {/* Edit display name */}
                         <Button
                           variant="ghost" size="sm"
-                          onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); }}
-                          title="Edit display name"
+                          onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); setEditType((lib.type || 'free') as 'free' | 'paid'); }}
+                          title="Edit"
                         >
                           <Pencil className="h-3 w-3 text-muted-foreground" />
                         </Button>

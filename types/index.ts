@@ -118,6 +118,7 @@ export interface LibDoc {
   _id: ObjectId;
   fileName: string;
   displayName: string;
+  type: 'free' | 'paid';
   ftpUrl: string;
   fileSize: string;
   fileSizeBytes: number;
