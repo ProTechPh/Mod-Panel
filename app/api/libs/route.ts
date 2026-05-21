@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
 import type { ReadableStream as NodeReadableStream } from 'stream/web';
 import { authenticate } from '@/lib/auth/middleware';
-import { listLibs, getLib, uploadLib, deleteLib } from '@/lib/services/lib-service';
+import { listLibs, getLib, uploadLib, updateLib, deleteLib } from '@/lib/services/lib-service';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
@@ -35,6 +35,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
     console.error('Lib upload error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const user = await authenticate(request);
+  if (!user || (user.level !== 1 && user.level !== 2)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { id, displayName } = await request.json();
+    if (!id) return NextResponse.json({ error: 'Lib ID required' }, { status: 400 });
+    if (!displayName || typeof displayName !== 'string') return NextResponse.json({ error: 'displayName required' }, { status: 400 });
+
+    const lib = await getLib(id);
+    if (!lib) return NextResponse.json({ error: 'Lib not found' }, { status: 404 });
+    if (user.level !== 1 && lib.uploadedBy !== user.username) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const updated = await updateLib(id, { displayName: displayName.trim() });
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error('Lib update error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

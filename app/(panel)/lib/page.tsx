@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Upload, Trash2, Download, Link, Code, X, Copy, Check } from 'lucide-react';
+import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lib {
@@ -19,47 +19,24 @@ interface Lib {
   uploadedAt: string;
 }
 
-// XOR obfuscation helper — mirrors the Java decode() logic
-function xorEncrypt(str: string, key: number = 0x5A): string {
-  const bytes = Array.from(str).map(c => (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0').toUpperCase());
-  // group in rows of 8 for readability
-  const rows: string[] = [];
-  for (let i = 0; i < bytes.length; i += 8) {
-    rows.push('\t\t\t' + bytes.slice(i, i + 8).map(b => `0x${b}`).join(','));
-  }
-  return rows.join(',\n');
-}
-
-function generateSnippet(fileName: string, downloadUrl: string): string {
-  const lnBytes = xorEncrypt(fileName);
-  const duBytes = xorEncrypt(downloadUrl);
-  return `\t// Runtime-decoded identifiers (XOR key: 0x5A)
-\tpublic static String libname;
-\tpublic static String downloadurl;
-
-\tprivate static String d(byte[] b) {
-\t\tchar[] c = new char[b.length];
-\t\tfor (int i = 0; i < b.length; i++) {
-\t\t\tc[i] = (char)(b[i] ^ 0x5A);
-\t\t}
-\t\treturn new String(c);
-\t}
-
-\tstatic {
-\t\tlibname = d(new byte[]{
-${lnBytes}
-\t\t});
-\t\tdownloadurl = d(new byte[]{
-${duBytes}
-\t\t});
-\t}`;
+function generateSnippet(lib: Lib, origin: string): string {
+  const libsListUrl = `${origin}/api/libs/list?uploadedBy=${lib.uploadedBy}`;
+  return `\t// Dynamic lib fetch — no hardcoded values needed
+\t// The app fetches available libs from:
+\t// ${libsListUrl}
+\t//
+\t// Make sure LIBS_LIST_URL in MainActivity uses the correct uploadedBy value.
+\t// Your uploadedBy: "${lib.uploadedBy}"
+\t//
+\t// Display name: "${lib.displayName}"
+\t// File name:    "${lib.fileName}"
+\t// Download URL: ${origin}/api/libs/serve/${lib.fileName}`;
 }
 
 function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const downloadUrl = `${origin}/api/libs/serve/${lib.fileName}`;
-  const snippet = generateSnippet(lib.fileName, downloadUrl);
+  const snippet = generateSnippet(lib, origin);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet);
@@ -85,14 +62,21 @@ function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
         {/* Info */}
         <div className="px-5 pt-4 pb-2">
           <p className="text-xs text-muted-foreground mb-3">
-            I-paste ito sa loob ng iyong <code className="bg-muted px-1 rounded">MainActivity</code> class.
-            Ang <code className="bg-muted px-1 rounded">libname</code> at <code className="bg-muted px-1 rounded">downloadurl</code> ay encrypted gamit ang XOR para hindi visible sa decompiler.
+            Dynamic na kino-fetch ng <code className="bg-muted px-1 rounded">MainActivity</code> ang libs mula sa <code className="bg-muted px-1 rounded">/api/libs/list?uploadedBy=WINTER</code>.
+            Hindi na kailangan ng hardcoded snippet — i-upload mo lang ang lib at automatic na lalabas sa app.
           </p>
 
-          {/* Download URL preview */}
-          <div className="mb-3 rounded-lg bg-muted/50 border border-border/30 px-3 py-2">
-            <p className="text-xs text-muted-foreground mb-0.5">Download URL</p>
-            <p className="font-mono text-xs break-all text-foreground">{downloadUrl}</p>
+          {/* Info */}
+          <div className="mb-3 rounded-lg bg-muted/50 border border-border/30 px-3 py-2 space-y-1">
+            <p className="text-xs text-muted-foreground">
+              <span className="text-foreground font-medium">Display name:</span> {lib.displayName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-foreground font-medium">File name:</span> {lib.fileName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-foreground font-medium">Uploaded by:</span> {lib.uploadedBy}
+            </p>
           </div>
         </div>
 
@@ -123,6 +107,8 @@ export default function LibPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileName, setUploadFileName] = useState('');
   const [snippetLib, setSnippetLib] = useState<Lib | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLibs = async () => {
@@ -185,6 +171,22 @@ export default function LibPage() {
     }
   };
 
+  const handleUpdate = async (id: string, displayName: string) => {
+    try {
+      const res = await fetch('/api/libs', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, displayName }),
+      });
+      if (!res.ok) { toast.error('Update failed'); return; }
+      toast.success('Display name updated');
+      setEditingId(null);
+      fetchLibs();
+    } catch {
+      toast.error('Update failed');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this file?')) return;
     const res = await fetch(`/api/libs?id=${id}`, { method: 'DELETE' });
@@ -242,12 +244,41 @@ export default function LibPage() {
                   <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No files</TableCell></TableRow>
                 ) : libs.map(lib => (
                   <TableRow key={lib._id}>
-                    <TableCell className="font-mono">{lib.displayName || lib.fileName}</TableCell>
+                    <TableCell className="font-mono">
+                      {editingId === lib._id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={e => setEditValue(e.target.value)}
+                            className="h-7 w-40 rounded border border-border bg-background px-2 text-xs font-mono outline-none focus:border-primary"
+                            autoFocus
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleUpdate(lib._id, editValue);
+                              if (e.key === 'Escape') setEditingId(null);
+                            }}
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => handleUpdate(lib._id, editValue)} className="h-7 w-7">
+                            <Save className="h-3 w-3 text-green-500" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="cursor-default">{lib.displayName || lib.fileName}</span>
+                      )}
+                    </TableCell>
                     <TableCell>{lib.fileSize}</TableCell>
                     <TableCell>{lib.uploadedBy}</TableCell>
                     <TableCell className="text-xs">{lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : ''}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        {/* Edit display name */}
+                        <Button
+                          variant="ghost" size="sm"
+                          onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); }}
+                          title="Edit display name"
+                        >
+                          <Pencil className="h-3 w-3 text-muted-foreground" />
+                        </Button>
                         {/* Java Snippet button */}
                         <Button variant="ghost" size="sm" onClick={() => setSnippetLib(lib)} title="Get Java Snippet">
                           <Code className="h-3 w-3 text-primary" />

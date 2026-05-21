@@ -63,6 +63,13 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
 }
 
 
+export async function updateLib(id: string, updates: { displayName?: string }) {
+  await dbConnect();
+  const lib = await Lib.findByIdAndUpdate(id, { $set: updates }, { new: true }).lean();
+  if (!lib) return null;
+  return sanitize(lib);
+}
+
 export async function deleteLib(id: string) {
   await dbConnect();
   const lib = await Lib.findById(id).lean();
