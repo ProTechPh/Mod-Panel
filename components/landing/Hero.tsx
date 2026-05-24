@@ -9,7 +9,7 @@ import { ScrollIndicator } from './ScrollIndicator';
 import { ShieldCheck, Users, Zap, Sparkles, ChevronRight, ArrowRight, Star } from 'lucide-react';
 import '@/components/landing/landing.css';
 
-gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+gsap.registerPlugin(ScrollTrigger);
 
 const words = ['Dominate', 'Win', 'Conquer', 'Destroy'];
 
