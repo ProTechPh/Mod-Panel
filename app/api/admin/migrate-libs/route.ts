@@ -4,7 +4,7 @@ import FtpConfig from '@/lib/db/models/FtpConfig';
 import Lib from '@/lib/db/models/Lib';
 import { authenticate } from '@/lib/auth/middleware';
 import * as ftp from 'basic-ftp';
-import { PassThrough } from 'stream';
+import { PassThrough, Readable } from 'stream';
 
 export async function POST(request: NextRequest) {
   const user = await authenticate(request);
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           await client.downloadTo(ws, oldPath + fn);
           await done;
 
-          await client.uploadFrom(Buffer.concat(chunks), newPath + fn);
+          await client.uploadFrom(Readable.from(Buffer.concat(chunks)), newPath + fn);
           results.push({ fileName: fn, status: 'copied', size: oldSize });
         } catch (err: any) {
           results.push({ fileName: fn, status: 'error', error: err.message });
