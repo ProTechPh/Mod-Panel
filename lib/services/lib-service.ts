@@ -12,8 +12,18 @@ function sanitize(lib: any) {
 export async function resolveFtpConfigId(ftpConfigId?: string): Promise<string | undefined> {
   if (ftpConfigId) return ftpConfigId;
   await dbConnect();
-  const first = await FtpConfig.findOne({ isActive: true }).sort({ order: 1 }).lean();
-  return first?._id.toString();
+  const active = await FtpConfig.find({ isActive: true }).sort({ order: 1 }).lean();
+  if (active.length === 0) return undefined;
+  if (active.length === 1) return active[0]._id.toString();
+
+  // Pick the FTP config with the fewest libs (least-used distribution)
+  const counts = await Promise.all(active.map(c =>
+    Lib.countDocuments({ ftpConfigId: c._id.toString() })
+  ));
+  const minCount = Math.min(...counts);
+  const candidates = active.filter((_, i) => counts[i] === minCount);
+  const picked = candidates[Math.floor(Math.random() * candidates.length)];
+  return picked._id.toString();
 }
 
 export async function listLibs(registrator?: string) {
