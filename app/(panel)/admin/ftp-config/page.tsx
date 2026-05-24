@@ -145,7 +145,7 @@ export default function FtpConfigPage() {
           <div className="space-y-3">
             <div>
               <Label>Label</Label>
-              <Input value={form.label} onChange={e => setForm({ ...form, label: e.target.value })} placeholder="e.g. InfinityFree Main" />
+              <Input value={form.label} onChange={e => setForm({ ...form, label: e.target.value })} placeholder="e.g. Main Server" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -181,8 +181,8 @@ export default function FtpConfigPage() {
               <Input value={form.remotePath} onChange={e => setForm({ ...form, remotePath: e.target.value })} placeholder="/htdocs/" />
             </div>
             <div>
-              <Label>Stats URL (optional)</Label>
-              <Input value={form.statsUrl} onChange={e => setForm({ ...form, statsUrl: e.target.value })} placeholder="http://mod.kesug.com/stats.php" />
+              <Label>Stats URL</Label>
+              <Input value={form.statsUrl} onChange={e => setForm({ ...form, statsUrl: e.target.value })} placeholder="https://example.com/stats.php" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />
