@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getAllFtpStats } from '@/lib/ftp/client';
+import { getAllFtpStats, getFtpConfigs } from '@/lib/ftp/client';
 
-const DISK_LIMIT = 5 * 1024 * 1024 * 1024;
-const INODE_LIMIT = 80000;
+const PER_FTP_DISK = 5 * 1024 * 1024 * 1024;
+const PER_FTP_INODES = 80000;
 const CACHE_TTL = 5 * 60 * 1000;
 
 let cached: { data: any; timestamp: number } | null = null;
@@ -13,8 +13,13 @@ export async function GET() {
     return NextResponse.json(cached.data);
   }
 
-  let disk = { used: 0, total: DISK_LIMIT, used_human: 'N/A', total_human: '5 GB', percent: 0 };
-  let inodes = { used: 0, total: INODE_LIMIT, percent: 0 };
+  const configs = await getFtpConfigs();
+  const count = Math.max(configs.length, 1);
+  const totalDisk = PER_FTP_DISK * count;
+  const totalInodes = PER_FTP_INODES * count;
+
+  let disk = { used: 0, total: totalDisk, used_human: 'N/A', total_human: `${count * 5} GB`, percent: 0 };
+  let inodes = { used: 0, total: totalInodes, percent: 0 };
   const bandwidth = { used_human: 'N/A', total_human: 'Unlimited' };
   const hits = { used_human: 'N/A', total_human: '50,000' };
 
@@ -22,15 +27,15 @@ export async function GET() {
     const stats = await getAllFtpStats();
     disk = {
       used: stats.totalSizeBytes,
-      total: DISK_LIMIT,
+      total: totalDisk,
       used_human: formatBytes(stats.totalSizeBytes),
-      total_human: '5 GB',
-      percent: DISK_LIMIT > 0 ? +((stats.totalSizeBytes / DISK_LIMIT) * 100).toFixed(1) : 0,
+      total_human: `${count * 5} GB`,
+      percent: totalDisk > 0 ? +((stats.totalSizeBytes / totalDisk) * 100).toFixed(1) : 0,
     };
     inodes = {
       used: stats.inodesUsed,
-      total: INODE_LIMIT,
-      percent: INODE_LIMIT > 0 ? +((stats.inodesUsed / INODE_LIMIT) * 100).toFixed(1) : 0,
+      total: totalInodes,
+      percent: totalInodes > 0 ? +((stats.inodesUsed / totalInodes) * 100).toFixed(1) : 0,
     };
   } catch { /* scan failed */ }
 
