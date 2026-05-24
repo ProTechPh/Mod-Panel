@@ -11,11 +11,13 @@ import { GrainOverlay } from './GrainOverlay';
 import { GradientOrbs } from './GradientOrbs';
 import { SpotlightCursor } from './SpotlightCursor';
 import { TikTokLiveSection } from './TikTokLiveSection';
+import { ThemeToggle } from './ThemeToggle';
 import '@/components/landing/landing.css';
 
 export default function LandingPage() {
   return (
-    <main className="relative bg-[oklch(0.08_0_0)] text-white min-h-screen overflow-x-clip">
+    <main className="relative min-h-screen overflow-x-clip" style={{ background: 'var(--landing-bg)', color: 'var(--landing-text)' }}>
+      <ThemeToggle />
       <GrainOverlay />
       <GradientOrbs />
       <SpotlightCursor />

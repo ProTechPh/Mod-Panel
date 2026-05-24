@@ -6,7 +6,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
 import { APP_NAME } from '@/lib/constants/app';
 import { ScrollIndicator } from './ScrollIndicator';
-import { ShieldCheck, Users, Zap } from 'lucide-react';
+import { ShieldCheck, Users, Zap, Sparkles } from 'lucide-react';
 import '@/components/landing/landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -91,26 +91,30 @@ export function Hero() {
       {/* Grid background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+              linear-gradient(var(--grid-line) 1px, transparent 1px),
+              linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)
             `,
             backgroundSize: '60px 60px',
           }}
         />
       </div>
 
+      {/* Decorative gradient glow top-right */}
+      <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-[0.04] dark:opacity-[0.06]" style={{ background: 'oklch(0.5 0.2 270)', filter: 'blur(120px)' }} />
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.03] dark:opacity-[0.05]" style={{ background: 'oklch(0.6 0.15 200)', filter: 'blur(120px)' }} />
+
       <div className="relative z-10 text-center max-w-4xl mx-auto">
         {/* Trust badge */}
         <div
           ref={badgeRef}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8"
+          className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full glass-card mb-8"
         >
-          <ShieldCheck className="size-3.5 text-emerald-400" />
-          <span className="text-xs font-medium text-white/70">
-            Trusted by <span className="text-emerald-400 font-semibold">5,000+</span> gamers worldwide
+          <ShieldCheck className="size-4 text-emerald-500" />
+          <span className="text-xs font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+            Trusted by <span className="text-emerald-500 font-semibold">5,000+</span> gamers worldwide
           </span>
         </div>
 
@@ -120,7 +124,12 @@ export function Hero() {
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none"
           style={{ perspective: '600px' }}
         >
-          <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40">
+          <span
+            className="bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom, var(--hero-gradient-from), var(--hero-gradient-to))',
+            }}
+          >
             {APP_NAME}
           </span>
         </h1>
@@ -129,7 +138,8 @@ export function Hero() {
         <div className="mt-6 space-y-2">
           <p
             ref={taglineRef}
-            className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto leading-relaxed"
+            className="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed"
+            style={{ color: 'var(--landing-text-muted)' }}
           >
             Dominate every match with undetectable mods. Instant activation, zero compromises, and a growing community of elite players.
           </p>
@@ -146,26 +156,42 @@ export function Hero() {
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-white/70 border border-white/10 bg-white/[0.04] backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 hover:text-white hover:scale-105 active:scale-95 min-w-[180px]"
+            className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold glass-card transition-all hover:scale-105 active:scale-95 min-w-[180px]"
+            style={{ color: 'var(--landing-text-muted)' }}
           >
             <Users className="size-4" />
             Sign In
           </Link>
         </div>
 
-        {/* Bottom trust indicators */}
-        <div className="mt-12 flex items-center justify-center gap-6 sm:gap-10 text-white/40">
-          <div className="flex items-center gap-2 text-xs">
-            <ShieldCheck className="size-3.5 text-emerald-400/60" />
-            <span>Undetectable</span>
+        {/* Features strip */}
+        <div className="mt-14 flex items-center justify-center gap-8 sm:gap-12 flex-wrap" style={{ color: 'var(--landing-text-subtle)' }}>
+          <div className="flex items-center gap-2.5 text-xs">
+            <div className="size-8 rounded-lg flex items-center justify-center" style={{ background: 'oklch(0.7 0.2 145 / 10%)' }}>
+              <ShieldCheck className="size-4 text-emerald-500" />
+            </div>
+            <div className="text-left">
+              <span className="block font-medium" style={{ color: 'var(--landing-text)' }}>Undetectable</span>
+              <span className="block" style={{ color: 'var(--landing-text-subtle)' }}>Stay under the radar</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <Zap className="size-3.5 text-amber-400/60" />
-            <span>Instant Delivery</span>
+          <div className="flex items-center gap-2.5 text-xs">
+            <div className="size-8 rounded-lg flex items-center justify-center" style={{ background: 'oklch(0.6 0.2 250 / 10%)' }}>
+              <Zap className="size-4 text-blue-500" />
+            </div>
+            <div className="text-left">
+              <span className="block font-medium" style={{ color: 'var(--landing-text)' }}>Instant Delivery</span>
+              <span className="block" style={{ color: 'var(--landing-text-subtle)' }}>Get keys immediately</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <Users className="size-3.5 text-blue-400/60" />
-            <span>24/7 Support</span>
+          <div className="flex items-center gap-2.5 text-xs">
+            <div className="size-8 rounded-lg flex items-center justify-center" style={{ background: 'oklch(0.7 0.18 80 / 10%)' }}>
+              <Sparkles className="size-4 text-amber-500" />
+            </div>
+            <div className="text-left">
+              <span className="block font-medium" style={{ color: 'var(--landing-text)' }}>24/7 Support</span>
+              <span className="block" style={{ color: 'var(--landing-text-subtle)' }}>We&apos;re here to help</span>
+            </div>
           </div>
         </div>
       </div>

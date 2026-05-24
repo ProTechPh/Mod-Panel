@@ -100,7 +100,7 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
           </div>
           <h3 className="text-base font-semibold">{feature.name}</h3>
         </div>
-        <p className="text-sm text-white/50 leading-relaxed">{feature.description}</p>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--landing-text-muted)' }}>{feature.description}</p>
       </div>
     </div>
   );
@@ -136,14 +136,14 @@ export function Features() {
     <section ref={sectionRef} className="relative py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6">
-            <Sparkles className="size-3.5 text-purple-400" />
-            <span className="text-xs font-medium text-white/70">Premium Features</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card mb-6">
+            <Sparkles className="size-3.5 text-purple-500" />
+            <span className="text-xs font-medium" style={{ color: 'var(--landing-text-muted)' }}>Premium Features</span>
           </div>
           <h2 className="section-title text-3xl sm:text-4xl font-bold tracking-tight">
             Everything You Need to <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400">Dominate</span>
           </h2>
-          <p className="text-white/50 mt-3 max-w-xl mx-auto">
+          <p className="mt-3 max-w-xl mx-auto" style={{ color: 'var(--landing-text-muted)' }}>
             A comprehensive suite of undetectable mods designed for competitive players who demand the best.
           </p>
         </div>

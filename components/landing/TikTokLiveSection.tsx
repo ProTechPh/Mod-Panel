@@ -131,16 +131,16 @@ export function TikTokLiveSection() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 mb-6">
-            <Radio className="size-3.5 text-pink-400" />
-            <span className="text-xs font-medium text-pink-400 tracking-wide uppercase">Browse Streamers</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card mb-6">
+            <Radio className="size-3.5 text-pink-500" />
+            <span className="text-xs font-medium" style={{ color: 'var(--landing-text-muted)' }}>Browse Streamers</span>
           </div>
           <h2 className="section-title text-3xl sm:text-4xl font-bold tracking-tight mb-4">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500">
               TikTok Live Streamers
             </span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p style={{ color: 'var(--landing-text-muted)' }} className="max-w-2xl mx-auto">
             Discover our community of streamers. Watch them live and see their stats.
           </p>
         </div>
@@ -150,26 +150,27 @@ export function TikTokLiveSection() {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div className="flex items-center gap-3">
               {liveCount > 0 && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-card">
                   <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-sm font-medium text-red-400">
+                  <span className="text-sm font-medium text-red-500">
                     {liveCount} live now
                   </span>
                 </div>
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm" style={{ color: 'var(--landing-text-subtle)' }}>
                 {streamers.length} streamer{streamers.length !== 1 ? 's' : ''} total
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5" style={{ color: 'var(--landing-text-subtle)' }} />
                 <Input
                   placeholder="Search streamers..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-48 h-9 pl-9 text-sm bg-white/5 border-white/10 focus:border-purple-500/50"
+                  className="w-48 h-9 pl-9 text-sm glass-card"
+                  style={{ border: '1px solid var(--glass-border)' }}
                 />
               </div>
               <Button
@@ -179,8 +180,8 @@ export function TikTokLiveSection() {
                 className={cn(
                   'h-9 text-xs gap-1.5',
                   filterLive
-                    ? 'bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/20'
-                    : 'text-muted-foreground hover:text-white'
+                    ? 'bg-red-500/15 text-red-500 border border-red-500/20 hover:bg-red-500/20'
+                    : 'hover:text-foreground'
                 )}
               >
                 <div className={cn('h-1.5 w-1.5 rounded-full', filterLive ? 'bg-red-500' : 'bg-muted-foreground')} />
@@ -194,20 +195,20 @@ export function TikTokLiveSection() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-2 border-purple-500/20 border-t-purple-500" />
-              <Radio className="absolute inset-0 m-auto size-5 text-purple-400 animate-pulse" />
+              <div className="animate-spin rounded-full h-12 w-12 border-2" style={{ borderColor: 'oklch(0.6 0.2 300 / 20%)', borderTopColor: 'oklch(0.6 0.2 300)' }} />
+              <Radio className="absolute inset-0 m-auto size-5 text-purple-500 animate-pulse" />
             </div>
-            <p className="text-sm text-muted-foreground animate-pulse">Loading streamers...</p>
+            <p className="text-sm animate-pulse" style={{ color: 'var(--landing-text-muted)' }}>Loading streamers...</p>
           </div>
         ) : filteredStreamers.length === 0 ? (
           <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center p-5 rounded-full bg-muted/30 mb-5">
-              <Search className="size-8 text-muted-foreground" />
+            <div className="inline-flex items-center justify-center p-5 rounded-full glass-card mb-5">
+              <Search className="size-8" style={{ color: 'var(--landing-text-subtle)' }} />
             </div>
-            <p className="text-muted-foreground text-lg font-medium">
+            <p className="text-lg font-medium" style={{ color: 'var(--landing-text-muted)' }}>
               {searchQuery ? 'No streamers match your search' : 'No streamers yet'}
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-sm mt-2" style={{ color: 'var(--landing-text-subtle)' }}>
               {searchQuery ? 'Try a different search term' : 'Be the first to join our TikTok live program!'}
             </p>
           </div>
@@ -217,11 +218,10 @@ export function TikTokLiveSection() {
               <div
                 key={streamer._id}
                 className={cn(
-                  'tiktok-browse-card group relative rounded-2xl overflow-hidden transition-all duration-300',
-                  'border hover:shadow-2xl',
+                  'tiktok-browse-card group relative rounded-2xl overflow-hidden transition-all duration-300 border',
                   streamer.isLive
-                    ? 'border-red-500/30 bg-red-500/[0.03] hover:border-red-500/50 hover:shadow-red-500/10'
-                    : 'border-white/[0.06] bg-white/[0.02] hover:border-purple-500/30 hover:shadow-purple-500/10'
+                    ? 'border-red-500/30 bg-red-500/[0.02] hover:border-red-500/50 hover:shadow-red-500/10'
+                    : 'hover:shadow-lg glass-card'
                 )}
               >
                 {/* Live glow effect */}
@@ -241,27 +241,27 @@ export function TikTokLiveSection() {
                           : 'bg-gradient-to-br from-purple-500/15 to-pink-500/15'
                       )}>
                         <span className={cn(
-                          streamer.isLive ? 'text-red-400' : 'text-purple-400'
+                          streamer.isLive ? 'text-red-500' : 'text-purple-500'
                         )}>
                           {streamer.streamerName.charAt(0).toUpperCase()}
                         </span>
                         {streamer.isLive && (
-                          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 ring-2 ring-[oklch(0.08_0_0)] animate-pulse" />
+                          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
                         )}
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="font-semibold text-sm truncate group-hover:text-white transition-colors">
+                        <h3 className="font-semibold text-sm truncate transition-colors">
                           {streamer.streamerName}
                         </h3>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-xs truncate" style={{ color: 'var(--landing-text-subtle)' }}>
                           @{streamer.tiktokUsername}
                         </p>
                       </div>
                     </div>
 
                     {streamer.isLive && (
-                      <Badge className="shrink-0 bg-red-500/15 text-red-400 border-red-500/20 text-[10px] px-2 py-0.5 gap-1">
+                      <Badge className="shrink-0 bg-red-500/15 text-red-500 border-red-500/20 text-[10px] px-2 py-0.5 gap-1">
                         <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         LIVE
                       </Badge>
@@ -269,13 +269,13 @@ export function TikTokLiveSection() {
                   </div>
 
                   {/* Stats row */}
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--landing-text-subtle)' }}>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="size-3 text-purple-400" />
+                      <Clock className="size-3 text-purple-500" />
                       <span>{formatTime(streamer.liveDuration)}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Heart className="size-3 text-pink-400" />
+                      <Heart className="size-3 text-pink-500" />
                       <span>{formatLastLive(streamer.lastLive)}</span>
                     </div>
                   </div>
@@ -289,7 +289,7 @@ export function TikTokLiveSection() {
                       'mt-auto flex items-center justify-center gap-2 w-full py-2 rounded-xl text-sm font-medium transition-all duration-200',
                       streamer.isLive
                         ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg shadow-red-500/20'
-                        : 'bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white border border-white/[0.06] hover:border-purple-500/20'
+                        : 'glass-card hover:scale-[1.02] active:scale-[0.98]'
                     )}
                   >
                     {streamer.isLive ? (
@@ -311,14 +311,14 @@ export function TikTokLiveSection() {
             ))}
 
             {/* Join as Streamer CTA Card */}
-            <div className="tiktok-browse-card group relative rounded-2xl overflow-hidden border-2 border-dashed border-purple-500/20 hover:border-purple-500/40 bg-purple-500/[0.02] transition-all duration-300">
+            <div className="tiktok-browse-card group relative rounded-2xl overflow-hidden border-2 border-dashed transition-all duration-300" style={{ borderColor: 'oklch(0.6 0.2 300 / 20%)', background: 'oklch(0.6 0.2 300 / 0.02)' }}>
               <div className="p-4 flex flex-col items-center justify-center gap-3 h-full text-center min-h-[180px]">
-                <div className="p-3 rounded-full bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
-                  <Sparkles className="size-6 text-purple-400" />
+                <div className="p-3 rounded-full" style={{ background: 'oklch(0.6 0.2 300 / 10%)' }}>
+                  <Sparkles className="size-6 text-purple-500" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Become a Streamer</h3>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-[180px]">
+                  <p className="text-xs mt-1 max-w-[180px]" style={{ color: 'var(--landing-text-muted)' }}>
                     Get your license key and join our community
                   </p>
                 </div>

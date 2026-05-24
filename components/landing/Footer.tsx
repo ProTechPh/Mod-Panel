@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
 import { APP_NAME } from '@/lib/constants/app';
+import { KeyRound } from 'lucide-react';
 import '@/components/landing/landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -32,14 +33,18 @@ export function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative border-t border-white/[0.08] py-12 px-4"
+      className="relative py-12 px-4"
+      style={{ borderTop: '1px solid var(--glass-border)' }}
     >
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
-        </p>
+        <div className="flex items-center gap-3">
+          <KeyRound className="size-5 text-emerald-500" />
+          <p className="text-sm" style={{ color: 'var(--landing-text-subtle)' }}>
+            &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+          </p>
+        </div>
 
-        <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+        <nav className="flex items-center gap-6 text-sm" style={{ color: 'var(--landing-text-subtle)' }}>
           <Link href="/login" className="hover:text-foreground transition-colors">
             Login
           </Link>

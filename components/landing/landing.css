@@ -1,13 +1,56 @@
+/* CSS custom properties for theme-aware landing page */
+:root {
+  --landing-bg: oklch(0.97 0.01 240 / 0.5);
+  --landing-text: oklch(0.145 0 0);
+  --landing-text-muted: oklch(0.4 0 0);
+  --landing-text-subtle: oklch(0.556 0 0);
+  --glass-bg: oklch(0.95 0.01 240 / 70%);
+  --glass-border: oklch(0 0 0 / 8%);
+  --glass-hover-border: oklch(0 0 0 / 15%);
+  --glass-shadow: oklch(0.5 0.2 270 / 8%);
+  --orb-opacity: 0.08;
+  --spotlight-opacity: 0.06;
+  --badge-bg: oklch(0.9 0 0 / 60%);
+  --badge-border: oklch(0 0 0 / 10%);
+  --grid-line: rgba(0,0,0,0.04);
+  --hero-gradient-from: oklch(0.145 0 0);
+  --hero-gradient-to: oklch(0.145 0 0 / 40%);
+  --step-line: oklch(0 0 0 / 10%);
+}
+
+.dark {
+  --landing-bg: oklch(0.08 0 0);
+  --landing-text: white;
+  --landing-text-muted: oklch(0.7 0 0);
+  --landing-text-subtle: oklch(0.5 0 0);
+  --glass-bg: oklch(0.18 0 0 / 60%);
+  --glass-border: oklch(1 0 0 / 8%);
+  --glass-hover-border: oklch(1 0 0 / 18%);
+  --glass-shadow: oklch(0.5 0.2 270 / 12%);
+  --orb-opacity: 0.15;
+  --spotlight-opacity: 0.08;
+  --badge-bg: oklch(0.25 0 0 / 60%);
+  --badge-border: oklch(1 0 0 / 10%);
+  --grid-line: rgba(255,255,255,0.04);
+  --hero-gradient-from: white;
+  --hero-gradient-to: rgba(255,255,255,0.4);
+  --step-line: rgba(255,255,255,0.1);
+}
+
 /* Grain/noise overlay */
 .grain-overlay {
   position: fixed;
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
+}
+
+.dark .grain-overlay {
+  opacity: 0.03;
 }
 
 /* Gradient orbs */
@@ -35,8 +78,9 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.15;
+  opacity: var(--orb-opacity);
   will-change: transform;
+  pointer-events: none;
 }
 
 .orb-1 {
@@ -48,6 +92,10 @@
   animation: orb-drift-1 20s ease-in-out infinite;
 }
 
+.dark .orb-1 {
+  background: oklch(0.5 0.25 270);
+}
+
 .orb-2 {
   width: 400px;
   height: 400px;
@@ -57,6 +105,10 @@
   animation: orb-drift-2 25s ease-in-out infinite;
 }
 
+.dark .orb-2 {
+  background: oklch(0.6 0.2 200);
+}
+
 .orb-3 {
   width: 300px;
   height: 300px;
@@ -64,6 +116,10 @@
   top: 40%;
   right: 20%;
   animation: orb-drift-3 18s ease-in-out infinite;
+}
+
+.dark .orb-3 {
+  background: oklch(0.4 0.22 300);
 }
 
 /* 3D tilt card */
@@ -77,17 +133,17 @@
   transform-style: preserve-3d;
 }
 
-/* Glass card */
+/* Glass card - theme aware */
 .glass-card {
-  background: oklch(0.2 0 0 / 50%);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid oklch(1 0 0 / 8%);
+  border: 1px solid var(--glass-border);
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .glass-card:hover {
-  border-color: oklch(1 0 0 / 15%);
-  box-shadow: 0 0 30px oklch(0.5 0.2 270 / 10%);
+  border-color: var(--glass-hover-border);
+  box-shadow: 0 0 30px var(--glass-shadow);
 }
 
 /* Status dot pulse */
@@ -143,14 +199,6 @@
   transform: scale(1.05);
 }
 
-/* Grid background for hero */
-.hero-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-
 /* Hero CTA buttons */
 .hero-cta-primary {
   background: linear-gradient(135deg, oklch(0.65 0.2 150), oklch(0.55 0.18 180));
@@ -186,8 +234,8 @@
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
-  background: oklch(0.25 0 0 / 60%);
-  border: 1px solid oklch(1 0 0 / 10%);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
 }
 
 /* Spotlight cursor effect */
@@ -198,7 +246,7 @@
   pointer-events: none;
   background: radial-gradient(
     600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    oklch(0.5 0.15 270 / 0.08),
+    oklch(0.5 0.15 270 / var(--spotlight-opacity)),
     transparent 40%
   );
 }
@@ -211,4 +259,29 @@
 
 .scroll-indicator {
   animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--landing-text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.05);
+  border-color: var(--glass-hover-border);
 }

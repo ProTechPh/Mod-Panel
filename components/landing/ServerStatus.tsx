@@ -46,7 +46,7 @@ function StatCard({ icon, label, value, accentColor, index }: {
   }, { scope: cardRef });
 
   return (
-    <div ref={cardRef} className="glass-card rounded-xl p-5 flex items-center gap-4 group hover:border-white/[0.15] transition-all">
+    <div ref={cardRef} className="glass-card rounded-xl p-5 flex items-center gap-4 transition-all">
       <div
         className="size-11 rounded-xl flex items-center justify-center shrink-0"
         style={{ background: `${accentColor}15` }}
@@ -54,7 +54,7 @@ function StatCard({ icon, label, value, accentColor, index }: {
         <span style={{ color: accentColor }}>{icon}</span>
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-white/50 uppercase tracking-wider font-medium">{label}</p>
+        <p className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--landing-text-subtle)' }}>{label}</p>
         <p className="text-lg font-semibold truncate">{value}</p>
       </div>
     </div>
@@ -109,14 +109,14 @@ export function ServerStatus() {
     <section ref={sectionRef} className="relative py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6">
-            <Signal className="size-3.5 text-emerald-400" />
-            <span className="text-xs font-medium text-white/70">Live Status</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card mb-6">
+            <Signal className="size-3.5 text-emerald-500" />
+            <span className="text-xs font-medium" style={{ color: 'var(--landing-text-muted)' }}>Live Status</span>
           </div>
           <h2 className="section-title text-3xl sm:text-4xl font-bold tracking-tight mb-4">
             Server Status
           </h2>
-          <p className="text-white/50 max-w-lg mx-auto">
+          <p style={{ color: 'var(--landing-text-muted)' }} className="max-w-lg mx-auto">
             {data.maintenanceMessage || (isActive ? 'All systems operational — everything is running smoothly.' : 'Maintenance in progress')}
           </p>
         </div>
@@ -125,16 +125,16 @@ export function ServerStatus() {
         <div className="flex items-center justify-center gap-3 mb-12">
           <div className="relative">
             <div
-              className={`size-3.5 rounded-full ${isActive ? 'bg-emerald-400 status-dot-active' : 'bg-amber-400'}`}
+              className={`size-3.5 rounded-full ${isActive ? 'bg-emerald-500 status-dot-active' : 'bg-amber-500'}`}
             />
           </div>
-          <span className={`text-sm font-semibold ${isActive ? 'text-emerald-400' : 'text-amber-400'}`}>
+          <span className={`text-sm font-semibold ${isActive ? 'text-emerald-500' : 'text-amber-500'}`}>
             {isActive ? 'System Online' : 'Maintenance'}
           </span>
           {isActive && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <Sparkles className="size-3 text-emerald-400" />
-              <span className="text-[10px] font-medium text-emerald-400">All Good</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'oklch(0.7 0.2 145 / 10%)', border: '1px solid oklch(0.7 0.2 145 / 20%)' }}>
+              <Sparkles className="size-3 text-emerald-500" />
+              <span className="text-[10px] font-medium text-emerald-500">All Good</span>
             </div>
           )}
         </div>
