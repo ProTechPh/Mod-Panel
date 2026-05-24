@@ -14,8 +14,6 @@ interface ServerConfig {
   maintenanceStatus: string;
   maintenanceMessage: string;
   maintenanceStartedAt: string | null;
-  announcement: string;
-  announcementStatus: string;
 }
 
 function useElapsed(startedAt: string | null, isOn: boolean) {
@@ -103,26 +101,7 @@ export default function ServerPage() {
     }
   };
 
-  const handleSaveAnnouncement = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch('/api/server-config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          announcement: config.announcement,
-          announcementStatus: config.announcementStatus
-        }),
-      });
-      if (res.ok) toast.success('Announcement saved');
-      else toast.error('Failed to save announcement');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const isOn = config.maintenanceStatus === 'on';
-  const isAnnOn = config.announcementStatus === 'on';
 
   return (
     <div className="space-y-4">
@@ -169,37 +148,6 @@ export default function ServerPage() {
             />
             <Button onClick={handleSaveMessage} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
               {saving ? 'Saving...' : 'Update Maintenance Message'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className={`border-border/50 ${isAnnOn ? 'border-indigo-500/60 bg-indigo-500/5' : ''}`}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Clock className={`h-4 w-4 ${isAnnOn ? 'text-indigo-500' : 'text-muted-foreground'}`} />
-            System Announcement
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={isAnnOn}
-              onCheckedChange={(val) => setConfig({ ...config, announcementStatus: val ? 'on' : 'off' })}
-            />
-            <Label className="text-xs">Show Announcement in Mod Panel</Label>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs">Announcement Message</Label>
-            <Textarea
-              value={config.announcement}
-              onChange={e => setConfig({ ...config, announcement: e.target.value })}
-              placeholder="Enter announcement text to show in the loader..."
-              className="text-xs min-h-[60px]"
-            />
-            <Button onClick={handleSaveAnnouncement} disabled={saving} size="sm" variant="secondary" className="h-7 text-xs">
-              {saving ? 'Saving...' : 'Update Announcement'}
             </Button>
           </div>
         </CardContent>
