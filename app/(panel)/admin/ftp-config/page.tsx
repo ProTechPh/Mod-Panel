@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Server, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Plus, Trash2, Server, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 
@@ -20,7 +20,6 @@ interface FtpConfig {
   password: string;
   port: number;
   remotePath: string;
-  statsUrl: string;
   isActive: boolean;
   order: number;
 }
@@ -33,7 +32,7 @@ export default function FtpConfigPage() {
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({
     label: '', host: '', user: '', password: '', port: 21,
-    remotePath: '/htdocs/', statsUrl: '',
+    remotePath: '/htdocs/',
     isActive: true, order: 0,
   });
 
@@ -46,7 +45,7 @@ export default function FtpConfigPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', statsUrl: '', isActive: true, order: configs.length });
+    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', isActive: true, order: configs.length });
     setShowPw(false);
     setDialogOpen(true);
   };
@@ -60,7 +59,6 @@ export default function FtpConfigPage() {
       password: '••••••',
       port: cfg.port,
       remotePath: cfg.remotePath,
-      statsUrl: cfg.statsUrl,
       isActive: cfg.isActive,
       order: cfg.order,
     });
@@ -116,11 +114,7 @@ export default function FtpConfigPage() {
                     {!cfg.isActive && <Badge variant="outline" className="text-xs">Disabled</Badge>}
                   </div>
                   <p className="text-muted-foreground">{cfg.user}@{cfg.host}:{cfg.port}</p>
-                  {cfg.statsUrl && (
-                    <p className="flex items-center gap-1.5 text-muted-foreground">
-                      <BarChart3 className="h-3.5 w-3.5" /> Stats: {cfg.statsUrl}
-                    </p>
-                  )}
+
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(cfg)}>Edit</Button>
@@ -179,10 +173,6 @@ export default function FtpConfigPage() {
             <div>
               <Label>Remote Path</Label>
               <Input value={form.remotePath} onChange={e => setForm({ ...form, remotePath: e.target.value })} placeholder="/htdocs/" />
-            </div>
-            <div>
-              <Label>Stats URL</Label>
-              <Input value={form.statsUrl} onChange={e => setForm({ ...form, statsUrl: e.target.value })} placeholder="https://example.com/stats.php" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />

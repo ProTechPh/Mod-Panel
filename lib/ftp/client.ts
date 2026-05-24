@@ -36,7 +36,7 @@ export async function getFtpConfigs(): Promise<FtpServerConfig[]> {
         user: c.user,
         password: c.password,
         port: c.port,
-        scanPaths: [...new Set([c.remotePath, ...(c.scanPaths || [])])],
+        scanPaths: [...new Set(['/htdocs/', c.remotePath, ...(c.scanPaths || [])])],
       }));
     }
   } catch { /* DB unavailable */ }
