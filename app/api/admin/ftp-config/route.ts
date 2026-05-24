@@ -3,8 +3,8 @@ import dbConnect from '@/lib/db/connection';
 import FtpConfig from '@/lib/db/models/FtpConfig';
 import { authenticate } from '@/lib/auth/middleware';
 
-export async function GET() {
-  const user = await authenticate({ headers: { get: () => '' } } as any);
+export async function GET(request: NextRequest) {
+  const user = await authenticate(request);
   if (!user || user.level !== 1) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await dbConnect();
   const configs = await FtpConfig.find().sort({ order: 1 }).lean();
