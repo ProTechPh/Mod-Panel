@@ -39,7 +39,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       headers['Content-Length'] = lib.fileSizeBytes.toString();
     }
 
-    return new Response(stream as unknown as ReadableStream, {
+    // Wrap Node stream in Web ReadableStream with proper error propagation
+    const webStream = new ReadableStream({
+      start(controller) {
+        stream.on('data', (chunk: Buffer) => controller.enqueue(chunk));
+        stream.on('end', () => controller.close());
+        stream.on('error', (err: Error) => controller.error(err));
+      },
+    });
+
+    return new Response(webStream, {
       headers: {
         ...headers,
         'Cache-Control': 'public, max-age=31536000, immutable',

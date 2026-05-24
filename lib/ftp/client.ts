@@ -176,25 +176,21 @@ export async function downloadFromFtp(fileName: string): Promise<Readable> {
   const port = cfg?.port || ENV_CONFIG.port;
   const remotePath = cfg?.remotePath || ENV_REMOTE_PATH;
 
-  const client = new ftp.Client(60000);
+  const client = new ftp.Client(10000);
   client.ftp.socket.setKeepAlive(true);
   try {
     await client.access({ host, user, password, port });
     const fullPath = `${remotePath}${fileName}`;
 
-    // Download entire file to buffer so errors are caught properly
-    const chunks: Buffer[] = [];
-    const ws = new PassThrough();
-    ws.on('data', (c: Buffer) => chunks.push(c));
-    const done = new Promise<void>((resolve, reject) => {
-      ws.on('end', () => resolve());
-      ws.on('error', (e) => reject(e));
-    });
-    await client.downloadTo(ws, fullPath);
-    await done;
-
-    return Readable.from(Buffer.concat(chunks));
-  } finally {
+    // Stream the download with proper error forwarding
+    const passthrough = new PassThrough();
+    client.downloadTo(passthrough, fullPath)
+      .then(() => passthrough.end())
+      .catch(err => passthrough.destroy(err))
+      .finally(() => client.close());
+    return passthrough;
+  } catch (err) {
     client.close();
+    throw err;
   }
 }
