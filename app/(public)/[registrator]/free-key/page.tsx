@@ -12,10 +12,13 @@ import { useTheme } from '@/components/shared/ThemeProvider';
 import {
   Moon, Sun, Copy, Check, RefreshCw, Loader2,
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
-  Download, Plus, Gamepad2, Timer, Trophy, ArrowRight, Sparkles, Star
+  Download, Plus, Gamepad2, Timer, Trophy, ArrowRight, Sparkles, Star,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { ParticleField } from '@/components/landing/ParticleField';
+import { SpotlightCursor } from '@/components/landing/SpotlightCursor';
 
 interface GameOption {
   code: string;
@@ -396,6 +399,12 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         <div className="freekey-orb freekey-orb-4" />
       </div>
 
+      {/* Particle field */}
+      <ParticleField />
+
+      {/* Spotlight cursor */}
+      <SpotlightCursor />
+
       {/* Grain overlay */}
       <div className="freekey-grain" />
 
@@ -450,22 +459,35 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       <main className="relative z-1 max-w-lg mx-auto px-4 py-6 md:py-8 space-y-5">
 
         {/* Hero header */}
-        <div className="text-center space-y-3 animate-in fade-in-0 duration-500">
-          <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 group">
-            <KeyRound className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+        <div className="text-center space-y-4 animate-in fade-in-0 duration-500">
+          <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 group fk-glow-card">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 via-transparent to-transparent pointer-events-none" />
+            <KeyRound className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-300" />
             <div className="absolute inset-0 rounded-2xl bg-primary/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="absolute -top-1 -right-1 size-3">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full size-3 bg-green-500" />
+            </span>
           </div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/60">Free Key Generator</h1>
+
+          <div className="space-y-2">
+            <div className="relative inline-block">
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground via-primary to-foreground/60 fk-title">Free Key Generator</h1>
+              <Sparkles className="fk-sparkle absolute -top-2 -right-6 h-4 w-4 text-primary" />
+              <Sparkles className="fk-sparkle-delayed absolute -bottom-1 -left-6 h-3 w-3 text-amber-400" />
+            </div>
             <p className="text-sm text-muted-foreground">Generate a free trial key from <span className="font-bold text-foreground">{registrator}</span></p>
           </div>
 
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" style={{ background: 'hsla(145, 70%, 50%, 0.08)', borderColor: 'hsla(145, 70%, 50%, 0.2)', color: 'hsl(145, 70%, 45%)' }}>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border animate-pulse" style={{ background: 'hsla(145, 70%, 50%, 0.08)', borderColor: 'hsla(145, 70%, 50%, 0.2)', color: 'hsl(145, 70%, 45%)' }}>
               <Sparkles className="size-3" /> Free Trial
             </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" style={{ background: 'hsla(250, 70%, 60%, 0.08)', borderColor: 'hsla(250, 70%, 60%, 0.2)', color: 'hsl(250, 70%, 60%)' }}>
               <Zap className="size-3" /> Instant Access
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" style={{ background: 'hsla(30, 90%, 55%, 0.08)', borderColor: 'hsla(30, 90%, 55%, 0.2)', color: 'hsl(30, 90%, 50%)' }}>
+              <ShieldCheck className="size-3" /> No Virus
             </div>
           </div>
 
@@ -1071,68 +1093,99 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
           0%, 100% { transform: translate(0, 0) scale(1); }
           50% { transform: translate(-20px, -30px) scale(1.06); }
         }
+        @keyframes fk-title-shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes fk-sparkle-float {
+          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+          50% { transform: translateY(-8px) rotate(180deg); opacity: 1; }
+        }
+        @keyframes fk-glow-pulse {
+          0%, 100% { box-shadow: 0 0 8px oklch(0.5 0.25 270 / 0.1); }
+          50% { box-shadow: 0 0 30px oklch(0.5 0.25 270 / 0.2), 0 0 60px oklch(0.6 0.2 200 / 0.1); }
+        }
         .freekey-orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
+          filter: blur(100px);
           will-change: transform;
           pointer-events: none;
+          transition: opacity 0.5s;
         }
         .freekey-orb-1 {
-          width: 500px; height: 500px;
-          background: oklch(0.5 0.25 270);
-          top: -15%; right: -10%;
-          opacity: 0.1;
+          width: 600px; height: 600px;
+          background: radial-gradient(circle, oklch(0.5 0.3 270), oklch(0.4 0.2 300));
+          top: -20%; right: -15%;
+          opacity: 0.15;
           animation: fk-orb-drift-1 22s ease-in-out infinite;
         }
         :root:not(.dark) .freekey-orb-1 {
-          opacity: 0.05;
+          opacity: 0.07;
         }
         .freekey-orb-2 {
-          width: 400px; height: 400px;
-          background: oklch(0.6 0.2 200);
-          bottom: -10%; left: -10%;
-          opacity: 0.08;
+          width: 500px; height: 500px;
+          background: radial-gradient(circle, oklch(0.6 0.25 200), oklch(0.5 0.2 180));
+          bottom: -15%; left: -15%;
+          opacity: 0.12;
           animation: fk-orb-drift-2 25s ease-in-out infinite;
         }
         :root:not(.dark) .freekey-orb-2 {
-          opacity: 0.04;
+          opacity: 0.06;
         }
         .freekey-orb-3 {
-          width: 300px; height: 300px;
-          background: oklch(0.4 0.22 300);
-          top: 50%; left: 50%;
-          opacity: 0.07;
+          width: 350px; height: 350px;
+          background: radial-gradient(circle, oklch(0.4 0.25 300), oklch(0.35 0.2 330));
+          top: 40%; left: 60%;
+          opacity: 0.1;
           animation: fk-orb-drift-3 18s ease-in-out infinite;
         }
         :root:not(.dark) .freekey-orb-3 {
-          opacity: 0.04;
+          opacity: 0.05;
         }
         .freekey-orb-4 {
-          width: 200px; height: 200px;
-          background: oklch(0.65 0.2 150);
-          top: 20%; right: 30%;
-          opacity: 0.06;
+          width: 250px; height: 250px;
+          background: radial-gradient(circle, oklch(0.65 0.25 150), oklch(0.55 0.2 130));
+          top: 15%; left: 20%;
+          opacity: 0.09;
           animation: fk-orb-drift-4 15s ease-in-out infinite;
         }
         :root:not(.dark) .freekey-orb-4 {
-          opacity: 0.03;
+          opacity: 0.04;
         }
         .freekey-grain {
           position: fixed;
           inset: 0;
           z-index: 0;
           pointer-events: none;
-          opacity: 0.015;
+          opacity: 0.02;
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
           background-repeat: repeat;
           background-size: 256px 256px;
         }
         :root.dark .freekey-grain {
-          opacity: 0.025;
+          opacity: 0.035;
+        }
+        .fk-title {
+          background-size: 200% auto;
+          animation: fk-title-shimmer 4s linear infinite;
+        }
+        .fk-sparkle {
+          animation: fk-sparkle-float 3s ease-in-out infinite;
+        }
+        .fk-sparkle-delayed {
+          animation: fk-sparkle-float 3s ease-in-out infinite;
+          animation-delay: 1.5s;
+        }
+        .fk-glow-card {
+          animation: fk-glow-pulse 3s ease-in-out infinite;
         }
         @media (prefers-reduced-motion: reduce) {
           .freekey-orb { animation: none; }
+          .fk-title { animation: none; }
+          .fk-sparkle { animation: none; }
+          .fk-sparkle-delayed { animation: none; }
+          .fk-glow-card { animation: none; }
         }
       `}</style>
     </div>
