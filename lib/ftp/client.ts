@@ -46,11 +46,15 @@ export async function getFtpConfigs(): Promise<FtpServerConfig[]> {
 }
 
 export async function getLibFtpConfig() {
+  // Env vars take priority — they were working before multi-FTP migration
+  if (process.env.FTP_HOSTNAME && process.env.FTP_USERNAME && process.env.FTP_PASSWORD) {
+    return null;
+  }
+  // Fallback to MongoDB config
   try {
     await dbConnect();
     const cfg = await FtpConfig.findOne({ isActive: true, isLibStorage: true }).lean();
     if (cfg) return cfg;
-    // fallback: first active config
     const anyCfg = await FtpConfig.findOne({ isActive: true }).sort({ order: 1 }).lean();
     if (anyCfg) return anyCfg;
   } catch { /* skip */ }
@@ -172,12 +176,25 @@ export async function downloadFromFtp(fileName: string): Promise<Readable> {
   const port = cfg?.port || ENV_CONFIG.port;
   const remotePath = cfg?.remotePath || ENV_REMOTE_PATH;
 
-  const client = new ftp.Client(30000);
-  await client.access({ host, user, password, port });
-  const passthrough = new PassThrough();
-  client.downloadTo(passthrough, `${remotePath}${fileName}`)
-    .then(() => passthrough.end())
-    .catch(err => passthrough.destroy(err))
-    .finally(() => client.close());
-  return passthrough;
+  const client = new ftp.Client(60000);
+  client.ftp.socket.setKeepAlive(true);
+  try {
+    await client.access({ host, user, password, port });
+    const fullPath = `${remotePath}${fileName}`;
+
+    // Download entire file to buffer so errors are caught properly
+    const chunks: Buffer[] = [];
+    const ws = new PassThrough();
+    ws.on('data', (c: Buffer) => chunks.push(c));
+    const done = new Promise<void>((resolve, reject) => {
+      ws.on('end', () => resolve());
+      ws.on('error', (e) => reject(e));
+    });
+    await client.downloadTo(ws, fullPath);
+    await done;
+
+    return Readable.from(Buffer.concat(chunks));
+  } finally {
+    client.close();
+  }
 }
