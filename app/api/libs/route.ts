@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import type { ReadableStream as NodeReadableStream } from 'stream/web';
 import { authenticate } from '@/lib/auth/middleware';
 import { listLibs, getLib, uploadLib, updateLib, deleteLib } from '@/lib/services/lib-service';
+import { purgeCloudflareCache, getLibServeUrl } from '@/lib/cloudflare/cache';
 
 export async function GET(request: NextRequest) {
   const user = await authenticate(request);
@@ -30,6 +31,10 @@ export async function POST(request: NextRequest) {
     const stream = Readable.fromWeb(file.stream() as unknown as NodeReadableStream);
 
     const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level, libType);
+
+    // Purge Cloudflare cache if the file was replaced (same filename)
+    await purgeCloudflareCache([getLibServeUrl(file.name)]);
+
     return NextResponse.json({ ...lib, replaced: true }, { status: 200 });
   } catch (error: any) {
     if (error.code === 'FORBIDDEN_REPLACE') {

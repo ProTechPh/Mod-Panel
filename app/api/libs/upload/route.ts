@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
 import { authenticate } from '@/lib/auth/middleware';
 import { uploadLib } from '@/lib/services/lib-service';
+import { purgeCloudflareCache, getLibServeUrl } from '@/lib/cloudflare/cache';
 import dbConnect from '@/lib/db/connection';
 import mongoose from 'mongoose';
 
@@ -71,6 +72,9 @@ export async function POST(request: NextRequest) {
       const stream = Readable.from(fullBuffer);
 
       const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level, libType);
+
+      // Purge Cloudflare cache if file was replaced
+      await purgeCloudflareCache([getLibServeUrl(fileName)]);
 
       // Clean up temp chunks
       await TempChunk.deleteMany({ sessionId });

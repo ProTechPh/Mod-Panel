@@ -17,6 +17,7 @@ const navItems = [
   { href: '/admin/ip-logs', label: 'IP Logs', icon: Network, minLevel: 1 },
   { href: '/admin/security-reports', label: 'Security Reports', icon: ShieldAlert, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
+  { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
