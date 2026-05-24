@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const newPath = '/mod.kesug.com/htdocs/onlinelibs/';
 
     const libs = await Lib.find({}).lean();
-    const results: { fileName: string; status: string; error?: string }[] = [];
+    const results: { fileName: string; status: string; error?: string; size?: number }[] = [];
 
     const client = new ftp.Client(60000);
     client.ftp.socket.setKeepAlive(true);
