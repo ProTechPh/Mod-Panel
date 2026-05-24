@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Server, Eye, EyeOff, HardDrive, BarChart3 } from 'lucide-react';
+import { Plus, Trash2, Server, Eye, EyeOff, HardDrive, BarChart3, Upload } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 
@@ -102,14 +102,57 @@ export default function FtpConfigPage() {
     fetchConfigs();
   };
 
+  const [migrating, setMigrating] = useState(false);
+  const [migrateResult, setMigrateResult] = useState<any>(null);
+
+  const runMigration = async () => {
+    if (!confirm('Copy all lib .so files from /htdocs/onlinelibs/ to /mod.kesug.com/htdocs/onlinelibs/ and update FTP config?')) return;
+    setMigrating(true);
+    setMigrateResult(null);
+    try {
+      const res = await fetch('/api/admin/migrate-libs', { method: 'POST' });
+      const data = await res.json();
+      setMigrateResult(data);
+      if (res.ok) {
+        toast.success(`Migration done: ${data.copied} copied, ${data.skipped} skipped, ${data.errors} errors`);
+        fetchConfigs();
+      } else {
+        toast.error(data.error || 'Migration failed');
+      }
+    } catch {
+      toast.error('Migration request failed');
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   if (!user || user.level !== 1) return <p className="text-muted-foreground">Unauthorized</p>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">FTP Configurations</h2>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add FTP</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={runMigration} disabled={migrating}>
+            <Upload className={`h-4 w-4 mr-2 ${migrating ? 'animate-spin' : ''}`} />
+            {migrating ? 'Migrating...' : 'Migrate Libs'}
+          </Button>
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add FTP</Button>
+        </div>
       </div>
+
+      {migrateResult && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="p-3 text-sm flex items-center justify-between">
+            <span>
+              Copied <strong>{migrateResult.copied}</strong> &middot;
+              Skipped <strong>{migrateResult.skipped}</strong> &middot;
+              Errors <strong>{migrateResult.errors}</strong>
+            </span>
+            <Button variant="ghost" size="sm" onClick={() => setMigrateResult(null)}>Dismiss</Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-3">
         {configs.map(cfg => (
