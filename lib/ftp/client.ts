@@ -36,7 +36,10 @@ export async function getFtpConfigs(): Promise<FtpServerConfig[]> {
         user: c.user,
         password: c.password,
         port: c.port,
-        scanPaths: [...new Set(['/htdocs/', c.remotePath, ...(c.scanPaths || [])])],
+        scanPaths: (() => {
+          const raw = [c.remotePath, ...(c.scanPaths || [])].filter(Boolean);
+          return raw.filter((p, i) => !raw.some((o, j) => i !== j && p.startsWith(o)));
+        })(),
       }));
     }
   } catch { /* DB unavailable */ }
