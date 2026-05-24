@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone, ShoppingCart, ScrollText, Network, ShieldAlert, BarChart3, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone, ShoppingCart, ScrollText, ShieldAlert, BarChart3, Megaphone } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
@@ -14,7 +14,6 @@ const navItems = [
   { href: '/tiktok-live', label: 'TikTok Live', icon: Smartphone, minLevel: 3 },
   { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
-  { href: '/admin/ip-logs', label: 'IP Logs', icon: Network, minLevel: 1 },
   { href: '/admin/security-reports', label: 'Security Reports', icon: ShieldAlert, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
