@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     const chunkIndex = parseInt(formData.get('chunkIndex') as string, 10);
     const totalChunks = parseInt(formData.get('totalChunks') as string, 10);
     const libType = (formData.get('type') as string) || 'free';
+    const ftpConfigId = formData.get('ftpConfigId') as string || undefined;
 
     if (!chunk || !fileName || isNaN(chunkIndex) || isNaN(totalChunks)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       const sizeMB = (fullBuffer.length / (1024 * 1024)).toFixed(2);
       const stream = Readable.from(fullBuffer);
 
-      const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level, libType);
+      const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level, libType, ftpConfigId);
 
       // Purge Cloudflare cache if file was replaced
       await purgeCloudflareCache([getLibServeUrl(fileName)]);

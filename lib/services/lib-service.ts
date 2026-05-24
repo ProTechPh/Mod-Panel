@@ -1,11 +1,19 @@
 import dbConnect from '@/lib/db/connection';
 import Lib from '@/lib/db/models/Lib';
+import FtpConfig from '@/lib/db/models/FtpConfig';
 import { uploadToFtp, deleteFromFtp } from '@/lib/ftp/client';
 import { Readable } from 'stream';
 
 function sanitize(lib: any) {
   const { ftpUrl, ...rest } = lib.toObject ? lib.toObject() : lib;
   return { ...rest, _id: rest._id.toString(), uploadedAt: rest.uploadedAt?.toISOString() };
+}
+
+export async function resolveFtpConfigId(ftpConfigId?: string): Promise<string | undefined> {
+  if (ftpConfigId) return ftpConfigId;
+  await dbConnect();
+  const first = await FtpConfig.findOne({ isActive: true }).sort({ order: 1 }).lean();
+  return first?._id.toString();
 }
 
 export async function listLibs(registrator?: string) {
@@ -22,28 +30,28 @@ export async function getLib(id: string) {
   return sanitize(lib);
 }
 
-export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free') {
+export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free', ftpConfigId?: string) {
   await dbConnect();
+
+  const resolvedId = await resolveFtpConfigId(ftpConfigId);
 
   const existing = await Lib.findOne({ fileName }).lean();
 
   if (existing) {
-    // Only the original uploader OR level 1 admin can replace
     if (existing.uploadedBy !== uploadedBy && uploaderLevel !== 1) {
       const error: any = new Error(`This file was uploaded by @${existing.uploadedBy}. You cannot replace it.`);
       error.code = 'FORBIDDEN_REPLACE';
       throw error;
     }
 
-    // Authorized — delete old file from FTP first
     try {
-      await deleteFromFtp(fileName);
+      await deleteFromFtp(fileName, existing.ftpConfigId || resolvedId);
     } catch {
       // FTP file may already be gone, continue anyway
     }
   }
 
-  const ftpUrl = await uploadToFtp(fileName, stream);
+  const ftpUrl = await uploadToFtp(fileName, stream, resolvedId);
 
   const lib = await Lib.findOneAndUpdate(
     { fileName },
@@ -56,6 +64,7 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
       fileSizeBytes,
       uploadedBy,
       uploadedAt: new Date(),
+      ftpConfigId: resolvedId,
     },
     { upsert: true, returnDocument: 'after' }
   );
@@ -81,7 +90,7 @@ export async function deleteLib(id: string) {
   if (!lib) return false;
 
   try {
-    await deleteFromFtp(lib.fileName);
+    await deleteFromFtp(lib.fileName, lib.ftpConfigId);
   } catch {
     // FTP delete may fail if file already removed; continue with DB delete
   }

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Server, Eye, EyeOff, HardDrive, BarChart3, Upload } from 'lucide-react';
+import { Plus, Trash2, Server, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 
@@ -20,11 +20,9 @@ interface FtpConfig {
   password: string;
   port: number;
   remotePath: string;
-  libBaseUrl: string;
   statsUrl: string;
   scanPaths: string[];
   isActive: boolean;
-  isLibStorage: boolean;
   order: number;
 }
 
@@ -36,8 +34,8 @@ export default function FtpConfigPage() {
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({
     label: '', host: '', user: '', password: '', port: 21,
-    remotePath: '/htdocs/', libBaseUrl: '', statsUrl: '',
-    scanPaths: '', isActive: true, isLibStorage: false, order: 0,
+    remotePath: '/htdocs/', statsUrl: '',
+    scanPaths: '', isActive: true, order: 0,
   });
 
   const fetchConfigs = async () => {
@@ -49,7 +47,7 @@ export default function FtpConfigPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', libBaseUrl: '', statsUrl: '', scanPaths: '', isActive: true, isLibStorage: false, order: configs.length });
+    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', statsUrl: '', scanPaths: '', isActive: true, order: configs.length });
     setShowPw(false);
     setDialogOpen(true);
   };
@@ -63,11 +61,9 @@ export default function FtpConfigPage() {
       password: '••••••',
       port: cfg.port,
       remotePath: cfg.remotePath,
-      libBaseUrl: cfg.libBaseUrl,
       statsUrl: cfg.statsUrl,
       scanPaths: (cfg.scanPaths || []).join('\n'),
       isActive: cfg.isActive,
-      isLibStorage: cfg.isLibStorage,
       order: cfg.order,
     });
     setShowPw(false);
@@ -102,57 +98,14 @@ export default function FtpConfigPage() {
     fetchConfigs();
   };
 
-  const [migrating, setMigrating] = useState(false);
-  const [migrateResult, setMigrateResult] = useState<any>(null);
-
-  const runMigration = async () => {
-    if (!confirm('Copy all lib .so files from /htdocs/onlinelibs/ to /mod.kesug.com/htdocs/onlinelibs/ and update FTP config?')) return;
-    setMigrating(true);
-    setMigrateResult(null);
-    try {
-      const res = await fetch('/api/admin/migrate-libs', { method: 'POST' });
-      const data = await res.json();
-      setMigrateResult(data);
-      if (res.ok) {
-        toast.success(`Migration done: ${data.copied} copied, ${data.skipped} skipped, ${data.errors} errors`);
-        fetchConfigs();
-      } else {
-        toast.error(data.error || 'Migration failed');
-      }
-    } catch {
-      toast.error('Migration request failed');
-    } finally {
-      setMigrating(false);
-    }
-  };
-
   if (!user || user.level !== 1) return <p className="text-muted-foreground">Unauthorized</p>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">FTP Configurations</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={runMigration} disabled={migrating}>
-            <Upload className={`h-4 w-4 mr-2 ${migrating ? 'animate-spin' : ''}`} />
-            {migrating ? 'Migrating...' : 'Migrate Libs'}
-          </Button>
-          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add FTP</Button>
-        </div>
+        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Add FTP</Button>
       </div>
-
-      {migrateResult && (
-        <Card className="border-primary/50 bg-primary/5">
-          <CardContent className="p-3 text-sm flex items-center justify-between">
-            <span>
-              Copied <strong>{migrateResult.copied}</strong> &middot;
-              Skipped <strong>{migrateResult.skipped}</strong> &middot;
-              Errors <strong>{migrateResult.errors}</strong>
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setMigrateResult(null)}>Dismiss</Button>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="grid gap-3">
         {configs.map(cfg => (
@@ -164,14 +117,8 @@ export default function FtpConfigPage() {
                     <Server className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="font-medium">{cfg.label || cfg.host}</span>
                     {!cfg.isActive && <Badge variant="outline" className="text-xs">Disabled</Badge>}
-                    {cfg.isLibStorage && <Badge className="text-xs bg-primary">Lib Storage</Badge>}
                   </div>
                   <p className="text-muted-foreground">{cfg.user}@{cfg.host}:{cfg.port}</p>
-                  {cfg.libBaseUrl && (
-                    <p className="flex items-center gap-1.5 text-muted-foreground">
-                      <HardDrive className="h-3.5 w-3.5" /> Lib URL: {cfg.libBaseUrl}
-                    </p>
-                  )}
                   {cfg.statsUrl && (
                     <p className="flex items-center gap-1.5 text-muted-foreground">
                       <BarChart3 className="h-3.5 w-3.5" /> Stats: {cfg.statsUrl}
@@ -194,7 +141,7 @@ export default function FtpConfigPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit FTP' : 'Add FTP'}</DialogTitle>
           </DialogHeader>
@@ -237,11 +184,7 @@ export default function FtpConfigPage() {
               <Input value={form.remotePath} onChange={e => setForm({ ...form, remotePath: e.target.value })} placeholder="/htdocs/" />
             </div>
             <div>
-              <Label>Lib Base URL (for serving .so files)</Label>
-              <Input value={form.libBaseUrl} onChange={e => setForm({ ...form, libBaseUrl: e.target.value })} placeholder="https://mod.kesug.com/onlinelibs" />
-            </div>
-            <div>
-              <Label>Stats URL (stats.php)</Label>
+              <Label>Stats URL (optional)</Label>
               <Input value={form.statsUrl} onChange={e => setForm({ ...form, statsUrl: e.target.value })} placeholder="http://mod.kesug.com/stats.php" />
             </div>
             <div>
@@ -254,10 +197,6 @@ export default function FtpConfigPage() {
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />
               <Label>Active</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.isLibStorage} onCheckedChange={v => setForm({ ...form, isLibStorage: v })} />
-              <Label>Lib Storage — upload/download .so files here</Label>
             </div>
             <Button onClick={save} className="w-full">{editing ? 'Update' : 'Create'}</Button>
           </div>

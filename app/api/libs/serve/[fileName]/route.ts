@@ -13,8 +13,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     await dbConnect();
     const lib = await Lib.findOne({ fileName }).lean();
+    if (!lib) return NextResponse.json({ error: 'File not found' }, { status: 404 });
 
-    const lastModified = lib?.uploadedAt
+    const lastModified = lib.uploadedAt
       ? new Date(lib.uploadedAt)
       : new Date();
     const lastModifiedStr = lastModified.toUTCString();
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const stream = await downloadFromFtp(fileName);
+    const stream = await downloadFromFtp(fileName, lib.ftpConfigId);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/octet-stream',
@@ -35,11 +36,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       'Last-Modified': lastModifiedStr,
     };
 
-    if (lib?.fileSizeBytes) {
+    if (lib.fileSizeBytes) {
       headers['Content-Length'] = lib.fileSizeBytes.toString();
     }
 
-    // Wrap Node stream in Web ReadableStream with proper error propagation
     const webStream = new ReadableStream({
       start(controller) {
         stream.on('data', (chunk: Buffer) => controller.enqueue(chunk));

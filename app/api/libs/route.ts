@@ -28,9 +28,10 @@ export async function POST(request: NextRequest) {
 
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
     const libType = formData.get('type') as string || 'free';
+    const ftpConfigId = formData.get('ftpConfigId') as string || undefined;
     const stream = Readable.fromWeb(file.stream() as unknown as NodeReadableStream);
 
-    const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level, libType);
+    const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level, libType, ftpConfigId);
 
     // Purge Cloudflare cache if the file was replaced (same filename)
     await purgeCloudflareCache([getLibServeUrl(file.name)]);

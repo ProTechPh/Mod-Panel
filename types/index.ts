@@ -124,6 +124,7 @@ export interface LibDoc {
   fileSizeBytes: number;
   uploadedBy: string;
   uploadedAt: Date;
+  ftpConfigId?: string;
 }
 
 export interface IpTrackerDoc {
