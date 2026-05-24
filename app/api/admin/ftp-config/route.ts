@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest) {
   const { _id, ...updates } = await request.json();
   if (!_id) return NextResponse.json({ error: '_id required' }, { status: 400 });
   if (!updates.password || updates.password === '••••••') delete updates.password;
-  const config = await FtpConfig.findByIdAndUpdate(_id, { $set: updates }, { new: true }).lean();
+  const config = await FtpConfig.findByIdAndUpdate(_id, { $set: updates }, { returnDocument: 'after' }).lean();
   if (!config) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ ...config, password: '••••••' });
 }

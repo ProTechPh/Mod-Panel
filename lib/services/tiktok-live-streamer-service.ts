@@ -264,7 +264,7 @@ export async function extendKeyForStreamer(
     });
     
     // Update streamer status
-    await TikTokLiveStreamer.findOneAndUpdate({ key }, { status: 'active' }, { new: true });
+    await TikTokLiveStreamer.findOneAndUpdate({ key }, { status: 'active' }, { returnDocument: 'after' });
     
     return { success: true };
   } catch (error) {

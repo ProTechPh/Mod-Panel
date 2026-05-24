@@ -57,7 +57,7 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
       uploadedBy,
       uploadedAt: new Date(),
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   );
 
   return sanitize(lib);
@@ -70,7 +70,7 @@ export async function updateLib(id: string, updates: { displayName?: string; typ
   if (updates.displayName !== undefined) setData.displayName = updates.displayName;
   if (updates.type !== undefined) setData.type = updates.type === 'paid' ? 'paid' : 'free';
   if (Object.keys(setData).length === 0) return getLib(id);
-  const lib = await Lib.findByIdAndUpdate(id, { $set: setData }, { new: true }).lean();
+  const lib = await Lib.findByIdAndUpdate(id, { $set: setData }, { returnDocument: 'after' }).lean();
   if (!lib) return null;
   return sanitize(lib);
 }
