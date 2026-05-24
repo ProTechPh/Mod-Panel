@@ -14,11 +14,10 @@ export async function GET() {
   }
 
   const configs = await getFtpConfigs();
-  const count = Math.max(configs.length, 1);
-  const totalDisk = PER_FTP_DISK * count;
-  const totalInodes = PER_FTP_INODES * count;
+  const totalDisk = configs.reduce((s, c) => s + (c.diskLimit || PER_FTP_DISK), 0);
+  const totalInodes = configs.reduce((s, c) => s + (c.inodeLimit || PER_FTP_INODES), 0);
 
-  let disk = { used: 0, total: totalDisk, used_human: 'N/A', total_human: `${count * 5} GB`, percent: 0 };
+  let disk = { used: 0, total: totalDisk, used_human: 'N/A', total_human: formatBytes(totalDisk), percent: 0 };
   let inodes = { used: 0, total: totalInodes, percent: 0 };
   const bandwidth = { used_human: 'N/A', total_human: 'Unlimited' };
   const hits = { used_human: 'N/A', total_human: '50,000' };
@@ -29,7 +28,7 @@ export async function GET() {
       used: stats.totalSizeBytes,
       total: totalDisk,
       used_human: formatBytes(stats.totalSizeBytes),
-      total_human: `${count * 5} GB`,
+      total_human: formatBytes(totalDisk),
       percent: totalDisk > 0 ? +((stats.totalSizeBytes / totalDisk) * 100).toFixed(1) : 0,
     };
     inodes = {

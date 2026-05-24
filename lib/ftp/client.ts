@@ -9,6 +9,8 @@ export interface FtpServerConfig {
   password: string;
   port: number;
   scanPaths: string[];
+  diskLimit: number;
+  inodeLimit: number;
 }
 
 export interface FtpStats {
@@ -24,6 +26,8 @@ const ENV_CONFIG: FtpServerConfig = {
   password: process.env.FTP_PASSWORD || '',
   port: parseInt(process.env.FTP_PORT || '21', 10),
   scanPaths: ['/htdocs/'],
+  diskLimit: 5 * 1024 * 1024 * 1024,
+  inodeLimit: 80000,
 };
 
 export async function getFtpConfigs(): Promise<FtpServerConfig[]> {
@@ -40,6 +44,8 @@ export async function getFtpConfigs(): Promise<FtpServerConfig[]> {
           const raw = [c.remotePath, ...(c.scanPaths || [])].filter(Boolean);
           return raw.filter((p, i) => !raw.some((o, j) => i !== j && p.startsWith(o)));
         })(),
+        diskLimit: c.diskLimit || 5 * 1024 * 1024 * 1024,
+        inodeLimit: c.inodeLimit || 80000,
       }));
     }
   } catch { /* DB unavailable */ }

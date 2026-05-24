@@ -22,6 +22,15 @@ interface FtpConfig {
   remotePath: string;
   isActive: boolean;
   order: number;
+  diskLimit: number;
+  inodeLimit: number;
+}
+
+function fmtBytes(bytes: number) {
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';
+  if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+  if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return bytes + ' B';
 }
 
 export default function FtpConfigPage() {
@@ -34,6 +43,8 @@ export default function FtpConfigPage() {
     label: '', host: '', user: '', password: '', port: 21,
     remotePath: '/htdocs/',
     isActive: true, order: 0,
+    diskLimit: 5,
+    inodeLimit: 80000,
   });
 
   const fetchConfigs = async () => {
@@ -45,7 +56,7 @@ export default function FtpConfigPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', isActive: true, order: configs.length });
+    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', isActive: true, order: configs.length, diskLimit: 5, inodeLimit: 80000 });
     setShowPw(false);
     setDialogOpen(true);
   };
@@ -61,13 +72,18 @@ export default function FtpConfigPage() {
       remotePath: cfg.remotePath,
       isActive: cfg.isActive,
       order: cfg.order,
+      diskLimit: Math.round(cfg.diskLimit / (1024 * 1024 * 1024)) || 5,
+      inodeLimit: cfg.inodeLimit || 80000,
     });
     setShowPw(false);
     setDialogOpen(true);
   };
 
   const save = async () => {
-    const body: any = { ...form };
+    const body: any = {
+      ...form,
+      diskLimit: form.diskLimit * 1024 * 1024 * 1024,
+    };
     if (editing) body._id = editing._id;
 
     const res = await fetch('/api/admin/ftp-config', {
@@ -114,7 +130,9 @@ export default function FtpConfigPage() {
                     {!cfg.isActive && <Badge variant="outline" className="text-xs">Disabled</Badge>}
                   </div>
                   <p className="text-muted-foreground">{cfg.user}@{cfg.host}:{cfg.port}</p>
-
+                  <p className="text-xs text-muted-foreground">
+                    {fmtBytes(cfg.diskLimit)} disk &middot; {(cfg.inodeLimit || 80000).toLocaleString()} inodes
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(cfg)}>Edit</Button>
@@ -173,6 +191,16 @@ export default function FtpConfigPage() {
             <div>
               <Label>Remote Path</Label>
               <Input value={form.remotePath} onChange={e => setForm({ ...form, remotePath: e.target.value })} placeholder="/htdocs/" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Disk Limit (GB)</Label>
+                <Input type="number" value={form.diskLimit} onChange={e => setForm({ ...form, diskLimit: parseFloat(e.target.value) || 0 })} />
+              </div>
+              <div>
+                <Label>Inode Limit</Label>
+                <Input type="number" value={form.inodeLimit} onChange={e => setForm({ ...form, inodeLimit: parseInt(e.target.value) || 0 })} />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />

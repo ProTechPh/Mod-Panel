@@ -11,6 +11,8 @@ export interface FtpConfigDoc {
   scanPaths: string[];
   isActive: boolean;
   order: number;
+  diskLimit: number;
+  inodeLimit: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +27,8 @@ const FtpConfigSchema = new Schema<FtpConfigDoc & Document>({
   scanPaths: [{ type: String }],
   isActive: { type: Boolean, default: true },
   order: { type: Number, default: 0 },
+  diskLimit: { type: Number, default: 5 * 1024 * 1024 * 1024 },
+  inodeLimit: { type: Number, default: 80000 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 }, { collection: 'ftp_configs' });
