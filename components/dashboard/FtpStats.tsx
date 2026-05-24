@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/components/shared/AuthProvider';
 
 interface FtpStatsData {
   disk: { used: number; total: number; used_human: string; total_human: string; percent: number };
@@ -9,7 +10,10 @@ interface FtpStatsData {
 }
 
 export default function FtpStats() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<FtpStatsData | null>(null);
+
+  if (!user || user.level > 2) return null;
 
   useEffect(() => {
     fetch('/api/ftp/stats')

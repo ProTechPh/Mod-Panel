@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone, ShoppingCart, ScrollText, Network, ShieldAlert, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive, History, Shield, BookOpen, Smartphone, ShoppingCart, ScrollText, Network, ShieldAlert, BarChart3, Megaphone } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
@@ -18,6 +18,7 @@ const navItems = [
   { href: '/admin/security-reports', label: 'Security Reports', icon: ShieldAlert, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
+  { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },

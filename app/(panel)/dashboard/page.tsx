@@ -8,6 +8,7 @@ import GameDistChart from '@/components/dashboard/GameDistChart';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 import TopPerformers from '@/components/dashboard/TopPerformers';
 import FtpStats from '@/components/dashboard/FtpStats';
+import Announcements from '@/components/dashboard/Announcements';
 import ExpiryNotificationBanner from '@/components/dashboard/ExpiryNotificationBanner';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +44,8 @@ export default function DashboardPage() {
       </div>
 
       <ExpiryNotificationBanner />
+
+      <Announcements />
 
       <StatsCards stats={analytics?.keyStats} />
 
