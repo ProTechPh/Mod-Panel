@@ -43,7 +43,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       headers['Content-Length'] = lib.fileSizeBytes.toString();
     }
 
-    return new Response(stream as unknown as ReadableStream, { headers });
+    return new Response(stream as unknown as ReadableStream, {
+      headers: {
+        ...headers,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'CDN-Cache-Control': 'public, max-age=31536000, immutable',
+        'Cloudflare-CDN-Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
   } catch {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
