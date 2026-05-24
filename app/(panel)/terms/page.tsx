@@ -3,7 +3,7 @@
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, Shield, ShoppingCart, Users } from 'lucide-react';
+import { ScrollText, Shield, ShoppingCart, Users, Sparkles } from 'lucide-react';
 
 const EFFECTIVE_DATE = 'May 1, 2026';
 
@@ -185,9 +185,9 @@ export default function TermsPage() {
     <div className="space-y-8 max-w-3xl">
       {/* Header */}
       <div className="space-y-1">
-        <div className="flex items-center gap-3">
-          <ScrollText className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold tracking-tight">Terms of Service</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Terms of Service</h2>
+          <Sparkles className="h-4 w-4 text-purple-400" />
         </div>
         <p className="text-sm text-muted-foreground">
           Effective date: <span className="font-medium text-foreground">{EFFECTIVE_DATE}</span>
@@ -195,72 +195,19 @@ export default function TermsPage() {
       </div>
 
       {/* General Terms */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Shield className="h-4 w-4 text-primary" />
-            General Terms
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">Applies to all users regardless of role.</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {GENERAL_TERMS.map((section) => (
-            <div key={section.title} className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
-              {section.content.map((paragraph, i) => (
-                <p key={i} className="text-sm text-muted-foreground leading-relaxed">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Role-Specific Terms */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4 text-primary" />
-              Your Role — {roleData.label}
-            </CardTitle>
-            <Badge variant={roleData.badgeVariant} className="text-xs">
-              {roleData.badge}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Additional terms and privileges specific to your account role.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {roleData.sections.map((section) => (
-            <div key={section.title} className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
-              {section.content.map((paragraph, i) => (
-                <p key={i} className="text-sm text-muted-foreground leading-relaxed">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Store Terms (visible to Owner and Admin only) */}
-      {(level === 1 || level === 2) && (
-        <Card className="border-border/50">
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-base">
-              <ShoppingCart className="h-4 w-4 text-primary" />
-              Store Terms
+              <Shield className="h-4 w-4 text-primary" />
+              General Terms
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Governs the operation of your reseller store and transactions with buyers.
-            </p>
+            <p className="text-sm text-muted-foreground">Applies to all users regardless of role.</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {STORE_TERMS.map((section) => (
+            {GENERAL_TERMS.map((section) => (
               <div key={section.title} className="space-y-2">
                 <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
                 {section.content.map((paragraph, i) => (
@@ -272,6 +219,71 @@ export default function TermsPage() {
             ))}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Role-Specific Terms */}
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-4 w-4 text-primary" />
+                Your Role — {roleData.label}
+              </CardTitle>
+              <Badge variant={roleData.badgeVariant} className="text-xs">
+                {roleData.badge}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Additional terms and privileges specific to your account role.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {roleData.sections.map((section) => (
+              <div key={section.title} className="space-y-2">
+                <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+                {section.content.map((paragraph, i) => (
+                  <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Store Terms (visible to Owner and Admin only) */}
+      {(level === 1 || level === 2) && (
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShoppingCart className="h-4 w-4 text-primary" />
+                Store Terms
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Governs the operation of your reseller store and transactions with buyers.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {STORE_TERMS.map((section) => (
+                <div key={section.title} className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+                  {section.content.map((paragraph, i) => (
+                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Footer notice */}

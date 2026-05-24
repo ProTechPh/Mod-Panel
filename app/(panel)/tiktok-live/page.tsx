@@ -13,7 +13,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import {
   Plus, Trash2, Pencil, Check, Clock, User, Smartphone, AlertCircle, RefreshCw,
-  TrendingUp, Users, Calendar
+  TrendingUp, Users, Calendar, Sparkles
 } from 'lucide-react';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
@@ -225,9 +225,9 @@ export default function TikTokLivePage() {
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">TikTok Live Streamers</h2>
-          <p className="text-muted-foreground">Generate and manage license keys for TikTok live streamers</p>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">TikTok Live Streamers</h2>
+          <Sparkles className="h-4 w-4 text-purple-400" />
         </div>
         <Dialog open={showGenerateDialog} onOpenChange={(open) => {
           setShowGenerateDialog(open);
@@ -236,12 +236,12 @@ export default function TikTokLivePage() {
           }
         }}>
           <DialogTrigger render={
-            <Button>
+            <Button className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
               <Plus className="h-4 w-4 mr-2" />
               Generate Key
             </Button>
           } />
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md border-border/30 bg-background/95 backdrop-blur-xl">
             <DialogHeader>
               <DialogTitle>Generate Streamer Key</DialogTitle>
             </DialogHeader>
@@ -252,22 +252,22 @@ export default function TikTokLivePage() {
                     Generating a new license key will create a pending entry in the list. 
                     The streamer will use this key to register their own details.
                   </p>
-                  <Button onClick={handleGenerateKey} className="w-full">
+                  <Button onClick={handleGenerateKey} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
                     Confirm Generation
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-muted rounded-lg flex flex-col items-center gap-2">
+                  <div className="p-4 bg-background/60 backdrop-blur-sm rounded-lg flex flex-col items-center gap-2 border border-purple-500/20">
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New License Key</span>
-                    <code className="text-2xl font-bold tracking-widest text-primary">{generatedKey}</code>
+                    <code className="text-2xl font-bold tracking-widest bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">{generatedKey}</code>
                   </div>
                   <p className="text-xs text-center text-amber-500">
                     Copy and send this key to the streamer. They must use it to complete their profile.
                   </p>
                   <Button 
                     variant="outline" 
-                    className="w-full" 
+                    className="w-full border-purple-500/30 hover:bg-purple-500/10" 
                     onClick={() => {
                       navigator.clipboard.writeText(generatedKey);
                       toast.success('Key copied to clipboard');
@@ -284,48 +284,60 @@ export default function TikTokLivePage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Streamers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{streamers.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All registered streamers
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Streamers</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{streamers.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                All registered streamers
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Streamers</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {streamers.filter(s => s.status === 'active').length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Currently live or recently active
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Streamers</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {streamers.filter(s => s.status === 'active').length}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Currently live or recently active
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Live Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatTime(streamers.reduce((acc, s) => acc + s.liveDuration, 0))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Combined live duration
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Live Time</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatTime(streamers.reduce((acc, s) => acc + s.liveDuration, 0))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Combined live duration
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -342,10 +354,10 @@ export default function TikTokLivePage() {
               placeholder="Search streamers..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-64"
+              className="w-64 bg-background/60 border-border/50"
             />
             <Select value={filter} onValueChange={v => setFilter(v as any)}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 bg-background/60 border-border/50">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -363,9 +375,12 @@ export default function TikTokLivePage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : (
-            <Card className="border-border/50">
-              <CardContent className="p-0">
-                <Table>
+            <div className="relative group">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                <CardContent className="p-0">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Streamer</TableHead>
@@ -477,13 +492,14 @@ export default function TikTokLivePage() {
                 </Table>
               </CardContent>
             </Card>
+          </div>
           )}
         </TabsContent>
       </Tabs>
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md border-border/30 bg-background/95 backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle>Edit Streamer</DialogTitle>
           </DialogHeader>
@@ -494,6 +510,7 @@ export default function TikTokLivePage() {
                 value={registrarForm.tiktokUsername}
                 onChange={e => setRegistrarForm({ ...registrarForm, tiktokUsername: e.target.value })}
                 placeholder="@username"
+                className="bg-background/60 border-border/50"
               />
             </div>
             <div className="space-y-1.5">
@@ -502,6 +519,7 @@ export default function TikTokLivePage() {
                 value={registrarForm.streamerName}
                 onChange={e => setRegistrarForm({ ...registrarForm, streamerName: e.target.value })}
                 placeholder="Streamer name"
+                className="bg-background/60 border-border/50"
               />
             </div>
             <div className="space-y-1.5">
@@ -510,16 +528,18 @@ export default function TikTokLivePage() {
                 value={registrarForm.contact}
                 onChange={e => setRegistrarForm({ ...registrarForm, contact: e.target.value })}
                 placeholder="Telegram or phone"
+                className="bg-background/60 border-border/50"
               />
             </div>
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
                 onClick={() => setShowEditDialog(false)}
+                className="border-purple-500/30 hover:bg-purple-500/10"
               >
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
                 Save Changes
               </Button>
             </div>

@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
-import { Clock, ShieldAlert } from 'lucide-react';
+import { Clock, ShieldAlert, Sparkles } from 'lucide-react';
 
 interface ServerConfig {
   maintenanceStatus: string;
@@ -105,11 +105,15 @@ export default function ServerPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Server Config</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Server Config</h2>
+        <Sparkles className="h-4 w-4 text-purple-400" />
       </div>
 
-      <Card className={`border-border/50 ${isOn ? 'border-amber-500/60 bg-amber-500/5' : ''}`}>
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className={`relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden ${isOn ? 'border-amber-500/60 bg-amber-500/5' : ''}`}>
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <ShieldAlert className={`h-4 w-4 ${isOn ? 'text-amber-500' : 'text-muted-foreground'}`} />
@@ -152,6 +156,7 @@ export default function ServerPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

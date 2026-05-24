@@ -15,7 +15,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import {
   ShoppingCart, Plus, Trash2, Pencil, Copy, Check, CheckCircle2,
-  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download,
+  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download, Sparkles,
 } from 'lucide-react';
 import type { Duration } from '@/types';
 
@@ -298,7 +298,10 @@ export default function StorePage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Store</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Store</h2>
+          <Sparkles className="h-4 w-4 text-purple-400" />
+        </div>
         {store && (
           <Button variant="outline" size="sm" onClick={copyStoreLink} className="gap-1.5">
             {copiedLink ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
@@ -328,62 +331,68 @@ export default function StorePage() {
       {/* ── SETUP TAB ─────────────────────────────────────────── */}
       {tab === 'setup' && (
         <div className="space-y-4 max-w-xl">
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-4 w-4 text-primary" />
-                Store Branding
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {storeLoading ? (
-                <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
-              ) : (
-                <>
-                  <div className="space-y-1.5">
-                    <Label>Store Name *</Label>
-                    <Input
-                      value={storeForm.storeName}
-                      onChange={e => setStoreForm({ ...storeForm, storeName: e.target.value })}
-                      placeholder="e.g. ProTech Key Shop"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Store Description</Label>
-                    <Textarea
-                      value={storeForm.storeDescription}
-                      onChange={e => setStoreForm({ ...storeForm, storeDescription: e.target.value })}
-                      placeholder="Brief description shown to buyers..."
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={storeForm.isActive}
-                      onCheckedChange={v => setStoreForm({ ...storeForm, isActive: v })}
-                    />
-                    <Label>Store Active (visible to buyers)</Label>
-                  </div>
-                  <Button onClick={saveStore} disabled={storeSaving} className="gap-2">
-                    {storeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Save Store Settings
-                  </Button>
-
-                  {store && (
-                    <div className="pt-2 border-t border-border/40">
-                      <p className="text-xs text-muted-foreground mb-1">Your public store URL:</p>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">{storeLink}</code>
-                        <Button size="sm" variant="outline" onClick={copyStoreLink} className="shrink-0 h-7 text-xs gap-1">
-                          {copiedLink ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                        </Button>
-                      </div>
+          <div className="relative group">
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+            <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="h-4 w-4 text-primary" />
+                  Store Branding
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {storeLoading ? (
+                  <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label>Store Name *</Label>
+                      <Input
+                        value={storeForm.storeName}
+                        onChange={e => setStoreForm({ ...storeForm, storeName: e.target.value })}
+                        placeholder="e.g. ProTech Key Shop"
+                        className="bg-background/60 border-border/50"
+                      />
                     </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+                    <div className="space-y-1.5">
+                      <Label>Store Description</Label>
+                      <Textarea
+                        value={storeForm.storeDescription}
+                        onChange={e => setStoreForm({ ...storeForm, storeDescription: e.target.value })}
+                        placeholder="Brief description shown to buyers..."
+                        rows={3}
+                        className="bg-background/60 border-border/50"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={storeForm.isActive}
+                        onCheckedChange={v => setStoreForm({ ...storeForm, isActive: v })}
+                      />
+                      <Label>Store Active (visible to buyers)</Label>
+                    </div>
+                    <Button onClick={saveStore} disabled={storeSaving} className="gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
+                      {storeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                      Save Store Settings
+                    </Button>
+
+                    {store && (
+                      <div className="pt-2 border-t border-border/40">
+                        <p className="text-xs text-muted-foreground mb-1">Your public store URL:</p>
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">{storeLink}</code>
+                          <Button size="sm" variant="outline" onClick={copyStoreLink} className="shrink-0 h-7 text-xs gap-1">
+                            {copiedLink ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 
@@ -394,9 +403,9 @@ export default function StorePage() {
             <p className="text-sm text-muted-foreground">{products.length} product{products.length !== 1 ? 's' : ''}</p>
             <Dialog open={productDialog} onOpenChange={setProductDialog}>
               <DialogTrigger render={
-                <Button size="sm" onClick={openAddProduct}><Plus className="h-4 w-4 mr-1" />Add Product</Button>
+                <Button size="sm" onClick={openAddProduct} className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25"><Plus className="h-4 w-4 mr-1" />Add Product</Button>
               } />
-              <DialogContent className="max-w-sm">
+              <DialogContent className="max-w-sm border-border/30 bg-background/95 backdrop-blur-xl">
                 <DialogHeader>
                   <DialogTitle>{editProduct ? 'Edit Product' : 'Add Product'}</DialogTitle>
                 </DialogHeader>
@@ -425,6 +434,7 @@ export default function StorePage() {
                         value={productForm.game}
                         onChange={e => setProductForm({ ...productForm, game: e.target.value.toUpperCase() })}
                         placeholder="e.g. CODM (no games configured yet)"
+                        className="bg-background/60 border-border/50"
                       />
                     )}
                   </div>
@@ -434,6 +444,7 @@ export default function StorePage() {
                       value={productForm.label}
                       onChange={e => setProductForm({ ...productForm, label: e.target.value })}
                       placeholder="e.g. CODM 1-Day Key"
+                      className="bg-background/60 border-border/50"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -454,6 +465,7 @@ export default function StorePage() {
                         type="number" min={1}
                         value={productForm.maxDevices}
                         onChange={e => setProductForm({ ...productForm, maxDevices: parseInt(e.target.value) || 1 })}
+                        className="bg-background/60 border-border/50"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -462,11 +474,12 @@ export default function StorePage() {
                         type="number" min={20} step={1}
                         value={productForm.price}
                         onChange={e => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 20 })}
+                        className="bg-background/60 border-border/50"
                       />
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">Minimum price is ₱20 (payment processor requirement)</p>
-                  <Button onClick={saveProduct} disabled={productSaving} className="w-full gap-2">
+                  <Button onClick={saveProduct} disabled={productSaving} className="w-full gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
                     {productSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     {editProduct ? 'Save Changes' : 'Add Product'}
                   </Button>
@@ -476,45 +489,53 @@ export default function StorePage() {
           </div>
 
           {products.length === 0 ? (
-            <Card className="border-border/50">
-              <CardContent className="py-12 text-center">
-                <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No products yet. Add your first product above.</p>
-              </CardContent>
-            </Card>
+            <div className="relative group">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                <CardContent className="py-12 text-center">
+                  <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No products yet. Add your first product above.</p>
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {products.map(p => (
-                <Card key={p._id} className={`border-border/50 ${!p.isActive ? 'opacity-60' : ''}`}>
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <Badge variant="outline" className="font-mono text-xs mb-1">{p.game}</Badge>
-                        <p className="font-medium text-sm">{p.label}</p>
+                <div key={p._id} className="relative group">
+                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                  <Card className={`relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden ${!p.isActive ? 'opacity-60' : ''}`}>
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <Badge variant="outline" className="font-mono text-xs mb-1">{p.game}</Badge>
+                          <p className="font-medium text-sm">{p.label}</p>
+                        </div>
+                        {!p.isActive && <Badge variant="secondary" className="text-xs shrink-0">Inactive</Badge>}
                       </div>
-                      {!p.isActive && <Badge variant="secondary" className="text-xs shrink-0">Inactive</Badge>}
-                    </div>
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div className="flex justify-between">
-                        <span>Duration</span><span>{durationLabel(p.duration)}</span>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div className="flex justify-between">
+                          <span>Duration</span><span>{durationLabel(p.duration)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Devices</span><span>{p.maxDevices}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-foreground">
+                          <span>Price</span><span className="text-primary">₱{p.price.toFixed(0)}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Devices</span><span>{p.maxDevices}</span>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1 h-7 text-xs gap-1" onClick={() => openEditProduct(p)}>
+                          <Pencil className="h-3 w-3" />Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteProduct(p._id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
-                      <div className="flex justify-between font-semibold text-foreground">
-                        <span>Price</span><span className="text-primary">₱{p.price.toFixed(0)}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 h-7 text-xs gap-1" onClick={() => openEditProduct(p)}>
-                        <Pencil className="h-3 w-3" />Edit
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => deleteProduct(p._id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               ))}
             </div>
           )}
@@ -532,46 +553,62 @@ export default function StorePage() {
             return (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <Card className="border-border/50 bg-gradient-to-br from-primary/10 to-primary/5">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Total Revenue</p>
-                        <PhilippinePeso className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <p className="text-2xl font-bold text-primary">₱{revenue.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Total Orders</p>
-                        <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-                      </div>
-                      <p className="text-2xl font-bold">{orders.length}</p>
-                      <p className="text-xs text-muted-foreground mt-1">All time</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Pending</p>
-                        <KeyRound className="h-3.5 w-3.5 text-amber-500" />
-                      </div>
-                      <p className="text-2xl font-bold text-amber-500">{orders.filter(o => o.status === 'pending').length}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Conversion</p>
-                        <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                      </div>
-                      <p className="text-2xl font-bold text-green-500">{convRate}%</p>
-                      <p className="text-xs text-muted-foreground mt-1">Paid vs total</p>
-                    </CardContent>
-                  </Card>
+                  <div className="relative group">
+                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Total Revenue</p>
+                          <PhilippinePeso className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">₱{revenue.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Total Orders</p>
+                          <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                        <p className="text-2xl font-bold">{orders.length}</p>
+                        <p className="text-xs text-muted-foreground mt-1">All time</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Pending</p>
+                          <KeyRound className="h-3.5 w-3.5 text-amber-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-amber-500">{orders.filter(o => o.status === 'pending').length}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Conversion</p>
+                          <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-green-500">{convRate}%</p>
+                        <p className="text-xs text-muted-foreground mt-1">Paid vs total</p>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
 
                 {/* Per-reseller breakdown — Owner only */}
@@ -586,42 +623,46 @@ export default function StorePage() {
                   const rows = Object.entries(byRegistrator).sort((a, b) => b[1].revenue - a[1].revenue);
                   if (rows.length <= 1) return null;
                   return (
-                    <Card className="border-border/50">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-primary" />
-                          Sales by Reseller
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
-                            <thead>
-                              <tr className="border-b border-border/50">
-                                <th className="text-left px-4 py-2 text-muted-foreground font-medium">#</th>
-                                <th className="text-left px-4 py-2 text-muted-foreground font-medium">Reseller</th>
-                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Revenue</th>
-                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Paid</th>
-                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Total</th>
-                                <th className="text-right px-4 py-2 text-muted-foreground font-medium">Conv.</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {rows.map(([reg, s], i) => (
-                                <tr key={reg} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
-                                  <td className="px-4 py-2 text-muted-foreground">{i + 1}</td>
-                                  <td className="px-4 py-2 font-mono font-medium">{reg}</td>
-                                  <td className="px-4 py-2 text-right text-primary font-semibold">₱{s.revenue.toLocaleString()}</td>
-                                  <td className="px-4 py-2 text-right text-green-500">{s.paid}</td>
-                                  <td className="px-4 py-2 text-right">{s.total}</td>
-                                  <td className="px-4 py-2 text-right text-muted-foreground">{s.total > 0 ? Math.round((s.paid / s.total) * 100) : 0}%</td>
+                    <div className="relative group">
+                      <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                      <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            Sales by Reseller
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="border-b border-border/50">
+                                  <th className="text-left px-4 py-2 text-muted-foreground font-medium">#</th>
+                                  <th className="text-left px-4 py-2 text-muted-foreground font-medium">Reseller</th>
+                                  <th className="text-right px-4 py-2 text-muted-foreground font-medium">Revenue</th>
+                                  <th className="text-right px-4 py-2 text-muted-foreground font-medium">Paid</th>
+                                  <th className="text-right px-4 py-2 text-muted-foreground font-medium">Total</th>
+                                  <th className="text-right px-4 py-2 text-muted-foreground font-medium">Conv.</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
+                              </thead>
+                              <tbody>
+                                {rows.map(([reg, s], i) => (
+                                  <tr key={reg} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                                    <td className="px-4 py-2 text-muted-foreground">{i + 1}</td>
+                                    <td className="px-4 py-2 font-mono font-medium">{reg}</td>
+                                    <td className="px-4 py-2 text-right text-primary font-semibold">₱{s.revenue.toLocaleString()}</td>
+                                    <td className="px-4 py-2 text-right text-green-500">{s.paid}</td>
+                                    <td className="px-4 py-2 text-right">{s.total}</td>
+                                    <td className="px-4 py-2 text-right text-muted-foreground">{s.total > 0 ? Math.round((s.paid / s.total) * 100) : 0}%</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   );
                 })()}
               </>
@@ -631,110 +672,118 @@ export default function StorePage() {
           {ordersLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
           ) : orders.length === 0 ? (
-            <Card className="border-border/50">
-              <CardContent className="py-12 text-center">
-                <ClipboardList className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No orders yet.</p>
-              </CardContent>
-            </Card>
+            <div className="relative group">
+              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                <CardContent className="py-12 text-center">
+                  <ClipboardList className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No orders yet.</p>
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             orders.map(o => (
               <div key={o._id}>
-              <Card className="border-border/50">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {statusBadge(o.status)}
-                        <Badge variant="outline" className="font-mono text-xs">{o.game}</Badge>
-                        <span className="text-sm font-medium">{o.label}</span>
-                        {user.level === 1 && o.registrator && (
-                          <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">{o.registrator}</span>
-                        )}
-                      </div>
-                      {o.buyerName && (
-                        <p className="text-xs text-muted-foreground">Buyer: {o.buyerName}</p>
-                      )}
-                      {o.generatedKey && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <KeyRound className="h-3.5 w-3.5 text-primary shrink-0" />
-                          <code className="text-xs font-mono break-all text-muted-foreground">{o.generatedKey}</code>
-                          <div className="receipt-actions flex items-center gap-2">
-                            <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Copy Key">
-                              {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
-                            <button onClick={() => downloadReceipt(o)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Download Receipt">
-                              <Download className="h-3.5 w-3.5" />
-                            </button>
+                <div className="relative group">
+                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                  <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {statusBadge(o.status)}
+                            <Badge variant="outline" className="font-mono text-xs">{o.game}</Badge>
+                            <span className="text-sm font-medium">{o.label}</span>
+                            {user.level === 1 && o.registrator && (
+                              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">{o.registrator}</span>
+                            )}
                           </div>
+                          {o.buyerName && (
+                            <p className="text-xs text-muted-foreground">Buyer: {o.buyerName}</p>
+                          )}
+                          {o.generatedKey && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <KeyRound className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <code className="text-xs font-mono break-all text-muted-foreground">{o.generatedKey}</code>
+                              <div className="receipt-actions flex items-center gap-2">
+                                <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Copy Key">
+                                  {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                                <button onClick={() => downloadReceipt(o)} className="shrink-0 text-muted-foreground hover:text-foreground" title="Download Receipt">
+                                  <Download className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-semibold text-primary">₱{o.price.toFixed(0)}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString()}</p>
-                      {o.status !== 'paid' && (
-                        <button
-                          onClick={() => deleteOrder(o._id)}
-                          className="mt-1 text-muted-foreground hover:text-destructive transition-colors"
-                          title="Delete order"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Hidden GCash-style Receipt Template */}
-              <div className="fixed left-[-9999px] top-[-9999px]">
-                <div id={`receipt-template-${o._id}`} className="w-[380px] bg-white text-black p-8 rounded-2xl shadow-xl font-sans relative overflow-hidden" style={{ minHeight: '550px' }}>
-                  <div className="text-center space-y-2 mb-8 relative z-10">
-                    <div className="mx-auto w-16 h-16 bg-[#0051e5] rounded-full flex items-center justify-center mb-4 shadow-md">
-                      <Check className="h-8 w-8 text-white" strokeWidth={3} />
-                    </div>
-                    <h2 className="text-[22px] font-bold text-[#0051e5]">Transaction Receipt</h2>
-                    <p className="text-sm text-gray-500">{new Date(o.createdAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</p>
-                  </div>
-
-                  <div className="text-center mb-8 relative z-10">
-                    <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Amount Paid</p>
-                    <p className="text-[40px] font-extrabold text-gray-900 tracking-tight leading-none">₱{o.price?.toFixed(2) || '0.00'}</p>
-                    <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-100">
-                      <CheckCircle2 className="h-4 w-4" /> Successful
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 border-t-2 border-dashed border-gray-200 pt-6 relative z-10">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Store Name</span>
-                      <span className="font-semibold text-gray-900">{o.registrator || store?.storeName || 'Store'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Product</span>
-                      <span className="font-semibold text-gray-900">{o.label}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Game</span>
-                      <span className="font-semibold text-gray-900">{o.game}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Order ID</span>
-                      <span className="font-mono text-sm font-medium text-gray-700">{o._id.slice(-8).toUpperCase()}</span>
-                    </div>
-                  </div>
-
-
-
-                  <div className="mt-10 text-center relative z-10">
-                    <p className="text-[13px] text-gray-500 font-medium">Thank you for your purchase!</p>
-                    <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {o._id.slice(-12).toUpperCase()}</p>
-                  </div>
-
-                  <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0051e5 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold text-primary">₱{o.price.toFixed(0)}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString()}</p>
+                          {o.status !== 'paid' && (
+                            <button
+                              onClick={() => deleteOrder(o._id)}
+                              className="mt-1 text-muted-foreground hover:text-destructive transition-colors"
+                              title="Delete order"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
+
+                {/* Hidden GCash-style Receipt Template */}
+                <div className="fixed left-[-9999px] top-[-9999px]">
+                  <div id={`receipt-template-${o._id}`} className="w-[380px] bg-white text-black p-8 rounded-2xl shadow-xl font-sans relative overflow-hidden" style={{ minHeight: '550px' }}>
+                    <div className="text-center space-y-2 mb-8 relative z-10">
+                      <div className="mx-auto w-16 h-16 bg-[#0051e5] rounded-full flex items-center justify-center mb-4 shadow-md">
+                        <Check className="h-8 w-8 text-white" strokeWidth={3} />
+                      </div>
+                      <h2 className="text-[22px] font-bold text-[#0051e5]">Transaction Receipt</h2>
+                      <p className="text-sm text-gray-500">{new Date(o.createdAt).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                    </div>
+
+                    <div className="text-center mb-8 relative z-10">
+                      <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">Amount Paid</p>
+                      <p className="text-[40px] font-extrabold text-gray-900 tracking-tight leading-none">₱{o.price?.toFixed(2) || '0.00'}</p>
+                      <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-semibold border border-green-100">
+                        <CheckCircle2 className="h-4 w-4" /> Successful
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 border-t-2 border-dashed border-gray-200 pt-6 relative z-10">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-sm">Store Name</span>
+                        <span className="font-semibold text-gray-900">{o.registrator || store?.storeName || 'Store'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-sm">Product</span>
+                        <span className="font-semibold text-gray-900">{o.label}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-sm">Game</span>
+                        <span className="font-semibold text-gray-900">{o.game}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-sm">Order ID</span>
+                        <span className="font-mono text-sm font-medium text-gray-700">{o._id.slice(-8).toUpperCase()}</span>
+                      </div>
+                    </div>
+
+
+
+                    <div className="mt-10 text-center relative z-10">
+                      <p className="text-[13px] text-gray-500 font-medium">Thank you for your purchase!</p>
+                      <p className="text-[11px] text-gray-400 mt-2 font-mono">Ref No. {o._id.slice(-12).toUpperCase()}</p>
+                    </div>
+
+                    <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0051e5 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                  </div>
+                </div>
               </div>
             ))
           )}

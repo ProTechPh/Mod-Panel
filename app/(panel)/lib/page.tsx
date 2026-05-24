@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save } from 'lucide-react';
+import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lib {
@@ -210,7 +210,10 @@ export default function LibPage() {
 
       <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">Library</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Library</h2>
+              <Sparkles className="h-4 w-4 text-purple-400" />
+            </div>
             <div className="flex items-center gap-2">
               <select
                 value={uploadType}
@@ -229,7 +232,7 @@ export default function LibPage() {
           </div>
 
         {uploading && (
-          <div className="space-y-2 rounded-lg border border-border/50 bg-card p-4">
+          <div className="space-y-2 rounded-lg border border-purple-500/20 bg-background/60 backdrop-blur-sm p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground truncate max-w-[200px] font-mono">{uploadFileName}</span>
               <span className="text-foreground font-medium tabular-nums">{uploadProgress}%</span>
@@ -241,8 +244,11 @@ export default function LibPage() {
           </div>
         )}
 
-        <Card className="border-border/50">
-          <CardContent className="p-0">
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -333,6 +339,7 @@ export default function LibPage() {
             </Table>
           </CardContent>
         </Card>
+        </div>
       </div>
     </>
   );

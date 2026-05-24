@@ -3,6 +3,7 @@
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Sparkles } from 'lucide-react';
 
 export default function DocsPage() {
   const { user } = useAuth();
@@ -14,10 +15,16 @@ export default function DocsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight">API Documentation</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">API Documentation</h2>
+        <Sparkles className="h-4 w-4 text-purple-400" />
+      </div>
 
       {/* Connect API */}
-      <Card className="border-border/50">
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
         <CardHeader>
           <div className="flex items-center gap-3">
             <CardTitle className="text-lg">POST /api/connect</CardTitle>
@@ -172,19 +179,23 @@ export default function DocsPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
 
       {/* Connect GET */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <CardTitle className="text-lg">GET /api/connect</CardTitle>
-            <Badge variant="outline" className="text-xs">Public</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Returns server info and contact details. No authentication required.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg">GET /api/connect</CardTitle>
+              <Badge variant="outline" className="text-xs">Public</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Returns server info and contact details. No authentication required.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
           <div>
             <h4 className="text-sm font-semibold mb-2">Example Request</h4>
             <pre className="bg-muted px-3 py-2 rounded text-xs font-mono overflow-x-auto">
@@ -210,19 +221,23 @@ export default function DocsPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
 
       {/* Library APIs */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <CardTitle className="text-lg">Library APIs</CardTitle>
-            <Badge className="text-xs">Auth Required</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Manage .so library files. All endpoints require a valid <code className="bg-muted px-1 rounded">wp_access</code> cookie.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className="relative group">
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg">Library APIs</CardTitle>
+              <Badge variant="outline" className="text-xs">Public</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Serve native library files (.so) from the FTP server.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
           {/* GET /api/libs */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -376,6 +391,7 @@ Content-Disposition: attachment; filename="libname_abc123.so"`}
           </div>
         </CardContent>
       </Card>
+        </div>
     </div>
   );
 }
