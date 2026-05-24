@@ -28,7 +28,7 @@ export default function FtpStats() {
   return (
     <Card className="border-border/50">
       <CardHeader>
-        <CardTitle className="text-lg">FTP Storage (InfinityFree)</CardTitle>
+        <CardTitle className="text-lg">FTP Storage</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Disk */}
