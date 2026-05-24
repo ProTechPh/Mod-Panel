@@ -10,6 +10,7 @@ import { Footer } from './Footer';
 import { GrainOverlay } from './GrainOverlay';
 import { GradientOrbs } from './GradientOrbs';
 import { SpotlightCursor } from './SpotlightCursor';
+import { ParticleField } from './ParticleField';
 import { TikTokLiveSection } from './TikTokLiveSection';
 import { ThemeToggle } from './ThemeToggle';
 import '@/components/landing/landing.css';
@@ -19,6 +20,7 @@ export default function LandingPage() {
     <main className="relative min-h-screen overflow-x-clip" style={{ background: 'var(--landing-bg)', color: 'var(--landing-text)' }}>
       <ThemeToggle />
       <GrainOverlay />
+      <ParticleField />
       <GradientOrbs />
       <SpotlightCursor />
       <div className="relative z-10">
