@@ -22,40 +22,6 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   return data.success === true;
 }
 
-async function checkVpn(ip: string): Promise<{ isVpn: boolean; isProxy: boolean; isp: string; org: string }> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    const res = await fetch(`https://iplogs.com/v1/check`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ip }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      // API failure should NOT result in banning — fail open
-      return { isVpn: false, isProxy: false, isp: '', org: '' };
-    }
-
-    const data = await res.json();
-    return {
-      isVpn: data.is_vpn === true,
-      isProxy: data.ip_info?.is_proxy === true,
-      isp: data.ip_info?.isp || '',
-      org: data.ip_info?.org || '',
-    };
-  } catch {
-    clearTimeout(timeoutId);
-    // API failure should NOT result in banning — fail open
-    return { isVpn: false, isProxy: false, isp: '', org: '' };
-  }
-}
-
 import { shortenUrl } from './reshortfly-service';
 
 import { SignJWT, jwtVerify } from 'jose';
@@ -130,29 +96,6 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
   }
 
 
-  // Always perform a fresh VPN check — don't reuse stale results
-  const vpnCheck = await checkVpn(ip);
-  if (vpnCheck.isVpn || vpnCheck.isProxy) {
-    const tracker = await IpTracker.findOne({ ipAddress: ip }).lean();
-    if (tracker) {
-      await IpTracker.updateOne({ _id: tracker._id }, { isBanned: true, banReason: 'VPN/Proxy detected', isVpn: vpnCheck.isVpn, isProxy: vpnCheck.isProxy });
-    } else {
-      await IpTracker.create({
-        userId: '0',
-        ipAddress: ip,
-        generatorIp: ip,
-        keyId: '000000000000000000000000',
-        isp: vpnCheck.isp,
-        org: vpnCheck.org,
-        isVpn: vpnCheck.isVpn,
-        isProxy: vpnCheck.isProxy,
-        isBanned: true,
-        banReason: 'VPN/Proxy detected',
-      });
-    }
-    return { error: 'VPN/Proxy detected. Free keys are not available for VPN users.' };
-  }
-
   // For 3h keys, we return an adUrl with a claim token. 
   // The key is ONLY created after they return from the ad link.
   if (duration === '3h') {
@@ -183,10 +126,8 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     ipAddress: ip,
     generatorIp: ip,
     keyId: key._id,
-    isp: vpnCheck.isp,
-    org: vpnCheck.org,
-    isVpn: false,
-    isProxy: false,
+    isp: '',
+    org: '',
     isAdClaim: false,
   });
 
@@ -263,10 +204,8 @@ export async function claimFreeKey(token: string, currentIp: string) {
     ipAddress: currentIp,
     generatorIp: currentIp,
     keyId: key._id,
-    isp: '', // VPN checks were already done in generateFreeKey
+    isp: '',
     org: '',
-    isVpn: false,
-    isProxy: false,
     isAdClaim: true,
   });
 
@@ -372,8 +311,6 @@ export async function extendFreeKey(token: string, currentIp: string) {
     keyId: key._id,
     isp: '',
     org: '',
-    isVpn: false,
-    isProxy: false,
     isAdClaim: true,
   });
 

@@ -54,7 +54,7 @@ MongoDB via Mongoose 9 with a global-cached singleton connection (`lib/db/connec
 | Referral | `referrals` | MD5-hashed codes; links to creator and users |
 | GameSetting | `game_settings` | Per-game config with feature flags (esp, item, silentAim, aim, bulletTrack, memory, floating, setting) |
 | ServerConfig | `server_config` | Singleton doc (fixed ObjectId `000000000000000000000001`) |
-| IpTracker | `ip_tracker` | VPN/proxy detection for free key abuse prevention |
+| IpTracker | `ip_tracker` | IP tracking for free key abuse prevention |
 | History | `history` | Action log |
 | AppLink / Lib | `app_links` / `libs` | Download links and .so file metadata |
 
@@ -66,7 +66,7 @@ Business logic lives in `lib/services/` — each service handles its domain (key
 
 Key service details:
 - `key-service.ts` has in-memory 1-minute TTL cache for `ServerConfig` and `GameSetting`
-- `free-key-service.ts` uses Cloudflare Turnstile + ip-api.com VPN detection + IP rate limiting (1 key/hour)
+- `free-key-service.ts` uses Cloudflare Turnstile + IP rate limiting (1 key/hour)
 - `lib-service.ts` manages `.so` files via FTP (`basic-ftp`) + MongoDB metadata
 
 ### Validation

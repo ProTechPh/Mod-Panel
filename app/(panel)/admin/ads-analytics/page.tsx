@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Area, AreaChart } from 'recharts';
-import { MousePointerClick, TrendingUp, Eye, Clock, ShieldAlert, Users, BarChart3, Zap, Crown } from 'lucide-react';
+import { MousePointerClick, TrendingUp, Eye, Clock, Users, BarChart3, Zap, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AdClaimTrend {
@@ -51,7 +51,6 @@ interface AdsAnalytics {
   total3hClaims: number;
   totalExtensions: number;
   total3hActive: number;
-  totalBlockedVpns: number;
   adClaimTrends: AdClaimTrend[];
   gameAdStats: GameAdStats[];
   topSupporters: TopAdSupporter[];
@@ -114,7 +113,7 @@ export default function AdsAnalyticsPage() {
     { label: '3h Key Claims', value: analytics.total3hClaims, icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10' },
     { label: 'Key Extensions', value: analytics.totalExtensions, icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
     { label: 'Active 3h Keys', value: analytics.total3hActive, icon: Clock, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-    { label: 'Blocked VPNs', value: analytics.totalBlockedVpns, icon: ShieldAlert, color: 'text-red-500', bg: 'bg-red-500/10' },
+
   ];
 
   return (
@@ -125,7 +124,7 @@ export default function AdsAnalyticsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {statsCards.map(card => (
           <Card key={card.label} className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-2">

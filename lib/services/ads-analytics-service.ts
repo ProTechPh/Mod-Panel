@@ -43,7 +43,6 @@ export interface AdsAnalytics {
   total3hClaims: number;
   totalExtensions: number;
   total3hActive: number;
-  totalBlockedVpns: number;
   adClaimTrends: AdClaimTrend[];
   gameAdStats: GameAdStats[];
   topSupporters: TopAdSupporter[];
@@ -58,18 +57,13 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   // Total counts
-  const [totalAdClaims, total3hClaims, totalExtensions, totalBlockedVpns] = await Promise.all([
+  const [totalAdClaims, total3hClaims, totalExtensions] = await Promise.all([
     IpTracker.countDocuments({ isAdClaim: true }),
-    IpTracker.countDocuments({ isAdClaim: true, isVpn: false, isProxy: false }),
-    // Extensions don't have VPN checks — they're counted by separate extension entries
+    IpTracker.countDocuments({ isAdClaim: true }),
     IpTracker.countDocuments({ isAdClaim: true }).then(async () => {
-      // We need to distinguish 3h claims from 1h extensions
-      // Extensions are tracked as ad claims with key data pointing to extending existing key
-      // Let's count via key duration field
       const extKeys = await Key.find({ isFreeKey: true, duration: '3h' }).lean();
       return extKeys.length;
     }),
-    IpTracker.countDocuments({ isBanned: true, $or: [{ isVpn: true }, { isProxy: true }] }),
   ]);
 
   // Active 3h free keys
@@ -331,7 +325,6 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
     total3hClaims: actualTotal3h,
     totalExtensions: actualExtensions,
     total3hActive,
-    totalBlockedVpns,
     adClaimTrends: mergedTrends,
     gameAdStats,
     topSupporters,

@@ -9,8 +9,6 @@ const IpTrackerSchema = new Schema<IpTrackerDoc & Document>({
   createdAt: { type: Date, default: Date.now },
   isp: { type: String, default: '' },
   org: { type: String, default: '' },
-  isVpn: { type: Boolean, default: false },
-  isProxy: { type: Boolean, default: false },
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
   isAdClaim: { type: Boolean, default: false },

@@ -12,8 +12,6 @@ import { toast } from 'sonner';
 interface IpLog {
   _id: string;
   ipAddress: string;
-  isVpn: boolean;
-  isProxy: boolean;
   isBanned: boolean;
   banReason: string;
   isp: string;
@@ -61,7 +59,7 @@ export default function IpLogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">IP Security Logs</h2>
-          <p className="text-muted-foreground">Monitor VPN, proxy, and banned IPs from free key generation.</p>
+          <p className="text-muted-foreground">Monitor banned IPs from free key generation.</p>
         </div>
       </div>
 
@@ -114,15 +112,13 @@ export default function IpLogsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-wrap">
-                          {log.isVpn && <Badge variant="destructive" className="text-[10px] h-5 px-1.5">VPN</Badge>}
-                          {log.isProxy && <Badge variant="destructive" className="text-[10px] h-5 px-1.5">Proxy</Badge>}
                           {log.isBanned && <Badge variant="destructive" className="text-[10px] h-5 px-1.5">Banned</Badge>}
                           {log.isAdClaim ? (
                             <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-blue-500/10 text-blue-500 border-blue-500/20">With Ads</Badge>
                           ) : (
                             <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-gray-500/10 text-gray-500 border-gray-500/20">No Ads</Badge>
                           )}
-                          {!log.isVpn && !log.isProxy && !log.isBanned && <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">Clean</Badge>}
+                          {!log.isBanned && <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">Clean</Badge>}
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{log.banReason || '-'}</TableCell>

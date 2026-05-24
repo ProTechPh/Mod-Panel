@@ -136,8 +136,6 @@ export interface IpTrackerDoc {
   createdAt: Date;
   isp: string;
   org: string;
-  isVpn: boolean;
-  isProxy: boolean;
   isBanned: boolean;
   banReason: string;
   isAdClaim: boolean;
