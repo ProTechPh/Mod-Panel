@@ -6,9 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 interface FtpStatsData {
   disk: { used: number; total: number; used_human: string; total_human: string; percent: number };
   inodes: { used: number; total: number; percent: number };
-  bandwidth?: { used_human: string; total_human: string };
-  hits?: { used_human: string; total_human: string };
-  _note?: string;
 }
 
 export default function FtpStats() {
@@ -23,7 +20,7 @@ export default function FtpStats() {
 
   if (!stats) return null;
 
-  const { disk, inodes, bandwidth, hits } = stats;
+  const { disk, inodes } = stats;
 
   return (
     <Card className="border-border/50">
@@ -43,14 +40,6 @@ export default function FtpStats() {
           <p className="text-xs text-muted-foreground mt-1">{disk.percent}% Used</p>
         </div>
 
-        {/* Bandwidth */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Bandwidth Usage</span>
-            <span>{bandwidth?.used_human ?? 'N/A'} / {bandwidth?.total_human ?? 'Unlimited'}</span>
-          </div>
-        </div>
-
         {/* Inodes */}
         <div>
           <div className="flex justify-between text-sm mb-1">
@@ -63,13 +52,6 @@ export default function FtpStats() {
           <p className="text-xs text-muted-foreground mt-1">{inodes.percent}% Used</p>
         </div>
 
-        {/* Hits */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Hits Usage Today</span>
-            <span>{hits?.used_human ?? 'N/A'} / {hits?.total_human ?? '50,000'}</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
