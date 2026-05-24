@@ -143,6 +143,14 @@
   transform: scale(1.05);
 }
 
+/* Grid background for hero */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
 /* Hero CTA buttons */
 .hero-cta-primary {
   background: linear-gradient(135deg, oklch(0.65 0.2 150), oklch(0.55 0.18 180));

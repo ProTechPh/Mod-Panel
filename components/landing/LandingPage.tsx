@@ -3,6 +3,8 @@
 import { Hero } from './Hero';
 import { Features } from './Features';
 import { ServerStatus } from './ServerStatus';
+import { StatsBar } from './StatsBar';
+import { HowItWorks } from './HowItWorks';
 import { DownloadSection } from './DownloadSection';
 import { Footer } from './Footer';
 import { GrainOverlay } from './GrainOverlay';
@@ -19,7 +21,9 @@ export default function LandingPage() {
       <SpotlightCursor />
       <div className="relative z-10">
         <Hero />
+        <StatsBar />
         <Features />
+        <HowItWorks />
         <ServerStatus />
         <DownloadSection />
         <TikTokLiveSection />

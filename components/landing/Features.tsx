@@ -5,7 +5,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
 import {
   Eye, Crosshair, Target, CircleDot, Package,
-  Brain, MoveUp, Settings
+  Brain, MoveUp, Settings, Sparkles
 } from 'lucide-react';
 import '@/components/landing/landing.css';
 
@@ -40,15 +40,16 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
     if (!el || !inner) return;
 
     gsap.fromTo(el,
-      { y: 60, opacity: 0 },
+      { y: 60, opacity: 0, scale: 0.95 },
       {
         y: 0,
         opacity: 1,
+        scale: 1,
         duration: 0.6,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: el,
-          start: 'top 85%',
+          start: 'top 88%',
           toggleActions: 'play none none none',
         },
         delay: index * 0.08,
@@ -62,8 +63,8 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
       const rect = el.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
-      xSet(x * 8);
-      ySet(-y * 8);
+      xSet(x * 10);
+      ySet(-y * 10);
     };
 
     const handleMouseLeave = () => {
@@ -77,8 +78,6 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
     return () => {
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('mouseleave', handleMouseLeave);
-      xSet(0);
-      ySet(0);
     };
   }, { scope: cardRef });
 
@@ -89,17 +88,19 @@ function FeatureCard({ feature, index }: { feature: FeatureItem; index: number }
   return (
     <div
       ref={cardRef}
-      className={`tilt-card glass-card rounded-xl p-6 ${sizeClass}`}
+      className={`tilt-card glass-card rounded-xl p-6 ${sizeClass} group`}
       style={{ perspective: '800px' }}
     >
       <div className="tilt-card-inner flex flex-col gap-3" ref={innerRef}>
-        <div className="feature-icon-glow" style={{ '--accent-color': feature.accent } as React.CSSProperties}>
-          <div className="feature-icon-bg" style={{ backgroundColor: feature.accent + '15' }}>
-            <span style={{ color: feature.accent }}>{feature.icon}</span>
+        <div className="flex items-center gap-3">
+          <div className="feature-icon-glow" style={{ '--accent-color': feature.accent } as React.CSSProperties}>
+            <div className="feature-icon-bg" style={{ backgroundColor: feature.accent + '15' }}>
+              <span style={{ color: feature.accent }}>{feature.icon}</span>
+            </div>
           </div>
+          <h3 className="text-base font-semibold">{feature.name}</h3>
         </div>
-        <h3 className="text-base font-semibold">{feature.name}</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+        <p className="text-sm text-white/50 leading-relaxed">{feature.description}</p>
       </div>
     </div>
   );
@@ -134,9 +135,18 @@ export function Features() {
   return (
     <section ref={sectionRef} className="relative py-24 px-4">
       <div className="max-w-5xl mx-auto">
-        <h2 className="section-title text-3xl sm:text-4xl font-bold tracking-tight text-center mb-16">
-          Features
-        </h2>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6">
+            <Sparkles className="size-3.5 text-purple-400" />
+            <span className="text-xs font-medium text-white/70">Premium Features</span>
+          </div>
+          <h2 className="section-title text-3xl sm:text-4xl font-bold tracking-tight">
+            Everything You Need to <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400">Dominate</span>
+          </h2>
+          <p className="text-white/50 mt-3 max-w-xl mx-auto">
+            A comprehensive suite of undetectable mods designed for competitive players who demand the best.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {heroFeatures.map((feature, i) => (
