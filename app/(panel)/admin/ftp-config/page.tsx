@@ -21,7 +21,6 @@ interface FtpConfig {
   port: number;
   remotePath: string;
   statsUrl: string;
-  scanPaths: string[];
   isActive: boolean;
   order: number;
 }
@@ -35,7 +34,7 @@ export default function FtpConfigPage() {
   const [form, setForm] = useState({
     label: '', host: '', user: '', password: '', port: 21,
     remotePath: '/htdocs/', statsUrl: '',
-    scanPaths: '', isActive: true, order: 0,
+    isActive: true, order: 0,
   });
 
   const fetchConfigs = async () => {
@@ -47,7 +46,7 @@ export default function FtpConfigPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', statsUrl: '', scanPaths: '', isActive: true, order: configs.length });
+    setForm({ label: '', host: '', user: '', password: '', port: 21, remotePath: '/htdocs/', statsUrl: '', isActive: true, order: configs.length });
     setShowPw(false);
     setDialogOpen(true);
   };
@@ -62,7 +61,6 @@ export default function FtpConfigPage() {
       port: cfg.port,
       remotePath: cfg.remotePath,
       statsUrl: cfg.statsUrl,
-      scanPaths: (cfg.scanPaths || []).join('\n'),
       isActive: cfg.isActive,
       order: cfg.order,
     });
@@ -72,7 +70,6 @@ export default function FtpConfigPage() {
 
   const save = async () => {
     const body: any = { ...form };
-    body.scanPaths = form.scanPaths.split('\n').filter(Boolean).map(s => s.trim());
     if (editing) body._id = editing._id;
 
     const res = await fetch('/api/admin/ftp-config', {
@@ -186,13 +183,6 @@ export default function FtpConfigPage() {
             <div>
               <Label>Stats URL (optional)</Label>
               <Input value={form.statsUrl} onChange={e => setForm({ ...form, statsUrl: e.target.value })} placeholder="http://mod.kesug.com/stats.php" />
-            </div>
-            <div>
-              <Label>Extra scan paths (one per line)</Label>
-              <textarea className="w-full min-h-[60px] rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                value={form.scanPaths}
-                onChange={e => setForm({ ...form, scanPaths: e.target.value })}
-                placeholder="/mod.kesug.com/" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />
