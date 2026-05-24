@@ -35,33 +35,45 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={onClose} />
+        <div className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden" onClick={onClose} />
       )}
       <aside
         className={cn(
-          'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] w-56 border-r border-border/40 bg-card transition-transform duration-200 md:translate-x-0',
+          'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] w-56 border-r border-border/20 bg-background/70 backdrop-blur-xl transition-transform duration-200 md:translate-x-0 shadow-xl shadow-purple-500/5',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex flex-col gap-1 p-3">
-          {filteredItems.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onClose}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname === item.href || pathname.startsWith(item.href + '/')
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-600/5 via-transparent to-cyan-500/5 pointer-events-none" />
+        <nav className="relative flex flex-col gap-1 p-3">
+          {filteredItems.map(item => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 overflow-hidden',
+                  isActive
+                    ? 'text-white'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/30'
+                )}
+              >
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-lg shadow-lg shadow-purple-500/20" />
+                )}
+                <item.icon className={cn(
+                  'relative h-4 w-4 transition-transform duration-200',
+                  !isActive && 'group-hover:scale-110'
+                )} />
+                <span className="relative">{item.label}</span>
+                {isActive && (
+                  <div className="absolute right-2 w-1 h-4 rounded-full bg-white/60" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
-
       </aside>
     </>
   );

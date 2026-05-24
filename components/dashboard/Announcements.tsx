@@ -2,15 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Megaphone } from 'lucide-react';
+import { Megaphone, Sparkles } from 'lucide-react';
 
-interface Announcement {
-  _id: string;
-  title: string;
-  content: string;
-  priority: number;
-  createdAt: string;
-}
+interface Announcement { _id: string; title: string; content: string; priority: number; createdAt: string; }
 
 export default function Announcements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -27,18 +21,27 @@ export default function Announcements() {
   return (
     <div className="space-y-3">
       {announcements.map(a => (
-        <Card key={a._id} className="border-primary/20 bg-primary/5">
-          <CardContent className="p-4">
-            <div className="flex gap-3">
-              <Megaphone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div className="space-y-1 text-sm">
-                <p className="font-semibold">{a.title}</p>
-                <p className="text-muted-foreground whitespace-pre-wrap">{a.content}</p>
-                <p className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString()}</p>
+        <div key={a._id} className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/40 via-fuchsia-500/30 to-cyan-500/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+          <Card className="relative border-0 bg-gradient-to-r from-purple-600/10 via-fuchsia-500/5 to-cyan-500/10 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex gap-3">
+                <div className="relative shrink-0 mt-0.5">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full blur-md opacity-60 animate-pulse" style={{ animationDuration: '3s' }} />
+                  <Megaphone className="relative h-5 w-5 text-purple-300" />
+                </div>
+                <div className="space-y-1 text-sm flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-purple-200">{a.title}</p>
+                    {a.priority > 0 && <Sparkles className="h-3 w-3 text-yellow-400" />}
+                  </div>
+                  <p className="text-muted-foreground/80 whitespace-pre-wrap">{a.content}</p>
+                  <p className="text-xs text-muted-foreground/50">{new Date(a.createdAt).toLocaleDateString()}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       ))}
     </div>
   );
