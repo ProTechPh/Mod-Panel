@@ -12,7 +12,7 @@ import { useTheme } from '@/components/shared/ThemeProvider';
 import {
   Moon, Sun, Copy, Check, RefreshCw, Loader2,
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
-  Download, Plus,
+  Download, Plus, Gamepad2, Timer, Trophy,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -78,10 +78,10 @@ function formatDate(iso: string | null): string {
 }
 
 function HistoryStatusBadge({ entry }: { entry: KeyHistoryEntry }) {
-  if (entry.status === 0) return <span className="text-xs px-1.5 py-0.5 rounded bg-destructive/15 text-destructive font-medium">Suspended</span>;
-  if (entry.isExpired) return <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">Expired</span>;
-  if (entry.isActivated) return <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/15 text-green-600 dark:text-green-400 font-medium">Active</span>;
-  return <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium">Unused</span>;
+  if (entry.status === 0) return <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium">Suspended</span>;
+  if (entry.isExpired) return <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">Expired</span>;
+  if (entry.isActivated) return <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-medium">Active</span>;
+  return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">Unused</span>;
 }
 
 export default function FreeKeyPage() {
@@ -110,7 +110,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [tab, setTab] = useState<Tab>('key');
   const [duration, setDuration] = useState<'1h' | '3h'>('1h');
 
-  // Per-game key state
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
   const [keyLoading, setKeyLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
@@ -120,16 +119,13 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [extending, setExtending] = useState(false);
   const [extendingRequest, setExtendingRequest] = useState(false);
 
-  // History state
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
-  // Store state
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [ipAddress, setIpAddress] = useState<string>('');
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [topUsersLoading, setTopUsersLoading] = useState(false);
 
-  // Fetch key for the selected game
   const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
     if (!selectedGame) return;
     if (!silent) setStatusLoading(true);
@@ -148,7 +144,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     }
   }, [registrator]);
 
-  // Fetch history
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
@@ -175,7 +170,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     }
   }, []);
 
-  // Fetch history when tab switches to history
   useEffect(() => {
     if (tab === 'history') fetchHistory();
     if (tab === 'top-users') fetchTopUsers();
@@ -210,7 +204,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     }
   };
 
-  // When game changes, fetch key for that game
   useEffect(() => {
     if (game) {
       setKeyStatus(null);
@@ -220,7 +213,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     }
   }, [game, fetchMyKey]);
 
-  // Fetch games list
   useEffect(() => {
     fetch('https://checkip.amazonaws.com')
       .then(res => res.text())
@@ -230,13 +222,12 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         }
       })
       .catch(() => {
-        // Fallback to internal API
         fetch('/api/ip')
           .then(r => r.json())
           .then(d => {
             if (d.ip) setIpAddress(d.ip);
           })
-          .catch(() => { });
+          .catch(() => {});
       });
 
     fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`)
@@ -244,12 +235,10 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       .then(data => {
         const list = Array.isArray(data) ? data : [];
         setGames(list);
-        // Auto-select if only one game
         if (list.length === 1) setGame(list[0].code);
       })
       .catch(() => setGames([]));
 
-    // Fetch store info
     fetch(`/api/store?registrator=${encodeURIComponent(registrator)}`)
       .then(res => res.json())
       .then(data => {
@@ -257,7 +246,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       })
       .catch(() => setStore(null));
 
-    // Handle claim token if present in URL
     const claimToken = searchParams.get('claimToken');
     if (claimToken) {
       const claim = async () => {
@@ -273,7 +261,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             toast.success('Key claimed successfully!');
             setGame(data.game);
             await fetchMyKey(data.game, true);
-            // Clean URL
             window.history.replaceState({}, '', window.location.pathname);
           } else {
             toast.error(data.error || 'Failed to claim key');
@@ -287,7 +274,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       claim();
     }
 
-    // Handle extend token if present in URL
     const extendToken = searchParams.get('extendToken');
     if (extendToken) {
       const extend = async () => {
@@ -303,7 +289,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             toast.success('Key extended by 1 hour!');
             setGame(data.game);
             await fetchMyKey(data.game, true);
-            // Clean URL
             window.history.replaceState({}, '', window.location.pathname);
           } else {
             toast.error(data.error || 'Failed to extend key');
@@ -318,7 +303,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     }
   }, [registrator, searchParams, fetchMyKey]);
 
-  // Live countdown
   useEffect(() => {
     if (!keyStatus?.expiredDate) { setCountdown(''); return; }
     const tick = () => setCountdown(formatCountdown(keyStatus.expiredDate));
@@ -413,7 +397,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     return 'Unused – grace period (1 day)';
   };
 
-  // Active = has key for this game, not expired, not suspended
   const hasActiveKey = keyStatus && !keyStatus.isExpired && keyStatus.status === 1;
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -428,99 +411,123 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Gradient orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
+
+      {/* Grain overlay */}
+      <div className="grain-overlay" />
+
+      {/* Claim overlay */}
       {claiming && (
-        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="font-semibold text-lg animate-pulse">Claiming your 3-hour key...</p>
           <p className="text-sm text-muted-foreground">Please wait while we verify your ad completion.</p>
         </div>
       )}
       {extending && (
-        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="font-semibold text-lg animate-pulse">Extending your key...</p>
           <p className="text-sm text-muted-foreground">Please wait while we apply your 1-hour bonus.</p>
         </div>
       )}
-      <Card className="w-full max-w-md border-border/50">
-        <CardHeader className="text-center pb-3">
-          <div className="flex justify-end mb-2">
+
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-md">
+        <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Free Key</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {store && (
+              <Link
+                href={`/${registrator}/store`}
+                className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }), "h-8 w-8")}
+              >
+                <ShoppingBag className="h-4 w-4" />
+              </Link>
+            )}
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
           </div>
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <KeyRound className="h-6 w-6 text-primary" />
-            <CardTitle className="text-2xl font-bold">Free Key Generator</CardTitle>
+        </div>
+      </header>
+
+      <main className="relative z-1 max-w-lg mx-auto px-4 py-6 md:py-8 space-y-5">
+
+        {/* Hero header */}
+        <div className="text-center space-y-3 animate-in fade-in-0 duration-500">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20">
+            <KeyRound className="h-7 w-7 text-primary" />
           </div>
-          <CardDescription>Generate a free 1-hour key from {registrator}</CardDescription>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">Free Key Generator</h1>
+            <p className="text-sm text-muted-foreground">Generate a free {games.length > 1 ? 'trial' : ''} key from <span className="font-medium text-foreground">{registrator}</span></p>
+          </div>
 
           {ipAddress && (
-            <div className="mt-3 flex justify-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/30 border border-border/50 rounded-full">
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/40 border border-border/50 rounded-full">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                 </span>
-                <span className="text-xs text-muted-foreground font-medium">Your IP: <span className="font-mono text-foreground">{ipAddress}</span></span>
+                <span className="text-xs text-muted-foreground font-medium">IP: <span className="font-mono text-foreground">{ipAddress}</span></span>
               </div>
             </div>
           )}
+        </div>
 
-          {store && (
-            <div className="mt-4 pt-4 border-t border-border/50">
-              <div className="bg-primary/5 rounded-xl p-4 border border-primary/10 flex flex-col items-center gap-3">
-                <div className="text-center">
-                  <p className="text-sm font-semibold text-primary">Want more time?</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Purchase premium keys with longer duration at our official shop.</p>
-                </div>
-                <Link
-                  href={`/${registrator}/store`}
-                  className={cn(
-                    buttonVariants({ variant: 'default', size: 'sm' }),
-                    "w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-semibold h-9 flex items-center justify-center gap-2"
-                  )}
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  Visit {store.storeName}
-                </Link>
-              </div>
-            </div>
-          )}
+        {/* Tab navigation */}
+        <div className="flex rounded-xl bg-muted/40 border border-border/50 p-1 gap-1">
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg transition-all duration-200 font-medium",
+                tab === t.id
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              )}
+            >
+              {t.icon}
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Tab switcher */}
-          <div className="flex rounded-lg border border-border/50 overflow-hidden mt-3">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 transition-colors ${tab === t.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted text-muted-foreground'
-                  }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-
-          {/* ══ MY KEY TAB ══════════════════════════════════════════ */}
-          {tab === 'key' && (
-            <>
-              {/* Game selector — always visible */}
-              {games.length === 0 ? (
-                <p className="text-center text-muted-foreground py-6">No free keys available from this reseller.</p>
-              ) : (
-                <div className="flex flex-col items-center space-y-2">
-                  <Label>Select Game</Label>
+        {/* ══ MY KEY TAB ══════════════════════════════════════════ */}
+        {tab === 'key' && (
+          <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            {/* Game selector */}
+            {games.length === 0 ? (
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <Gamepad2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No free keys available from this reseller.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+                    Select Game
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Select game" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a game" />
                     </SelectTrigger>
                     <SelectContent>
                       {games.map(g => (
@@ -528,180 +535,206 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              )}
+                </CardContent>
+              </Card>
+            )}
 
-              {/* No game selected prompt */}
-              {!game && games.length > 0 && (
-                <p className="text-center text-sm text-muted-foreground py-2">
-                  Select a game to see your key or generate a new one.
-                </p>
-              )}
+            {!game && games.length > 0 && (
+              <p className="text-center text-sm text-muted-foreground py-2">
+                Select a game to see your key or generate a new one.
+              </p>
+            )}
 
-              {/* Key lookup spinner */}
-              {game && keyLoading && (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              )}
+            {game && keyLoading && (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
 
-              {/* Current key panel for selected game */}
-              {game && !keyLoading && keyStatus && (
-                <div className="space-y-3">
-                  <div className="rounded-lg border border-border/50 bg-muted/40 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Your Free Key</span>
-                      <span className="text-xs text-muted-foreground font-mono">{keyStatus.game}</span>
-                    </div>
-                    <p className="font-mono text-sm break-all select-all">{keyStatus.key}</p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleCopy(keyStatus.key)} className="h-7 text-xs gap-1.5">
+            {/* Status panel */}
+            {game && !keyLoading && keyStatus && (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <KeyRound className="h-4 w-4 text-muted-foreground" />
+                      Your Free Key
+                    </CardTitle>
+                    <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-0.5 rounded-md">{keyStatus.game}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Key display */}
+                  <div className="bg-muted/30 rounded-xl border border-border/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="font-mono text-sm break-all select-all tracking-wide">{keyStatus.key}</p>
+                      <Button variant="default" size="sm" onClick={() => handleCopy(keyStatus.key)} className="shrink-0 h-8 gap-1.5">
                         {copied === keyStatus.key
-                          ? <><Check className="h-3 w-3" />Copied</>
-                          : <><Copy className="h-3 w-3" />Copy Key</>
+                          ? <><Check className="h-3.5 w-3.5" />Copied</>
+                          : <><Copy className="h-3.5 w-3.5" />Copy</>
                         }
                       </Button>
-                      {games.find(g => g.code === game)?.downloadLink && (
-                        <a
-                          href={games.find(g => g.code === game)?.downloadLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            buttonVariants({ variant: 'default', size: 'sm' }),
-                            "h-7 text-xs gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
-                          )}
+                    </div>
+                    {games.find(g => g.code === game)?.downloadLink && (
+                      <a
+                        href={games.find(g => g.code === game)?.downloadLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          buttonVariants({ variant: 'outline', size: 'sm' }),
+                          "w-full h-8 gap-1.5 text-xs"
+                        )}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download Mod
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Status grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-muted/20 rounded-xl border border-border/50 p-3 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-medium">Status</span>
+                        <button
+                          onClick={() => fetchMyKey(game)}
+                          disabled={statusLoading}
+                          className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                         >
-                          <Download className="h-3 w-3" />
-                          Download Mod
-                        </a>
+                          {statusLoading
+                            ? <Loader2 className="h-3 w-3 animate-spin" />
+                            : <RefreshCw className="h-3 w-3" />
+                          }
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn("h-2 w-2 rounded-full", statusColor().replace('text-', 'bg-'))} />
+                        <span className={cn("text-sm font-semibold", statusColor())}>{statusLabel()}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-muted/20 rounded-xl border border-border/50 p-3 space-y-1.5">
+                      <span className="text-xs text-muted-foreground font-medium">Devices</span>
+                      <div className="flex items-center gap-1.5">
+                        <Smartphone className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm font-semibold">{keyStatus.deviceCount} / 1</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Countdown */}
+                  <div className="bg-muted/20 rounded-xl border border-border/50 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {keyStatus.isActivated ? 'Time Remaining' : 'Grace Period Ends'}
+                      </span>
+                      {keyStatus.isActivated && !keyStatus.isExpired && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={handleExtendKey}
+                          disabled={extendingRequest}
+                          className="h-auto p-0 text-xs text-primary font-semibold flex items-center gap-1 hover:no-underline"
+                        >
+                          {extendingRequest ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                          Extend (+1h)
+                        </Button>
                       )}
                     </div>
+                    <p className={cn(
+                      "font-mono text-2xl font-bold tracking-wider",
+                      keyStatus.isExpired ? 'text-destructive' : ''
+                    )}>
+                      {keyStatus.isExpired ? 'Expired' : countdown}
+                    </p>
+                    {keyStatus.expiredDate && (
+                      <p className="text-xs text-muted-foreground mt-1">{formatDate(keyStatus.expiredDate)}</p>
+                    )}
                   </div>
 
-                  <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Status</span>
-                      <button
-                        onClick={() => fetchMyKey(game)}
-                        disabled={statusLoading}
-                        className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                      >
-                        {statusLoading
-                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : <RefreshCw className="h-3.5 w-3.5" />
-                        }
-                      </button>
-                    </div>
-
+                  {/* Reset devices */}
+                  <div className="bg-muted/20 rounded-xl border border-border/50 p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Zap className={`h-4 w-4 shrink-0 ${statusColor()}`} />
-                      <span className={`text-sm font-medium ${statusColor()}`}>{statusLabel()}</span>
-                    </div>
-
-                    <div className="flex items-start gap-2 text-sm">
-                      <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-muted-foreground">
-                            {keyStatus.isActivated ? 'Expires in' : 'Unused grace expires in'}
-                          </p>
-                          {keyStatus.isActivated && !keyStatus.isExpired && (
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={handleExtendKey}
-                              disabled={extendingRequest}
-                              className="h-auto p-0 text-[10px] text-primary font-bold flex items-center gap-1 hover:no-underline"
-                            >
-                              {extendingRequest ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Plus className="h-2.5 w-2.5" />}
-                              Extend Time (+1h)
-                            </Button>
-                          )}
-                        </div>
-                        <p className={`font-mono font-semibold ${keyStatus.isExpired ? 'text-destructive' : ''}`}>
-                          {keyStatus.isExpired ? 'Expired' : countdown}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{formatDate(keyStatus.expiredDate)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-2 text-sm">
-                      <Smartphone className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <ShieldAlert className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Connected devices</p>
-                        <p className="font-semibold">{keyStatus.deviceCount} / 1</p>
+                        <p className="text-xs text-muted-foreground">Device Resets</p>
+                        <p className="text-xs font-semibold">{keyStatus.resetsRemaining} / 2 remaining</p>
                       </div>
                     </div>
-
-                    <div className="flex items-start gap-2 text-sm">
-                      <ShieldAlert className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <div className="space-y-1.5">
-                        <p className="text-xs text-muted-foreground">
-                          Device resets remaining: <strong>{keyStatus.resetsRemaining}</strong> / 2
-                        </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs gap-1.5"
-                          disabled={resetLoading || keyStatus.resetsRemaining === 0 || keyStatus.isExpired}
-                          onClick={handleResetDevices}
-                        >
-                          {resetLoading
-                            ? <><Loader2 className="h-3 w-3 animate-spin" />Resetting...</>
-                            : <><RefreshCw className="h-3 w-3" />Reset Devices</>
-                          }
-                        </Button>
-                      </div>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs gap-1"
+                      disabled={resetLoading || keyStatus.resetsRemaining === 0 || keyStatus.isExpired}
+                      onClick={handleResetDevices}
+                    >
+                      {resetLoading
+                        ? <><Loader2 className="h-3 w-3 animate-spin" />Resetting...</>
+                        : <><RefreshCw className="h-3 w-3" />Reset</>
+                      }
+                    </Button>
                   </div>
-                </div>
-              )}
+                </CardContent>
+              </Card>
+            )}
 
-              {/* Generate form — shown when game selected and no active key for that game */}
-              {game && !keyLoading && !hasActiveKey && games.length > 0 && (
-                <>
-                  {keyStatus?.isExpired && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      Your {game} key has expired. Generate a new one below.
-                    </p>
-                  )}
-                  {!keyStatus && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      No active {game} key found. Generate one below.
-                    </p>
-                  )}
-
+            {/* Generate form */}
+            {game && !keyLoading && !hasActiveKey && games.length > 0 && (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    Generate New Key
+                  </CardTitle>
+                  <CardDescription>
+                    {keyStatus?.isExpired
+                      ? 'Your key has expired. Generate a new one below.'
+                      : 'No active key found. Generate one below.'
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-3">
-                      <Label className="text-center block">Select Duration</Label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <Label className="text-xs font-medium text-muted-foreground">Select Duration</Label>
+                      <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => setDuration('1h')}
                           className={cn(
-                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 gap-1.5",
                             duration === '1h'
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border/50 hover:border-border text-muted-foreground"
+                              ? "border-primary bg-primary/5 text-primary shadow-sm shadow-primary/10"
+                              : "border-border/50 hover:border-border hover:bg-muted/30 text-muted-foreground"
                           )}
                         >
-                          <Clock className="h-5 w-5" />
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                            duration === '1h' ? "bg-primary/10" : "bg-muted"
+                          )}>
+                            <Clock className={cn("h-5 w-5", duration === '1h' ? "text-primary" : "text-muted-foreground")} />
+                          </div>
                           <span className="text-sm font-bold">1 Hour</span>
-                          <span className="text-[10px] opacity-70">No Ads</span>
+                          <span className="text-[10px] opacity-70 font-medium">No Ads</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setDuration('3h')}
                           className={cn(
-                            "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1",
+                            "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 gap-1.5",
                             duration === '3h'
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border/50 hover:border-border text-muted-foreground"
+                              ? "border-primary bg-primary/5 text-primary shadow-sm shadow-primary/10"
+                              : "border-border/50 hover:border-border hover:bg-muted/30 text-muted-foreground"
                           )}
                         >
-                          <Zap className="h-5 w-5" />
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                            duration === '3h' ? "bg-primary/10" : "bg-muted"
+                          )}>
+                            <Timer className={cn("h-5 w-5", duration === '3h' ? "text-primary" : "text-muted-foreground")} />
+                          </div>
                           <span className="text-sm font-bold">3 Hours</span>
-                          <span className="text-[10px] opacity-70">With Ads</span>
+                          <span className="text-[10px] opacity-70 font-medium">With Ads</span>
                         </button>
                       </div>
                     </div>
@@ -712,216 +745,322 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                         onSuccess={setTurnstileToken}
                       />
                     </div>
-                    <Button type="submit" className="w-full h-11 text-base font-bold shadow-lg shadow-primary/20" disabled={generating || !turnstileToken}>
+
+                    <Button
+                      type="submit"
+                      className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98]"
+                      disabled={generating || !turnstileToken}
+                    >
                       {generating
-                        ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
+                        ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Generating...</>
                         : duration === '3h' ? 'Unlock 3h Key (Watch Ads)' : `Get Free ${game} Key`
                       }
                     </Button>
                   </form>
-                </>
-              )}
+                </CardContent>
+              </Card>
+            )}
 
-              {game && !keyLoading && hasActiveKey && (
-                <p className="text-xs text-center text-muted-foreground pb-1">
-                  Come back after your key expires to generate a new one.
-                </p>
-              )}
-            </>
-          )}
-
-          {/* ══ HISTORY TAB ═════════════════════════════════════════ */}
-          {tab === 'history' && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-muted-foreground">All keys generated from your IP</p>
-                <button
-                  onClick={fetchHistory}
-                  disabled={historyLoading}
-                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                >
-                  {historyLoading
-                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    : <RefreshCw className="h-3.5 w-3.5" />
-                  }
-                </button>
-              </div>
-
-              {historyLoading && (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              )}
-
-              {!historyLoading && history.length === 0 && (
-                <p className="text-center text-muted-foreground py-8 text-sm">No key history found.</p>
-              )}
-
-              {!historyLoading && history.length > 0 && (
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                  {history.map((entry, i) => (
-                    <div key={entry.key} className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground font-mono">#{history.length - i}</span>
-                          <span className="text-xs font-medium">{entry.game}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <HistoryStatusBadge entry={entry} />
-                          {entry.isAdClaim ? (
-                            <span className="text-[10px] px-1 py-0 rounded bg-blue-500/10 text-blue-500 font-bold border border-blue-500/20">With Ads</span>
-                          ) : (
-                            <span className="text-[10px] px-1 py-0 rounded bg-gray-500/10 text-gray-500 font-bold border border-gray-500/20">No Ads</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <p className="font-mono text-xs text-muted-foreground break-all">{entry.key}</p>
-                        <button
-                          onClick={() => handleCopy(entry.key)}
-                          className="ml-2 shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {copied === entry.key
-                            ? <Check className="h-3.5 w-3.5 text-green-500" />
-                            : <Copy className="h-3.5 w-3.5" />
-                          }
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                        <div>
-                          <span className="block">Generated</span>
-                          <span className="text-foreground">{formatDate(entry.generatedAt)}</span>
-                        </div>
-                        <div>
-                          <span className="block">Expired</span>
-                          <span className="text-foreground">{formatDate(entry.expiredDate)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!historyLoading && history.length > 0 && (
-                <p className="text-xs text-center text-muted-foreground pt-1">
-                  Total keys generated: <strong>{history.length}</strong>
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* ══ DOWNLOADS TAB ════════════════════════════════════════ */}
-          {tab === 'downloads' && (
-            <div className="space-y-4">
-              <p className="text-xs text-muted-foreground text-center">
-                Download the official mod files for your selected games.
+            {game && !keyLoading && hasActiveKey && (
+              <p className="text-xs text-center text-muted-foreground">
+                Come back after your key expires to generate a new one.
               </p>
+            )}
 
-              <div className="space-y-2">
-                {games.filter(g => g.downloadLink).length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8 text-sm">No download links available.</p>
-                ) : (
-                  games.filter(g => g.downloadLink).map(g => (
-                    <div key={g.code} className="rounded-lg border border-border/50 bg-muted/20 p-4 flex items-center justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate">{g.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono uppercase">{g.code}</p>
-                      </div>
-                      <a
-                        href={g.downloadLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          buttonVariants({ variant: 'outline', size: 'sm' }),
-                          "shrink-0 h-9 gap-2"
-                        )}
-                      >
-                        <Download className="h-4 w-4" />
-                        Download
-                      </a>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                <div className="flex gap-2">
-                  <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 leading-tight">
-                    Always download from these official links. We are not responsible for files downloaded from third-party sources.
-                  </p>
+            {/* Store promotion */}
+            {store && (
+              <div className="bg-gradient-to-br from-primary/[0.04] to-transparent rounded-2xl border border-primary/15 p-5 space-y-3">
+                <div className="text-center">
+                  <p className="text-sm font-bold text-primary">Want more time?</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Purchase premium keys with longer duration at our official shop.</p>
                 </div>
+                <Link
+                  href={`/${registrator}/store`}
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'lg' }),
+                    "w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-semibold h-11 flex items-center justify-center gap-2"
+                  )}
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Visit {store.storeName}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ HISTORY TAB ═════════════════════════════════════════ */}
+        {tab === 'history' && (
+          <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">All keys generated from your IP</p>
+              <button
+                onClick={fetchHistory}
+                disabled={historyLoading}
+                className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {historyLoading
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <RefreshCw className="h-3.5 w-3.5" />
+                }
+              </button>
+            </div>
+
+            {historyLoading && (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {!historyLoading && history.length === 0 && (
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <History className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm">No key history found.</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {!historyLoading && history.length > 0 && (
+              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                {history.map((entry, i) => (
+                  <div key={entry.key} className="rounded-xl border border-border/50 bg-muted/10 p-4 space-y-3 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded">#{history.length - i}</span>
+                        <span className="text-xs font-semibold">{entry.game}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <HistoryStatusBadge entry={entry} />
+                        {entry.isAdClaim ? (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-semibold border border-blue-500/20">With Ads</span>
+                        ) : (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-500/10 text-gray-500 font-semibold border border-gray-500/20">No Ads</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-background/50 rounded-lg p-2 border border-border/30">
+                      <p className="font-mono text-xs text-muted-foreground flex-1 truncate select-all">{entry.key}</p>
+                      <button
+                        onClick={() => handleCopy(entry.key)}
+                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {copied === entry.key
+                          ? <Check className="h-3.5 w-3.5 text-green-500" />
+                          : <Copy className="h-3.5 w-3.5" />
+                        }
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="bg-muted/20 rounded-lg p-2">
+                        <span className="block text-muted-foreground mb-0.5">Generated</span>
+                        <span className="text-foreground font-medium">{formatDate(entry.generatedAt)}</span>
+                      </div>
+                      <div className="bg-muted/20 rounded-lg p-2">
+                        <span className="block text-muted-foreground mb-0.5">Expired</span>
+                        <span className="text-foreground font-medium">{formatDate(entry.expiredDate)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!historyLoading && history.length > 0 && (
+              <div className="bg-muted/20 rounded-xl border border-border/50 p-3 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Total keys generated: <strong className="text-foreground">{history.length}</strong>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ DOWNLOADS TAB ════════════════════════════════════════ */}
+        {tab === 'downloads' && (
+          <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <p className="text-xs text-muted-foreground text-center">
+              Download the official mod files for your selected games.
+            </p>
+
+            <div className="space-y-2">
+              {games.filter(g => g.downloadLink).length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Download className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground text-sm">No download links available.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                games.filter(g => g.downloadLink).map(g => (
+                  <div key={g.code} className="rounded-xl border border-border/50 bg-muted/10 p-4 flex items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{g.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono uppercase">{g.code}</p>
+                    </div>
+                    <a
+                      href={g.downloadLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'sm' }),
+                        "shrink-0 h-9 gap-2"
+                      )}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </a>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl p-4">
+              <div className="flex gap-3">
+                <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-600 dark:text-amber-400 leading-relaxed">
+                  Always download from these official links. We are not responsible for files downloaded from third-party sources.
+                </p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ══ TOP USERS TAB ════════════════════════════════════════ */}
-          {tab === 'top-users' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold">Top Ad Supporters</h3>
-                  <p className="text-[10px] text-muted-foreground">Top users claiming keys with ads</p>
-                </div>
-                <button
-                  onClick={fetchTopUsers}
-                  disabled={topUsersLoading}
-                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                >
-                  {topUsersLoading
-                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    : <RefreshCw className="h-3.5 w-3.5" />
-                  }
-                </button>
+        {/* ══ TOP USERS TAB ════════════════════════════════════════ */}
+        {tab === 'top-users' && (
+          <div className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-amber-500" />
+                  Top Ad Supporters
+                </h3>
+                <p className="text-[10px] text-muted-foreground">Users claiming keys with ads</p>
               </div>
+              <button
+                onClick={fetchTopUsers}
+                disabled={topUsersLoading}
+                className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {topUsersLoading
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <RefreshCw className="h-3.5 w-3.5" />
+                }
+              </button>
+            </div>
 
-              {topUsersLoading && (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              )}
+            {topUsersLoading && (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
 
-              {!topUsersLoading && topUsers.length === 0 && (
-                <p className="text-center text-muted-foreground py-8 text-sm">No ad claims recorded yet.</p>
-              )}
+            {!topUsersLoading && topUsers.length === 0 && (
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <Zap className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm">No ad claims recorded yet.</p>
+                </CardContent>
+              </Card>
+            )}
 
-              {!topUsersLoading && topUsers.length > 0 && (
-                <div className="space-y-2">
-                  {topUsers.map((u, i) => (
-                    <div key={u.maskedIp} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold",
-                          i === 0 ? "bg-amber-500 text-white" :
-                            i === 1 ? "bg-slate-400 text-white" :
-                              i === 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
-                        )}>
-                          #{i + 1}
-                        </div>
-                        <div>
-                          <p className="text-xs font-mono font-bold">User {u.maskedIp}</p>
-                          <p className="text-[10px] text-muted-foreground">Last claim: {formatDate(u.lastClaim)}</p>
-                        </div>
+            {!topUsersLoading && topUsers.length > 0 && (
+              <div className="space-y-2">
+                {topUsers.map((u, i) => (
+                  <div key={u.maskedIp} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold",
+                        i === 0 ? "bg-amber-500/15 text-amber-500 border border-amber-500/30" :
+                          i === 1 ? "bg-slate-400/15 text-slate-400 border border-slate-400/30" :
+                            i === 2 ? "bg-amber-700/15 text-amber-700 border border-amber-700/30" : "bg-muted text-muted-foreground"
+                      )}>
+                        #{i + 1}
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold text-primary">{u.count} Claims</p>
-                        <p className="text-[9px] text-muted-foreground">With Ads</p>
+                      <div>
+                        <p className="text-xs font-mono font-bold">User {u.maskedIp}</p>
+                        <p className="text-[10px] text-muted-foreground">Last claim: {formatDate(u.lastClaim)}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-primary">{u.count}</p>
+                      <p className="text-[9px] text-muted-foreground">Claims</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-              <p className="text-[10px] text-center text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
+            <div className="bg-primary/[0.03] rounded-xl border border-primary/10 p-4 text-center">
+              <p className="text-[10px] text-muted-foreground">
                 Supporting us by claiming keys with ads helps keep the service free. Top users get our special appreciation!
               </p>
             </div>
-          )}
+          </div>
+        )}
 
-        </CardContent>
-      </Card>
+      </main>
+
+      <style>{`
+        @keyframes orb-drift-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(30px, -50px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.95); }
+          75% { transform: translate(40px, 30px) scale(1.05); }
+        }
+        @keyframes orb-drift-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(-40px, 30px) scale(0.95); }
+          50% { transform: translate(20px, -40px) scale(1.1); }
+          75% { transform: translate(-30px, -20px) scale(1); }
+        }
+        @keyframes orb-drift-3 {
+          0%, 100% { transform: translate(0, 0) scale(1.05); }
+          33% { transform: translate(50px, 20px) scale(0.9); }
+          66% { transform: translate(-30px, -40px) scale(1.1); }
+        }
+        .orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.12;
+          will-change: transform;
+          pointer-events: none;
+        }
+        .orb-1 {
+          width: 500px; height: 500px;
+          background: oklch(0.5 0.2 270);
+          top: -10%; left: -5%;
+          animation: orb-drift-1 20s ease-in-out infinite;
+        }
+        .orb-2 {
+          width: 400px; height: 400px;
+          background: oklch(0.6 0.15 200);
+          bottom: -5%; right: -10%;
+          animation: orb-drift-2 25s ease-in-out infinite;
+        }
+        .orb-3 {
+          width: 300px; height: 300px;
+          background: oklch(0.4 0.18 300);
+          top: 40%; right: 20%;
+          animation: orb-drift-3 18s ease-in-out infinite;
+        }
+        .grain-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          opacity: 0.03;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-repeat: repeat;
+          background-size: 256px 256px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .orb { animation: none; }
+        }
+      `}</style>
     </div>
   );
 }
