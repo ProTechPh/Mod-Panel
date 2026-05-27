@@ -120,6 +120,15 @@ export async function getLibLogs(libId: string, username?: string) {
   const logs = await LibraryLog.find(filter).sort({ downloadedAt: -1 }).limit(100).lean();
   return logs.map(l => ({ ...l, _id: l._id.toString(), libId: l.libId.toString(), downloadedAt: l.downloadedAt?.toISOString() }));
 }
+
+export async function getRecentLibLogs(username?: string, limit: number = 15) {
+  await dbConnect();
+  const filter: Record<string, any> = {};
+  if (username) filter.uploadedBy = username;
+  const logs = await LibraryLog.find(filter).sort({ downloadedAt: -1 }).limit(limit).lean();
+  return logs.map(l => ({ ...l, _id: l._id.toString(), libId: l.libId.toString(), downloadedAt: l.downloadedAt?.toISOString() }));
+}
+
 export async function deleteLib(id: string) {
   await dbConnect();
   const lib = await Lib.findById(id).lean();

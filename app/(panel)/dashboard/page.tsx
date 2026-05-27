@@ -8,6 +8,7 @@ import GameDistChart from '@/components/dashboard/GameDistChart';
 import ActivityChart from '@/components/dashboard/ActivityChart';
 import TopPerformers from '@/components/dashboard/TopPerformers';
 import FtpStats from '@/components/dashboard/FtpStats';
+import LibDownloadLogs from '@/components/dashboard/LibDownloadLogs';
 import Announcements from '@/components/dashboard/Announcements';
 import ExpiryNotificationBanner from '@/components/dashboard/ExpiryNotificationBanner';
 import { useAuth } from '@/components/shared/AuthProvider';
@@ -81,6 +82,7 @@ export default function DashboardPage() {
 
       <TopPerformers data={analytics?.topPerformers ?? []} />
       <FtpStats />
+      <LibDownloadLogs />
 
       {/* Account Info Card */}
       <div className="relative group">

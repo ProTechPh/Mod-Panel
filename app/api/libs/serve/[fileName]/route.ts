@@ -16,10 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const lib = await Lib.findOne({ fileName }).lean();
     if (!lib) return NextResponse.json({ error: 'File not found' }, { status: 404 });
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')
-      || request.headers.get('cf-connecting-ip')
-      || 'unknown';
+    const ip = request.headers.get('x-client-ip') || 'unknown';
     const ua = request.headers.get('user-agent') || '';
     logLibDownload(lib._id.toString(), lib.fileName, lib.uploadedBy, ip, ua).catch(() => {});
 
