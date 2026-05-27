@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db/connection';
 import Lib from '@/lib/db/models/Lib';
+import LibraryLog from '@/lib/db/models/LibraryLog';
 import FtpConfig from '@/lib/db/models/FtpConfig';
 import { uploadToFtp, deleteFromFtp } from '@/lib/ftp/client';
 import { Readable } from 'stream';
@@ -94,6 +95,31 @@ export async function updateLib(id: string, updates: { displayName?: string; typ
   return sanitize(lib);
 }
 
+export async function logLibDownload(libId: string, fileName: string, uploadedBy: string, ipAddress: string, userAgent: string) {
+  await dbConnect();
+  const device = parseDevice(userAgent);
+  await LibraryLog.create({ libId, fileName, uploadedBy, ipAddress, userAgent, device, downloadedAt: new Date() });
+}
+
+function parseDevice(ua: string): string {
+  if (!ua) return 'Unknown';
+  const u = ua.toLowerCase();
+  if (u.includes('windows')) return 'Windows';
+  if (u.includes('mac os') || u.includes('macintosh')) return 'macOS';
+  if (u.includes('linux') || u.includes('android')) return 'Android';
+  if (u.includes('iphone') || u.includes('ipad')) return 'iOS';
+  if (u.includes('okhttp')) return 'Android (OKHttp)';
+  if (u.includes('dalvik')) return 'Android (Dalvik)';
+  return 'Other';
+}
+
+export async function getLibLogs(libId: string, username?: string) {
+  await dbConnect();
+  const filter: Record<string, any> = { libId };
+  if (username) filter.uploadedBy = username;
+  const logs = await LibraryLog.find(filter).sort({ downloadedAt: -1 }).limit(100).lean();
+  return logs.map(l => ({ ...l, _id: l._id.toString(), libId: l.libId.toString(), downloadedAt: l.downloadedAt?.toISOString() }));
+}
 export async function deleteLib(id: string) {
   await dbConnect();
   const lib = await Lib.findById(id).lean();

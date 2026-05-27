@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { downloadFromFtp } from '@/lib/ftp/client';
 import dbConnect from '@/lib/db/connection';
 import Lib from '@/lib/db/models/Lib';
+import { logLibDownload } from '@/lib/services/lib-service';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ fileName: string }> }) {
   const { fileName } = await params;
@@ -14,6 +15,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     await dbConnect();
     const lib = await Lib.findOne({ fileName }).lean();
     if (!lib) return NextResponse.json({ error: 'File not found' }, { status: 404 });
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || request.headers.get('cf-connecting-ip')
+      || 'unknown';
+    const ua = request.headers.get('user-agent') || '';
+    logLibDownload(lib._id.toString(), lib.fileName, lib.uploadedBy, ip, ua).catch(() => {});
 
     const lastModified = lib.uploadedAt
       ? new Date(lib.uploadedAt)

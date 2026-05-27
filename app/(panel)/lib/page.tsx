@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save, Sparkles } from 'lucide-react';
+import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save, Sparkles, History } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Lib {
@@ -18,6 +18,14 @@ interface Lib {
   fileSize: string;
   uploadedBy: string;
   uploadedAt: string;
+}
+
+interface LibLog {
+  _id: string;
+  ipAddress: string;
+  userAgent: string;
+  device: string;
+  downloadedAt: string;
 }
 
 function generateSnippet(lib: Lib, origin: string): string {
@@ -101,6 +109,57 @@ function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
   );
 }
 
+function LogsModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
+  const [logs, setLogs] = useState<LibLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/libs/logs?libId=${lib._id}`)
+      .then(r => r.json())
+      .then(d => { setLogs(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [lib._id]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-3xl max-h-[80vh] rounded-xl border border-border/50 bg-card shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 shrink-0">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm">Download Logs</span>
+            <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{lib.fileName}</span>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="overflow-y-auto p-5">
+          {loading ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+          ) : logs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No download logs yet</p>
+          ) : (
+            <div className="space-y-2">
+              {logs.map(log => (
+                <div key={log._id} className="rounded-lg border border-border/30 bg-muted/30 px-4 py-3 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-foreground">{log.ipAddress}</span>
+                    <span className="text-muted-foreground">{new Date(log.downloadedAt).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">{log.device || 'Unknown'}</span>
+                    <span className="text-muted-foreground truncate">{log.userAgent}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LibPage() {
   const { user } = useAuth();
   const [libs, setLibs] = useState<Lib[]>([]);
@@ -109,6 +168,7 @@ export default function LibPage() {
   const [uploadFileName, setUploadFileName] = useState('');
   const [uploadType, setUploadType] = useState<'free' | 'paid'>('free');
   const [snippetLib, setSnippetLib] = useState<Lib | null>(null);
+  const [logsLib, setLogsLib] = useState<Lib | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editType, setEditType] = useState<'free' | 'paid'>('free');
@@ -207,6 +267,7 @@ export default function LibPage() {
   return (
     <>
       {snippetLib && <SnippetModal lib={snippetLib} onClose={() => setSnippetLib(null)} />}
+      {logsLib && <LogsModal lib={logsLib} onClose={() => setLogsLib(null)} />}
 
       <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -310,6 +371,10 @@ export default function LibPage() {
                     <TableCell className="text-xs">{lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : ''}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        {/* Download Logs */}
+                        <Button variant="ghost" size="sm" onClick={() => setLogsLib(lib)} title="Download Logs">
+                          <History className="h-3 w-3 text-muted-foreground" />
+                        </Button>
                         {/* Edit display name */}
                         <Button
                           variant="ghost" size="sm"

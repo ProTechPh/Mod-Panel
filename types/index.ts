@@ -127,6 +127,17 @@ export interface LibDoc {
   ftpConfigId?: string;
 }
 
+export interface LibLogDoc {
+  _id: ObjectId;
+  libId: ObjectId;
+  fileName: string;
+  uploadedBy: string;
+  ipAddress: string;
+  userAgent: string;
+  device: string;
+  downloadedAt: Date;
+}
+
 export interface IpTrackerDoc {
   _id: ObjectId;
   userId: string;
