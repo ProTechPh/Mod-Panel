@@ -16,7 +16,6 @@ const TikTokLiveStreamerSchema = new Schema<TikTokLiveStreamerDoc & Document>({
   updatedAt: { type: Date, default: Date.now },
 }, { timestamps: true, collection: 'tiktok_live_streamers' });
 
-TikTokLiveStreamerSchema.index({ key: 1 }, { unique: true });
 TikTokLiveStreamerSchema.index({ registrator: 1 });
 TikTokLiveStreamerSchema.index({ tiktokUsername: 1 });
 TikTokLiveStreamerSchema.index({ status: 1 });
