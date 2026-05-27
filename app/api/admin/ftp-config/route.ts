@@ -7,8 +7,8 @@ export async function GET(request: NextRequest) {
   const user = await authenticate(request);
   if (!user || user.level !== 1) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await dbConnect();
-  const configs = await FtpConfig.find().sort({ order: 1 }).lean();
-  return NextResponse.json(configs.map(c => ({ ...c, password: '••••••' })));
+   const configs = await FtpConfig.find().sort({ order: 1 }).lean();
+   return NextResponse.json(configs.map(c => ({ ...c, password: '••••••', diskLimit: c.diskLimit || 5 * 1024 * 1024 * 1024, inodeLimit: c.inodeLimit || 80000 })));
 }
 
 export async function POST(request: NextRequest) {

@@ -139,7 +139,7 @@ export default function FtpConfigPage() {
                     </div>
                     <p className="text-muted-foreground">{cfg.user}@{cfg.host}:{cfg.port}</p>
                     <p className="text-xs text-muted-foreground">
-                      {fmtBytes(cfg.diskLimit)} disk &middot; {(cfg.inodeLimit || 80000).toLocaleString()} inodes
+                      {fmtBytes(cfg.diskLimit || 5 * 1024 * 1024 * 1024)} disk &middot; {(cfg.inodeLimit || 80000).toLocaleString()} inodes
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
