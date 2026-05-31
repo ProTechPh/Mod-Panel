@@ -26,15 +26,21 @@ export async function GET(request: NextRequest) {
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || '';
 
-    const result = libs.map((l: any) => ({
-      fileName: l.fileName,
-      displayName: l.displayName || l.fileName,
-      type: l.type || 'free',
-      fileSize: l.fileSize || '',
-      uploadedBy: l.uploadedBy,
-      uploadedAt: l.uploadedAt ? new Date(l.uploadedAt).toISOString() : null,
-      downloadUrl: `${origin}/api/libs/serve/${encodeURIComponent(l.fileName)}`,
-    }));
+    const result = libs.map((l: any) => {
+      const version = l.uploadedAt
+        ? new Date(l.uploadedAt).getTime().toString(36)
+        : '0';
+      const baseUrl = `${origin}/api/libs/serve/${encodeURIComponent(l.fileName)}`;
+      return {
+        fileName: l.fileName,
+        displayName: l.displayName || l.fileName,
+        type: l.type || 'free',
+        fileSize: l.fileSize || '',
+        uploadedBy: l.uploadedBy,
+        uploadedAt: l.uploadedAt ? new Date(l.uploadedAt).toISOString() : null,
+        downloadUrl: `${baseUrl}?v=${version}`,
+      };
+    });
 
     return NextResponse.json(result, {
       headers: {

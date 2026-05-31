@@ -24,8 +24,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ? new Date(lib.uploadedAt)
       : new Date();
     const lastModifiedStr = lastModified.toUTCString();
+    const etag = `W/"${lastModified.getTime().toString(36)}"`;
 
     const ifModifiedSince = request.headers.get('If-Modified-Since');
+    const ifNoneMatch = request.headers.get('If-None-Match');
+
+    if (ifNoneMatch === etag || ifNoneMatch === `"${lastModified.getTime().toString(36)}"`) {
+      return new Response(null, { status: 304 });
+    }
+
     if (ifModifiedSince) {
       const clientDate = new Date(ifModifiedSince);
       if (clientDate.getTime() >= Math.floor(lastModified.getTime() / 1000) * 1000) {
@@ -39,6 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       'Content-Type': 'application/octet-stream',
       'Content-Disposition': `attachment; filename="${fileName}"`,
       'Last-Modified': lastModifiedStr,
+      'ETag': etag,
     };
 
     if (lib.fileSizeBytes) {
