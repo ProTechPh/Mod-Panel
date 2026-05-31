@@ -56,9 +56,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return new Response(webStream, {
       headers: {
         ...headers,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'CDN-Cache-Control': 'public, max-age=31536000, immutable',
-        'Cloudflare-CDN-Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'public, max-age=86400, must-revalidate',
+        'CDN-Cache-Control': 'public, max-age=86400, must-revalidate',
+        'Cloudflare-CDN-Cache-Control': 'public, max-age=86400, must-revalidate',
       },
     });
   } catch {

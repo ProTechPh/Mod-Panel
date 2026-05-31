@@ -87,5 +87,11 @@ export async function DELETE(request: NextRequest) {
   const deleted = await deleteLib(id);
   if (!deleted) return NextResponse.json({ error: 'Lib not found' }, { status: 404 });
 
+  // Purge Cloudflare cache for the deleted file
+  const libFileName = lib.fileName;
+  if (libFileName) {
+    await purgeCloudflareCache([getLibServeUrl(libFileName)]);
+  }
+
   return NextResponse.json({ success: true });
 }
