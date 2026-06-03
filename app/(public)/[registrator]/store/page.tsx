@@ -35,11 +35,14 @@ interface Product {
 function formatDuration(duration: number | string): string {
   if (duration === '1h') return '1 Hour';
   if (duration === '3h') return '3 Hours';
-  if (typeof duration === 'number') {
-    if (duration === 1) return '1 Day';
-    if (duration === 7) return '7 Days';
-    if (duration === 30) return '30 Days';
-    return `${duration} Days`;
+  if (typeof duration === 'number' || !isNaN(Number(duration))) {
+    const num = Number(duration);
+    if (num === 1) return '1 Day';
+    if (num === 7) return '7 Days';
+    if (num === 30) return '30 Days';
+    if (num === 60) return '60 Days';
+    if (num === 90) return '90 Days';
+    return `${num} Days`;
   }
   return String(duration);
 }
@@ -47,8 +50,10 @@ function formatDuration(duration: number | string): string {
 function getDurationColor(duration: number | string): string {
   if (duration === '1h') return 'from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400';
   if (duration === '3h') return 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 text-cyan-400';
-  if (duration === 1) return 'from-green-500/20 to-green-600/10 border-green-500/30 text-green-400';
-  if (duration === 7) return 'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400';
+  if (Number(duration) === 1) return 'from-green-500/20 to-green-600/10 border-green-500/30 text-green-400';
+  if (Number(duration) === 7) return 'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400';
+  if (Number(duration) === 60) return 'from-indigo-500/20 to-indigo-600/10 border-indigo-500/30 text-indigo-400';
+  if (Number(duration) === 90) return 'from-rose-500/20 to-rose-600/10 border-rose-500/30 text-rose-400';
   return 'from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400';
 }
 
