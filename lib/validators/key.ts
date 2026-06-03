@@ -16,7 +16,7 @@ export const editKeySchema = z.object({
 });
 
 export const connectSchema = z.object({
-  game: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid game format'),
+  game: z.string().regex(/^[a-zA-Z0-9_-]*$/, 'Invalid game format').optional(),
   user_key: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid key format'),
   serial: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid serial format'),
 });

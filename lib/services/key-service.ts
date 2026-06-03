@@ -197,6 +197,7 @@ export async function validateKey(game: string, userKey: string, serial: string)
     data: {
       real,
       token,
+      gameCode: activeGame,
       modname: modName,
       mod_status: gameSetting?.floatingTextStatus || '',
       credit: gameSetting?.floatingText || '',
