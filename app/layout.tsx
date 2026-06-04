@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,6 +45,12 @@ export default function RootLayout({
         {children}
         <Toaster />
         <Analytics />
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="246103"
+          data-cfasync="false"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
