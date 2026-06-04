@@ -57,6 +57,7 @@ const DURATION_OPTIONS = [
   { label: '30 Days', value: 30 },
   { label: '60 Days', value: 60 },
   { label: '90 Days', value: 90 },
+  { label: 'Lifetime', value: 'lifetime' },
 ];
 
 function durationLabel(d: Duration) {

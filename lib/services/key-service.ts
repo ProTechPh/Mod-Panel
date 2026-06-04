@@ -165,6 +165,8 @@ export async function validateKey(game: string, userKey: string, serial: string)
       finalExpiredDate = new Date(now.getTime() + 60 * 60 * 1000);
     } else if (key.duration === '3h') {
       finalExpiredDate = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    } else if (key.duration === 'lifetime') {
+      finalExpiredDate = new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000); // 100 years for lifetime
     } else {
       finalExpiredDate = new Date(now.getTime() + (key.duration as number) * 24 * 60 * 60 * 1000);
     }

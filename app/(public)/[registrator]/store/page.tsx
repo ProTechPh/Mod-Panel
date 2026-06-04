@@ -33,6 +33,7 @@ interface Product {
 }
 
 function formatDuration(duration: number | string): string {
+  if (duration === 'lifetime') return 'Lifetime';
   if (duration === '1h') return '1 Hour';
   if (duration === '3h') return '3 Hours';
   if (typeof duration === 'number' || !isNaN(Number(duration))) {
@@ -48,6 +49,7 @@ function formatDuration(duration: number | string): string {
 }
 
 function getDurationColor(duration: number | string): string {
+  if (duration === 'lifetime') return 'from-fuchsia-500/20 to-fuchsia-600/10 border-fuchsia-500/30 text-fuchsia-400';
   if (duration === '1h') return 'from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400';
   if (duration === '3h') return 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 text-cyan-400';
   if (Number(duration) === 1) return 'from-green-500/20 to-green-600/10 border-green-500/30 text-green-400';
@@ -58,6 +60,7 @@ function getDurationColor(duration: number | string): string {
 }
 
 function getDurationIcon(duration: number | string) {
+  if (duration === 'lifetime') return <Star className="h-3.5 w-3.5" />;
   if (duration === '1h' || duration === '3h') return <Clock className="h-3.5 w-3.5" />;
   return <Timer className="h-3.5 w-3.5" />;
 }

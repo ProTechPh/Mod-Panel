@@ -169,7 +169,7 @@ export interface JwtPayload {
   exp: number;
 }
 
-export type Duration = number | '1h' | '3h';
+export type Duration = number | '1h' | '3h' | 'lifetime';
 
 export const LEVEL_OWNER: UserLevel = 1;
 export const LEVEL_ADMIN: UserLevel = 2;
