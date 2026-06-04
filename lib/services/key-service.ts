@@ -216,6 +216,15 @@ export async function validateKey(game: string, userKey: string, serial: string)
       rng: Math.floor(Date.now() / 1000),
       registrator: key.registrator,
       announcement: gameSetting?.announcementStatus === 'on' ? (gameSetting?.announcement || '') : '',
+      offsets: {
+        patch1: "6A08590",
+        patch2: "A9A4A8C",
+        patch3: "A9A4C7C",
+        patch4: "647C5B8",
+        offset_a1: "8D781DC",
+        offset_blue1: "B8D0FD4",
+        offset_blue2: "B8C3770"
+      }
     },
   };
 }
