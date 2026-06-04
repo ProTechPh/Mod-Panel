@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Script from 'next/script';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -818,6 +819,20 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                         }
                       </span>
                     </Button>
+
+                    <div className="text-center pt-2 mt-2 border-t border-border/10">
+                      <p className="text-[11px] text-muted-foreground">
+                        Support our servers by visiting our{" "}
+                        <a
+                          href="https://www.effectivecpmnetwork.com/af3m3ncy4?key=d3dfc16b1bccb6cf90bb7c5871ecb083"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary font-bold hover:underline"
+                        >
+                          Sponsor Link
+                        </a>
+                      </p>
+                    </div>
                   </form>
                 </div>
               </div>
@@ -1070,6 +1085,16 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         )}
 
       </main>
+
+      {/* Ad Scripts (Hoisted automatically by React / Next.js) */}
+      <Script src="https://pl29635888.effectivecpmnetwork.com/76/e9/92/76e9921dd32b21981772bb0a3f32976a.js" strategy="afterInteractive" />
+      <Script src="https://pl29635890.effectivecpmnetwork.com/df/d6/32/dfd632caec23bf46fbb7d22a48bead7d.js" strategy="lazyOnload" />
+
+      {/* Ad Banner Container */}
+      <div className="max-w-lg mx-auto px-4 pb-6 flex flex-col items-center justify-center gap-2 relative z-10">
+        <div id="container-11549e9ed33a224ea077baba528d1381" className="w-full min-h-[50px] flex items-center justify-center" />
+        <Script async src="https://pl29635891.effectivecpmnetwork.com/11549e9ed33a224ea077baba528d1381/invoke.js" data-cfasync="false" strategy="afterInteractive" />
+      </div>
 
       <style>{`
         @keyframes fk-orb-drift-1 {
