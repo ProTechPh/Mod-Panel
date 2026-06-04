@@ -200,8 +200,8 @@ export default function StorePage() {
   const saveProduct = async () => {
     setProductSaving(true);
     try {
-      const duration: Duration = productForm.duration === '1h' || productForm.duration === '3h'
-        ? productForm.duration
+      const duration: Duration = productForm.duration === '1h' || productForm.duration === '3h' || productForm.duration === 'lifetime'
+        ? productForm.duration as Duration
         : Number(productForm.duration);
 
       const body = editProduct
