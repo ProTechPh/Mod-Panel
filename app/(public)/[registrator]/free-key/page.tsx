@@ -298,6 +298,17 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     return () => clearInterval(id);
   }, [keyStatus?.expiredDate]);
 
+  useEffect(() => {
+    const container = document.getElementById('container-11549e9ed33a224ea077baba528d1381');
+    if (container && !container.hasChildNodes()) {
+      const script = document.createElement('script');
+      script.src = 'https://pl29635891.effectivecpmnetwork.com/11549e9ed33a224ea077baba528d1381/invoke.js';
+      script.async = true;
+      script.setAttribute('data-cfasync', 'false');
+      container.appendChild(script);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!turnstileToken) { toast.error('Complete captcha verification'); return; }
@@ -1093,7 +1104,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       {/* Ad Banner Container */}
       <div className="max-w-lg mx-auto px-4 pb-6 flex flex-col items-center justify-center gap-2 relative z-10">
         <div id="container-11549e9ed33a224ea077baba528d1381" className="w-full min-h-[50px] flex items-center justify-center" />
-        <Script async src="https://pl29635891.effectivecpmnetwork.com/11549e9ed33a224ea077baba528d1381/invoke.js" data-cfasync="false" strategy="afterInteractive" />
       </div>
 
       <style>{`
