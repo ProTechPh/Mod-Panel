@@ -8,8 +8,8 @@ const KeySchema = new Schema<KeyDoc & Document>({
     type: Schema.Types.Mixed,
     required: true,
     validate: {
-      validator: (v: Duration) => typeof v === 'number' || v === '1h' || v === '3h',
-      message: 'Duration must be a number, "1h", or "3h"',
+      validator: (v: Duration) => typeof v === 'number' || v === '1h' || v === '3h' || v === 'lifetime',
+      message: 'Duration must be a number, "1h", "3h", or "lifetime"',
     },
   },
   expiredDate: { type: Date, default: null },

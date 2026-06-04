@@ -44,7 +44,7 @@ export interface KeyDoc {
   _id: ObjectId;
   game: string;
   userKey: string;
-  duration: number | '1h' | '3h';
+  duration: Duration;
   expiredDate: Date | null;
   maxDevices: number;
   devices: string[];
