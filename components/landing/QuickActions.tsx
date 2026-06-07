@@ -15,12 +15,12 @@ export function QuickActions() {
       </div>
 
       <div className="quick-actions">
-        <Link href="/register" className="qa-btn">
+        <a href="https://t.me/CanKillYouForever" target="_blank" rel="noopener noreferrer" className="qa-btn">
           <div className="qa-icon" style={{ background: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-2)' }}>
             <ShoppingBag size={16} />
           </div>
           <span className="qa-label">Buy Keys</span>
-        </Link>
+        </a>
         <Link href="/login" className="qa-btn">
           <div className="qa-icon" style={{ background: 'rgba(240, 192, 64, 0.1)', color: 'var(--gold)' }}>
             <Plus size={16} />

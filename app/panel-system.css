@@ -162,3 +162,205 @@
   height: 100vh;
   display: block;
 }
+
+/* ============================================
+   FEATURE GRID (Arsenal Modules)
+   ============================================ */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+}
+
+.feature-item {
+  position: relative;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: var(--feat-bg, rgba(20, 184, 184, 0.05));
+  border: 1px solid var(--feat-border, rgba(20, 184, 184, 0.15));
+  transition: all 0.25s;
+}
+.feature-item:hover {
+  border-color: var(--feat-accent, var(--teal-2));
+  box-shadow: 0 0 20px rgba(20, 184, 184, 0.15);
+  transform: translateY(-2px);
+}
+
+.feature-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--feat-bg, rgba(20, 184, 184, 0.1));
+  border: 1px solid var(--feat-border, rgba(20, 184, 184, 0.2));
+  color: var(--feat-accent, var(--teal-2));
+  flex-shrink: 0;
+}
+
+.feature-name {
+  font-family: var(--ff-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-hi);
+  letter-spacing: 0.03em;
+}
+
+.feature-desc {
+  font-size: 0.8rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   STEP LIST (Quick Start Protocol)
+   ============================================ */
+
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 0.75rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: var(--step-bg, rgba(20, 184, 184, 0.05));
+  border: 1px solid var(--step-border, rgba(20, 184, 184, 0.15));
+  transition: all 0.25s;
+}
+.step-item:hover {
+  border-color: var(--step-color, var(--teal-2));
+  box-shadow: 0 0 16px rgba(20, 184, 184, 0.12);
+}
+
+.step-num {
+  grid-row: 1 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-family: var(--ff-display);
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--bg-void);
+  flex-shrink: 0;
+}
+
+.step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--step-bg, rgba(20, 184, 184, 0.1));
+  border: 1px solid var(--step-border, rgba(20, 184, 184, 0.2));
+  color: var(--step-color, var(--teal-2));
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-family: var(--ff-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-hi);
+  letter-spacing: 0.03em;
+}
+
+.step-desc {
+  grid-column: 2 / 4;
+  font-size: 0.8rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+  margin: 0.15rem 0 0;
+}
+
+@media (max-width: 500px) {
+  .step-item {
+    grid-template-columns: auto 1fr;
+  }
+  .step-icon { display: none; }
+  .step-desc { grid-column: 2 / 3; }
+}
+
+/* ============================================
+   PANEL HEAD (shared panel header bar)
+   ============================================ */
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--ff-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-hi);
+  letter-spacing: 0.04em;
+}
+
+.panel-title .ico {
+  color: var(--teal-2);
+  flex-shrink: 0;
+}
+
+.panel-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 50px;
+  font-family: var(--ff-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(20, 184, 184, 0.1);
+  border: 1px solid rgba(20, 184, 184, 0.25);
+  color: var(--teal-3);
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--ff-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.view-all-link:hover { color: var(--teal-neon); }

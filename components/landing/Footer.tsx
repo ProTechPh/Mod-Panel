@@ -30,7 +30,7 @@ export function Footer() {
         </div>
 
         <div>
-          <div className="footer-col-title">Store</div>
+          <div className="footer-col-title">Quick Links</div>
           <Link href="/register" className="footer-link">Get Started</Link>
           <Link href="/login" className="footer-link">Sign In</Link>
           <a href="#downloads" className="footer-link">Downloads</a>
@@ -41,7 +41,6 @@ export function Footer() {
           <div className="footer-col-title">Resources</div>
           <a href="#how-it-works" className="footer-link">Quick Start</a>
           <a href="#status" className="footer-link">System Status</a>
-          <a href="#streamers" className="footer-link">Streamers</a>
           <a
             href="https://t.me/CanKillYouForever"
             target="_blank"
@@ -54,9 +53,8 @@ export function Footer() {
 
         <div>
           <div className="footer-col-title">Legal</div>
-          <Link href="/store-terms" className="footer-link">Terms of Service</Link>
+          <Link href="/terms" className="footer-link">Terms of Service</Link>
           <a href="#privacy" className="footer-link">Privacy Policy</a>
-          <a href="#refund" className="footer-link">Refund Policy</a>
         </div>
       </div>
 

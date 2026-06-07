@@ -26,7 +26,6 @@ const SERVICES_TEMPLATE: Omit<ServiceStatus, 'badge' | 'label'>[] = [
   { name: 'Anti-Ban Module', icon: <ShieldCheck size={13} /> },
   { name: 'Kernel Bypass', icon: <Cpu size={13} /> },
   { name: 'Update Server', icon: <Cloud size={13} /> },
-  { name: 'Payment Gateway', icon: <Lock size={13} /> },
 ];
 
 export function ServerStatus() {
@@ -57,8 +56,7 @@ export function ServerStatus() {
       ? s.name === 'Delivery Engine' ? 'Online'
         : s.name === 'Anti-Ban Module' ? 'Active'
         : s.name === 'Kernel Bypass' ? 'Running'
-        : s.name === 'Update Server' ? 'Synced'
-        : 'Secure'
+        : 'Synced'
       : 'Updating',
   }));
 
