@@ -118,13 +118,13 @@ export default function LoginForm() {
 
   return (
     <div className="relative group">
-      {/* Animated border glow */}
-      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500 rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ animationDuration: '4s' }} />
+      {/* Animated border glow — teal cyberpunk */}
+      <div className="absolute -inset-[2px] rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-neon), var(--ecto-green))', animationDuration: '4s' }} />
 
-      <Card className="relative border-0 bg-background/80 backdrop-blur-xl shadow-2xl shadow-purple-500/10 overflow-hidden">
+      <Card className="relative border-0 backdrop-blur-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(9, 19, 24, 0.85)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 184, 0.08)' }}>
         {/* Decorative gradient lines */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
 
         <CardHeader className="text-center relative">
           <div className="flex justify-between items-center mb-2">
@@ -135,33 +135,34 @@ export default function LoginForm() {
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full blur-xl opacity-60 animate-pulse" style={{ animationDuration: '3s' }} />
-              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full ring-2 ring-purple-500/30" />
+              <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
+              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold" style={{ fontFamily: 'var(--ff-display)', background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.06em' }}>
               {APP_NAME}
             </CardTitle>
           </div>
-          <CardDescription className="text-muted-foreground/80 flex items-center justify-center gap-2">
-            <Sparkles className="h-3 w-3 text-purple-400" />
+          <CardDescription className="flex items-center justify-center gap-2" style={{ color: 'var(--text-mid)' }}>
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />
             Sign in to your account
-            <Sparkles className="h-3 w-3 text-cyan-400" />
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
           </CardDescription>
         </CardHeader>
 
         <CardContent className="relative">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="identifier" className="text-sm font-medium text-muted-foreground">Username or Email</Label>
+              <Label htmlFor="identifier" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Username or Email</Label>
               <div className={`relative transition-all duration-300 ${focusedField === 'identifier' ? 'scale-[1.02]' : ''}`}>
-                <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'identifier' ? 'opacity-100' : ''}`} />
+                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'identifier' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                 <Input
                   id="identifier"
                   {...register('identifier')}
                   placeholder="Enter username or email"
                   onFocus={() => setFocusedField('identifier')}
                   onBlur={() => setFocusedField(null)}
-                  className="relative bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all"
+                  className="relative placeholder:text-muted-foreground/40 transition-all"
+                  style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                 />
               </div>
               {errors.identifier && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.identifier.message}</p>}
@@ -169,13 +170,13 @@ export default function LoginForm() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">Password</Label>
-                <Link href="/forgot-password" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
+                <Label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Password</Label>
+                <Link href="/forgot-password" className="text-xs transition-colors" style={{ color: 'var(--teal-2)' }}>
                   Forgot password?
                 </Link>
               </div>
               <div className={`relative transition-all duration-300 ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
-                <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-100' : ''}`} />
+                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                 <div className="relative flex">
                   <Input
                     id="password"
@@ -184,7 +185,8 @@ export default function LoginForm() {
                     placeholder="Enter password"
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
-                    className="flex-1 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all pr-10"
+                    className="flex-1 placeholder:text-muted-foreground/40 transition-all pr-10"
+                    style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                   />
                   <button
                     type="button"
@@ -208,7 +210,7 @@ export default function LoginForm() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-11 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" disabled={loading}>
+            <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>
               {loading ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -221,13 +223,13 @@ export default function LoginForm() {
             </Button>
 
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/30" /></div>
+              <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid rgba(20, 184, 184, 0.15)' }} /></div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-3 text-muted-foreground/60">or continue with</span>
+                <span className="px-3" style={{ background: 'rgba(9, 19, 24, 0.9)', color: 'var(--text-lo)' }}>or continue with</span>
               </div>
             </div>
 
-            <Button type="button" variant="outline" className="w-full h-11 border-border/50 bg-background/40 hover:bg-background/60 hover:border-purple-500/30 transition-all duration-300 group/btn" disabled={tgLoading} onClick={handleTelegramLogin}>
+            <Button type="button" variant="outline" className="w-full h-11 transition-all duration-300 group/btn" style={{ borderColor: 'rgba(20, 184, 184, 0.2)', background: 'rgba(2, 6, 8, 0.4)' }} disabled={tgLoading} onClick={handleTelegramLogin}>
               {tgLoading ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -239,16 +241,16 @@ export default function LoginForm() {
               ) : (
                 <>
                   <svg className="mr-2 h-5 w-5 text-[#26A5E4] group-hover/btn:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.504-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
-                  <span className="group-hover/btn:text-purple-300 transition-colors">Sign In with Telegram</span>
+                  <span className="group-hover/btn:text-teal-300 transition-colors">Sign In with Telegram</span>
                 </>
               )}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground/70">
+            <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
               Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-purple-400 hover:text-purple-300 font-medium transition-colors relative group/link">
+              <Link href="/register" className="font-medium transition-colors relative group/link" style={{ color: 'var(--teal-2)' }}>
                 Register
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-purple-400 to-fuchsia-400 scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left" style={{ background: 'linear-gradient(90deg, var(--teal-2), var(--ecto-green))' }} />
               </Link>
             </p>
           </form>

@@ -57,7 +57,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4 py-4">
         <p className="text-red-400">Invalid or missing reset token.</p>
-        <Button variant="outline" onClick={() => router.push('/forgot-password')} className="border-purple-500/30 hover:border-purple-500/50">
+        <Button variant="outline" onClick={() => router.push('/forgot-password')} style={{ borderColor: 'rgba(20, 184, 184, 0.3)', color: 'var(--text-mid)' }}>
           Request New Reset Link
         </Button>
       </div>
@@ -68,13 +68,13 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4 py-4">
         <div className="flex justify-center">
-          <div className="h-14 w-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <CheckCircle2 className="h-7 w-7 text-emerald-400" />
+          <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(57, 255, 20, 0.15)' }}>
+            <CheckCircle2 className="h-7 w-7" style={{ color: 'var(--ecto-green)' }} />
           </div>
         </div>
-        <p className="text-emerald-400 font-medium text-lg">Password reset successfully!</p>
-        <p className="text-sm text-muted-foreground/70">Your password has been updated. You can now sign in with your new password.</p>
-        <Button className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25" onClick={() => router.push('/login')}>
+        <p className="font-medium text-lg" style={{ color: 'var(--ecto-green)' }}>Password reset successfully!</p>
+        <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Your password has been updated. You can now sign in with your new password.</p>
+        <Button className="w-full text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} onClick={() => router.push('/login')}>
           Go to Sign In
         </Button>
       </div>
@@ -85,26 +85,26 @@ function ResetPasswordForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <input type="hidden" {...register('token')} />
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">New Password</Label>
+        <Label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>New Password</Label>
         <div className="relative">
-          <Input id="password" type={showPassword ? 'text' : 'password'} {...register('password')} placeholder="Enter new password" autoComplete="new-password" className="bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all pr-10" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+          <Input id="password" type={showPassword ? 'text' : 'password'} {...register('password')} placeholder="Enter new password" autoComplete="new-password" className="placeholder:text-muted-foreground/40 transition-all pr-10" style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }} />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--text-mid)' }}>
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {errors.password && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.password.message}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Confirm Password</Label>
         <div className="relative">
-          <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} {...register('confirmPassword')} placeholder="Confirm new password" autoComplete="new-password" className="bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all pr-10" />
-          <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+          <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} {...register('confirmPassword')} placeholder="Confirm new password" autoComplete="new-password" className="placeholder:text-muted-foreground/40 transition-all pr-10" style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }} />
+          <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--text-mid)' }}>
             {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {errors.confirmPassword && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.confirmPassword.message}</p>}
       </div>
-      <Button type="submit" className="w-full h-11 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300" disabled={loading}>
+      <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>
         {loading ? (
           <span className="flex items-center gap-2">
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
@@ -112,9 +112,9 @@ function ResetPasswordForm() {
           </span>
         ) : 'Reset Password'}
       </Button>
-      <p className="text-center text-sm text-muted-foreground/70">
+      <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
         Remember your password?{' '}
-        <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">Sign In</Link>
+        <Link href="/login" className="font-medium transition-colors" style={{ color: 'var(--teal-2)' }}>Sign In</Link>
       </p>
     </form>
   );
@@ -126,38 +126,38 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="relative group">
-      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500 rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="relative border-0 bg-background/80 backdrop-blur-xl shadow-2xl shadow-purple-500/10 overflow-hidden rounded-xl">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+      <div className="absolute -inset-[2px] rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-neon), var(--ecto-green))', animationDuration: '4s' }} />
+      <div className="relative border-0 backdrop-blur-xl shadow-2xl overflow-hidden rounded-xl" style={{ background: 'rgba(9, 19, 24, 0.85)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 184, 0.08)' }}>
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
         <div className="text-center p-6 pb-2">
           <div className="flex justify-between items-center mb-2">
-            <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all">
+            <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               <ArrowLeft className="h-4 w-4" />
             </button>
             <button onClick={() => {
               const t = theme === 'dark' ? 'light' : 'dark';
               document.documentElement.classList.toggle('dark', t === 'dark');
               localStorage.setItem('theme', t);
-            }} className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all">
+            }} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full blur-xl opacity-60 animate-pulse" style={{ animationDuration: '3s' }} />
-              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full ring-2 ring-purple-500/30" />
+              <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
+              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
             </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">{APP_NAME}</p>
+            <p className="text-2xl font-bold" style={{ fontFamily: 'var(--ff-display)', background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.06em' }}>{APP_NAME}</p>
           </div>
-          <p className="text-muted-foreground/80 flex items-center justify-center gap-2 text-sm">
-            <Sparkles className="h-3 w-3 text-purple-400" />
+          <p className="flex items-center justify-center gap-2 text-sm" style={{ color: 'var(--text-mid)' }}>
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />
             Set a new password
-            <Sparkles className="h-3 w-3 text-cyan-400" />
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
           </p>
         </div>
         <div className="p-6 pt-2">
-          <Suspense fallback={<p className="text-center text-muted-foreground">Loading...</p>}>
+          <Suspense fallback={<p className="text-center" style={{ color: 'var(--text-mid)' }}>Loading...</p>}>
             <ResetPasswordForm />
           </Suspense>
         </div>

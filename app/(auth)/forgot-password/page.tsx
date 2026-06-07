@@ -70,56 +70,56 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="relative group">
-      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500 rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="relative border-0 bg-background/80 backdrop-blur-xl shadow-2xl shadow-purple-500/10 overflow-hidden rounded-xl">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+      <div className="absolute -inset-[2px] rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-neon), var(--ecto-green))', animationDuration: '4s' }} />
+      <div className="relative border-0 backdrop-blur-xl shadow-2xl overflow-hidden rounded-xl" style={{ background: 'rgba(9, 19, 24, 0.85)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 184, 0.08)' }}>
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
         <div className="text-center p-6 pb-2">
           <div className="flex justify-between items-center mb-2">
-            <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all">
+            <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <button onClick={toggleTheme} className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all">
+            <button onClick={toggleTheme} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full blur-xl opacity-60 animate-pulse" style={{ animationDuration: '3s' }} />
-              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full ring-2 ring-purple-500/30" />
+              <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
+              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
             </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">{APP_NAME}</p>
+            <p className="text-2xl font-bold" style={{ fontFamily: 'var(--ff-display)', background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.06em' }}>{APP_NAME}</p>
           </div>
-          <p className="text-muted-foreground/80 flex items-center justify-center gap-2 text-sm">
-            <Sparkles className="h-3 w-3 text-purple-400" />
+          <p className="flex items-center justify-center gap-2 text-sm" style={{ color: 'var(--text-mid)' }}>
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />
             Reset your password
-            <Sparkles className="h-3 w-3 text-cyan-400" />
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
           </p>
         </div>
         <div className="p-6 pt-2">
           {resetData ? (
             <div className="space-y-4">
-              <div className="rounded-lg bg-muted/50 border border-border/30 p-4 space-y-2">
-                <p className="text-sm font-medium">Reset link generated for <strong className="text-purple-300">{resetData.username}</strong></p>
-                <p className="text-xs text-muted-foreground/60">Share this reset URL with the user. It expires in 1 hour.</p>
+              <div className="rounded-lg p-4 space-y-2" style={{ background: 'rgba(20, 184, 184, 0.05)', border: '1px solid rgba(20, 184, 184, 0.15)' }}>
+                <p className="text-sm font-medium">Reset link generated for <strong style={{ color: 'var(--teal-3)' }}>{resetData.username}</strong></p>
+                <p className="text-xs" style={{ color: 'var(--text-lo)' }}>Share this reset URL with the user. It expires in 1 hour.</p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-background/60 rounded px-2 py-1.5 truncate border border-border/20 font-mono">
+                  <code className="flex-1 text-xs rounded px-2 py-1.5 truncate font-mono" style={{ background: 'rgba(2, 6, 8, 0.6)', border: '1px solid rgba(20, 184, 184, 0.15)', color: 'var(--text-mid)' }}>
                     {typeof window !== 'undefined' ? `${window.location.origin}/reset-password?token=${resetData.token}` : ''}
                   </code>
-                  <button onClick={copyResetUrl} className="h-8 w-8 flex items-center justify-center rounded-md border border-border/30 hover:bg-accent/50 transition-all">
-                    {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                  <button onClick={copyResetUrl} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ border: '1px solid rgba(20, 184, 184, 0.2)' }}>
+                    {copied ? <Check className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-4 w-4" style={{ color: 'var(--text-mid)' }} />}
                   </button>
                 </div>
               </div>
-              <button onClick={() => setResetData(null)} className="w-full h-11 rounded-lg border border-border/30 bg-background/40 hover:bg-background/60 text-sm font-medium transition-all">
+              <button onClick={() => setResetData(null)} className="w-full h-11 rounded-lg text-sm font-medium transition-all" style={{ border: '1px solid rgba(20, 184, 184, 0.2)', background: 'rgba(2, 6, 8, 0.4)', color: 'var(--text-mid)' }}>
                 Reset Another Account
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="identifier" className="text-sm font-medium text-muted-foreground">Username or Email</Label>
-                <Input id="identifier" {...register('identifier')} placeholder="Enter username or email" autoComplete="username" className="bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all" />
+                <Label htmlFor="identifier" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Username or Email</Label>
+                <Input id="identifier" {...register('identifier')} placeholder="Enter username or email" autoComplete="username" className="placeholder:text-muted-foreground/40 transition-all" style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }} />
                 {errors.identifier && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.identifier.message}</p>}
               </div>
               {siteKey && (
@@ -127,12 +127,12 @@ export default function ForgotPasswordPage() {
                   <Turnstile siteKey={siteKey} onSuccess={(token) => setValue('turnstileToken', token)} options={{ theme: theme === 'dark' ? 'dark' : 'light' }} />
                 </div>
               )}
-              <Button type="submit" className="w-full h-11 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300" disabled={loading}>
+              <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>
                 {loading ? 'Generating...' : 'Generate Reset Link'}
               </Button>
-              <p className="text-center text-sm text-muted-foreground/70">
+              <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
                 Remember your password?{' '}
-                <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">Sign In</Link>
+                <Link href="/login" className="font-medium transition-colors" style={{ color: 'var(--teal-2)' }}>Sign In</Link>
               </p>
             </form>
           )}

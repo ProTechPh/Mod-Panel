@@ -61,13 +61,13 @@ export default function RegisterForm() {
 
   return (
     <div className="relative group">
-      {/* Animated border glow */}
-      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500 rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ animationDuration: '4s' }} />
+      {/* Animated border glow — teal cyberpunk */}
+      <div className="absolute -inset-[2px] rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-neon), var(--ecto-green))', animationDuration: '4s' }} />
 
-      <Card className="relative border-0 bg-background/80 backdrop-blur-xl shadow-2xl shadow-purple-500/10 overflow-hidden">
+      <Card className="relative border-0 backdrop-blur-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(9, 19, 24, 0.85)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 184, 0.08)' }}>
         {/* Decorative gradient lines */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
 
         <CardHeader className="text-center relative">
           <div className="flex justify-between items-center mb-2">
@@ -78,35 +78,36 @@ export default function RegisterForm() {
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-fuchsia-500 rounded-full blur-xl opacity-60 animate-pulse" style={{ animationDuration: '3s' }} />
-              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full ring-2 ring-purple-500/30" />
+              <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
+              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold" style={{ fontFamily: 'var(--ff-display)', background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.06em' }}>
               {APP_NAME}
             </CardTitle>
           </div>
-          <CardDescription className="text-muted-foreground/80 flex items-center justify-center gap-2">
-            <Sparkles className="h-3 w-3 text-purple-400" />
+          <CardDescription className="flex items-center justify-center gap-2" style={{ color: 'var(--text-mid)' }}>
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />
             Create your account
-            <Sparkles className="h-3 w-3 text-cyan-400" />
+            <Sparkles className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
           </CardDescription>
         </CardHeader>
 
         <CardContent className="relative">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium text-muted-foreground">Username</Label>
+              <Label htmlFor="username" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Username</Label>
               <div className={`relative transition-all duration-300 ${focusedField === 'username' ? 'scale-[1.01]' : ''}`}>
-                <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'username' ? 'opacity-100' : ''}`} />
+                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'username' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10" style={{ color: 'var(--text-lo)' }} />
                   <Input
                     id="username"
                     {...register('username')}
                     placeholder="Choose a username"
                     onFocus={() => setFocusedField('username')}
                     onBlur={() => setFocusedField(null)}
-                    className="pl-10 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all"
+                    className="pl-10 placeholder:text-muted-foreground/40 transition-all"
+                    style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                   />
                 </div>
               </div>
@@ -114,11 +115,11 @@ export default function RegisterForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Email</Label>
               <div className={`relative transition-all duration-300 ${focusedField === 'email' ? 'scale-[1.01]' : ''}`}>
-                <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'email' ? 'opacity-100' : ''}`} />
+                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'email' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10" style={{ color: 'var(--text-lo)' }} />
                   <Input
                     id="email"
                     type="email"
@@ -126,7 +127,8 @@ export default function RegisterForm() {
                     placeholder="Enter email"
                     onFocus={() => setFocusedField('email')}
                     onBlur={() => setFocusedField(null)}
-                    className="pl-10 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all"
+                    className="pl-10 placeholder:text-muted-foreground/40 transition-all"
+                    style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                   />
                 </div>
               </div>
@@ -134,18 +136,19 @@ export default function RegisterForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fullname" className="text-sm font-medium text-muted-foreground">Full Name</Label>
+              <Label htmlFor="fullname" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Full Name</Label>
               <div className={`relative transition-all duration-300 ${focusedField === 'fullname' ? 'scale-[1.01]' : ''}`}>
-                <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'fullname' ? 'opacity-100' : ''}`} />
+                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'fullname' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                 <div className="relative">
-                  <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                  <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10" style={{ color: 'var(--text-lo)' }} />
                   <Input
                     id="fullname"
                     {...register('fullname')}
                     placeholder="Enter full name"
                     onFocus={() => setFocusedField('fullname')}
                     onBlur={() => setFocusedField(null)}
-                    className="pl-10 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all"
+                    className="pl-10 placeholder:text-muted-foreground/40 transition-all"
+                    style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                   />
                 </div>
               </div>
@@ -154,11 +157,11 @@ export default function RegisterForm() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Password</Label>
                 <div className={`relative transition-all duration-300 ${focusedField === 'password' ? 'scale-[1.01]' : ''}`}>
-                  <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-100' : ''}`} />
+                  <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                   <div className="relative flex">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 z-10" />
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10" style={{ color: 'var(--text-lo)' }} />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -166,7 +169,8 @@ export default function RegisterForm() {
                       placeholder="Password"
                       onFocus={() => setFocusedField('password')}
                       onBlur={() => setFocusedField(null)}
-                      className="flex-1 pl-10 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all pr-10"
+                      className="flex-1 pl-10 placeholder:text-muted-foreground/40 transition-all pr-10"
+                      style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                     />
                     <button
                       type="button"
@@ -181,11 +185,11 @@ export default function RegisterForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">Confirm</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Confirm</Label>
                 <div className={`relative transition-all duration-300 ${focusedField === 'confirmPassword' ? 'scale-[1.01]' : ''}`}>
-                  <div className={`absolute -inset-[1px] bg-gradient-to-r from-purple-600/50 to-fuchsia-500/50 rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'confirmPassword' ? 'opacity-100' : ''}`} />
+                  <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'confirmPassword' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
                   <div className="relative flex">
-                    <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 z-10" />
+                    <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 z-10" style={{ color: 'var(--text-lo)' }} />
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
@@ -193,7 +197,8 @@ export default function RegisterForm() {
                       placeholder="Confirm"
                       onFocus={() => setFocusedField('confirmPassword')}
                       onBlur={() => setFocusedField(null)}
-                      className="flex-1 pl-10 bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all pr-10"
+                      className="flex-1 pl-10 placeholder:text-muted-foreground/40 transition-all pr-10"
+                      style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                     />
                     <button
                       type="button"
@@ -209,13 +214,14 @@ export default function RegisterForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="referralCode" className="text-sm font-medium text-muted-foreground">Referral Code <span className="text-muted-foreground/40">(optional)</span></Label>
+              <Label htmlFor="referralCode" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Referral Code <span style={{ color: 'var(--text-lo)' }}>(optional)</span></Label>
               <div className="relative">
                 <Input
                   id="referralCode"
                   {...register('referralCode')}
                   placeholder="Enter referral code"
-                  className="bg-background/60 border-border/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 placeholder:text-muted-foreground/40 transition-all"
+                  className="placeholder:text-muted-foreground/40 transition-all"
+                  style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
                 />
               </div>
               {errors.referralCode && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.referralCode.message}</p>}
@@ -231,7 +237,7 @@ export default function RegisterForm() {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-11 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" disabled={loading}>
+            <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>
               {loading ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -243,11 +249,11 @@ export default function RegisterForm() {
               ) : 'Create Account'}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground/70">
+            <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
               Already have an account?{' '}
-              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors relative group/link">
+              <Link href="/login" className="font-medium transition-colors relative group/link" style={{ color: 'var(--teal-2)' }}>
                 Sign in
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-purple-400 to-fuchsia-400 scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left" />
+                <span className="absolute bottom-0 left-0 w-full h-[1px] scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left" style={{ background: 'linear-gradient(90deg, var(--teal-2), var(--ecto-green))' }} />
               </Link>
             </p>
           </form>

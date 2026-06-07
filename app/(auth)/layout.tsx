@@ -3,24 +3,25 @@ import { ThemeProvider } from '@/components/shared/ThemeProvider';
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-        {/* Animated gradient orbs */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-void)' }}>
+        {/* Animated gradient orbs — teal/cyan cyberpunk */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-purple-600/30 via-fuchsia-500/20 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-blue-600/25 via-cyan-500/20 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-r from-violet-600/10 to-pink-600/10 blur-3xl animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl animate-pulse" style={{ background: 'radial-gradient(circle, rgba(20,184,184,0.18) 0%, rgba(13,122,122,0.08) 50%, transparent 70%)', animationDuration: '8s' }} />
+          <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full blur-3xl animate-pulse" style={{ background: 'radial-gradient(circle, rgba(0,255,247,0.12) 0%, rgba(57,255,20,0.06) 50%, transparent 70%)', animationDuration: '10s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-3xl animate-pulse" style={{ background: 'radial-gradient(circle, rgba(94,234,212,0.08) 0%, rgba(20,184,184,0.04) 50%, transparent 70%)', animationDuration: '12s' }} />
         </div>
 
         {/* Grid pattern overlay */}
-        <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
+        <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(20,184,184,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(20,184,184,0.03) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
 
         {/* Animated floating particles */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-primary/30 rounded-full"
+              className="absolute w-1 h-1 rounded-full"
               style={{
+                background: 'rgba(20, 184, 184, 0.4)',
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animation: `float ${6 + Math.random() * 8}s ease-in-out infinite`,
