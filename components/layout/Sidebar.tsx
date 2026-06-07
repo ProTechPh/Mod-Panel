@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
   History, Shield, BookOpen, Smartphone, ShoppingCart, ScrollText,
-  ShieldAlert, BarChart3, Megaphone,
+  BarChart3, Megaphone,
 } from 'lucide-react';
 
 const navItems = [
@@ -18,7 +18,6 @@ const navItems = [
   { href: '/tiktok-live', label: 'TikTok Live', icon: Smartphone, minLevel: 3 },
   { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
-  { href: '/admin/security-reports', label: 'Security Reports', icon: ShieldAlert, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },

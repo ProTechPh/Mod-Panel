@@ -24,7 +24,6 @@ export const RATE_LIMIT_TIERS = {
   connect: { windowMs: 60 * 1000, maxRequests: 300, blockDurationMs: 2 * 60 * 1000 },
   // free-key: public page, not security-critical — allow reasonable browsing traffic.
   freeKey: { windowMs: 60 * 1000, maxRequests: 30, blockDurationMs: 5 * 60 * 1000 },
-  reportViolation: { windowMs: 60 * 1000, maxRequests: 10, blockDurationMs: 15 * 60 * 1000 },
   public: { windowMs: 60 * 1000, maxRequests: 60, blockDurationMs: 5 * 60 * 1000 },
   authenticated: { windowMs: 60 * 1000, maxRequests: 120, blockDurationMs: 2 * 60 * 1000 },
   // keyGenerate: key creation costs saldo — limit to prevent abuse / accidental spam
@@ -98,12 +97,6 @@ export function getRateLimitTier(pathname: string): RateLimitConfig {
     pathname.startsWith('/api/auth/telegram/callback')
   ) {
     return RATE_LIMIT_TIERS.auth;
-  }
-  if (
-    pathname === '/api/report-violation' ||
-    pathname.startsWith('/api/report-violation')
-  ) {
-    return RATE_LIMIT_TIERS.reportViolation;
   }
   if (
     pathname === '/api/free-key' ||
