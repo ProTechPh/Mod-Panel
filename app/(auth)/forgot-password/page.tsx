@@ -8,8 +8,7 @@ import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validators
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTheme } from '@/components/shared/ThemeProvider';
-import { Moon, Sun, ArrowLeft, Copy, Check, Sparkles } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -18,7 +17,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [resetData, setResetData] = useState<{ token: string; username: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -75,12 +73,9 @@ export default function ForgotPasswordPage() {
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
         <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
         <div className="text-center p-6 pb-2">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-start items-center mb-2">
             <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               <ArrowLeft className="h-4 w-4" />
-            </button>
-            <button onClick={toggleTheme} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
@@ -124,7 +119,7 @@ export default function ForgotPasswordPage() {
               </div>
               {siteKey && (
                 <div className="flex justify-center my-4">
-                  <Turnstile siteKey={siteKey} onSuccess={(token) => setValue('turnstileToken', token)} options={{ theme: theme === 'dark' ? 'dark' : 'light' }} />
+                  <Turnstile siteKey={siteKey} onSuccess={(token) => setValue('turnstileToken', token)} options={{ theme: 'dark' }} />
                 </div>
               )}
               <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>

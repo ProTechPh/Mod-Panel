@@ -50,13 +50,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}})()`,
-          }}
-        />
         <script src="https://quge5.com/88/tag.min.js" data-zone="246103" async data-cfasync="false"></script>
         <script src="//libtl.com/sdk.js" data-zone="11099376" data-sdk="show_11099376" async></script>
       </head>

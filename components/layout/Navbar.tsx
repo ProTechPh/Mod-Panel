@@ -1,16 +1,14 @@
 'use client';
 
 import { useAuth } from '@/components/shared/AuthProvider';
-import { useTheme } from '@/components/shared/ThemeProvider';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Menu, LogOut, Sparkles } from 'lucide-react';
+import { Menu, LogOut, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants';
 
 export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { user, setUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -153,16 +151,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
             </span>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-8 w-8"
-            style={{ color: 'var(--text-mid)' }}
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
           <Button
             variant="ghost"
             size="icon"

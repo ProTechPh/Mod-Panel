@@ -10,8 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTheme } from '@/components/shared/ThemeProvider';
-import { Moon, Sun, Sparkles, Eye, EyeOff, User, Mail, UserCircle, KeyRound, ShieldCheck } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, User, Mail, UserCircle, KeyRound, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -21,7 +20,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -70,13 +68,7 @@ export default function RegisterForm() {
         <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
 
         <CardHeader className="text-center relative">
-          <div className="flex justify-between items-center mb-2">
-            <div />
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors">
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-          </div>
-          <div className="flex flex-col items-center gap-3 mb-2">
+          <div className="flex flex-col items-center gap-3 mb-2 pt-2">
             <div className="relative">
               <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
               <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
@@ -232,7 +224,7 @@ export default function RegisterForm() {
                 <Turnstile
                   siteKey={siteKey}
                   onSuccess={(token) => setValue('turnstileToken', token)}
-                  options={{ theme: theme === 'dark' ? 'dark' : 'light' }}
+                  options={{ theme: 'dark' }}
                 />
               </div>
             )}

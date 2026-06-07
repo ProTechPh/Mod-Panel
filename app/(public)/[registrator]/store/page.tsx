@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTheme } from '@/components/shared/ThemeProvider';
 import {
-  Moon, Sun, ShoppingCart, Loader2, Gamepad2, Smartphone, Zap,
+  ShoppingCart, Loader2, Gamepad2, Smartphone, Zap,
   ShieldCheck, Trophy, Sparkles, KeyRound, Star, ArrowRight, CreditCard, Tag, Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -60,7 +59,6 @@ const DURATION_STYLES: Record<DurationKind, { color: string; bg: string; border:
 
 export default function StorePage() {
   const { registrator } = useParams<{ registrator: string }>();
-  const { theme, toggleTheme } = useTheme();
 
   const [store, setStore] = useState<Store | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -149,9 +147,6 @@ export default function StorePage() {
             <ShoppingCart className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
             <span className="font-display font-bold tracking-wide" style={{ color: 'var(--text-hi)' }}>{store.storeName}</span>
           </div>
-          <Button variant="ghost" size="icon-sm" onClick={toggleTheme}>
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
         </div>
       </header>
 

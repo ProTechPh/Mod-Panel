@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTheme } from '@/components/shared/ThemeProvider';
 import {
-  Moon, Sun, Copy, Check, RefreshCw, Loader2,
+  Copy, Check, RefreshCw, Loader2,
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
   Download, Plus, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
   ShieldCheck, Cpu, AlertTriangle, Activity, Globe, ExternalLink, Hash, Calendar,
@@ -78,7 +77,6 @@ export default function FreeKeyPage() {
 
 function FreeKeyContent({ registrator }: { registrator: string }) {
   const searchParams = useSearchParams();
-  const { theme, toggleTheme } = useTheme();
 
   const [games, setGames] = useState<GameOption[]>([]);
   const [game, setGame] = useState(searchParams.get('game') || '');
@@ -369,9 +367,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                 <Button variant="ghost" size="icon-sm"><ShoppingBag className="h-4 w-4" /></Button>
               </Link>
             )}
-            <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle theme">
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
           </div>
         </div>
       </header>

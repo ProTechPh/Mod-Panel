@@ -8,8 +8,7 @@ import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validators/a
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTheme } from '@/components/shared/ThemeProvider';
-import { Moon, Sun, ArrowLeft, Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -19,7 +18,6 @@ function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -122,7 +120,6 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const { theme } = useTheme();
 
   return (
     <div className="relative group">
@@ -131,16 +128,9 @@ export default function ResetPasswordPage() {
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
         <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
         <div className="text-center p-6 pb-2">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-start items-center mb-2">
             <button onClick={() => router.push('/login')} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
               <ArrowLeft className="h-4 w-4" />
-            </button>
-            <button onClick={() => {
-              const t = theme === 'dark' ? 'light' : 'dark';
-              document.documentElement.classList.toggle('dark', t === 'dark');
-              localStorage.setItem('theme', t);
-            }} className="h-8 w-8 flex items-center justify-center rounded-md transition-all" style={{ color: 'var(--text-mid)' }}>
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
           <div className="flex flex-col items-center gap-3 mb-2">
