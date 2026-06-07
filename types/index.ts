@@ -6,17 +6,6 @@ export type KeyStatus = 0 | 1;
 export type MaintenanceStatus = 'on' | 'off';
 export type ServerConfigId = '000000000000000000000001';
 
-export interface Features {
-  esp: boolean;
-  item: boolean;
-  silentAim: boolean;
-  aim: boolean;
-  bulletTrack: boolean;
-  memory: boolean;
-  floating: boolean;
-  setting: boolean;
-}
-
 export interface UserDoc {
   _id: ObjectId;
   username: string;
@@ -79,14 +68,9 @@ export interface GameSettingDoc {
   maintenanceMessage: string;
   maintenanceStartedAt: Date | null;
   downloadLink: string;
-  floatingTextStatus: string;
-  floatingText: string;
   modName: string;
   telegramChannel: string;
   telegramGroup: string;
-  features: Features;
-  patches: string;
-  patchVersion: number;
   registrator: string;
   announcement: string;
   announcementStatus: 'on' | 'off';

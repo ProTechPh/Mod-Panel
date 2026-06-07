@@ -42,12 +42,9 @@ export async function addGameSetting(data: {
     freeKeyEnabled: data.freeKeyEnabled ?? true,
     maintenanceMessage: '',
     downloadLink: '',
-    floatingTextStatus: '',
-    floatingText: '',
     modName: '',
     telegramChannel: '',
     telegramGroup: '',
-    features: { esp: false, item: false, silentAim: false, aim: false, bulletTrack: false, memory: false, floating: false, setting: false },
     announcement: '',
     announcementStatus: 'off',
   });
@@ -62,13 +59,9 @@ export async function updateGameSetting(gameCode: string, data: {
   freeKeyEnabled?: boolean;
   maintenanceMessage?: string;
   downloadLink?: string;
-  floatingTextStatus?: string;
-  floatingText?: string;
   modName?: string;
   telegramChannel?: string;
   telegramGroup?: string;
-  features?: Record<string, boolean>;
-  patches?: string;
 }, registrator?: string) {
   await dbConnect();
   const filter: Record<string, unknown> = { gameCode: gameCode.toUpperCase() };
@@ -113,18 +106,8 @@ export async function updateGameSetting(gameCode: string, data: {
     }
   }
   // ─────────────────────────────────────────────────────────────────────────
-  let shouldIncPatchVersion = false;
-  if (data.patches !== undefined) {
-    const current = await GameSetting.findOne(filter).lean();
-    if (current && current.patches !== data.patches) {
-      shouldIncPatchVersion = true;
-    }
-  }
 
   const updateOps: Record<string, unknown> = { $set: updateData };
-  if (shouldIncPatchVersion) {
-    updateOps.$inc = { patchVersion: 1 };
-  }
 
   const game = await GameSetting.findOneAndUpdate(
     filter,

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Megaphone, Gamepad2, Save, Link as LinkIcon, Settings as SettingsIcon, Code2, Wrench } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Megaphone, Gamepad2, Save, Link as LinkIcon, Settings as SettingsIcon, Wrench } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -22,22 +22,13 @@ interface GameSetting {
   freeKeyEnabled: boolean;
   maintenanceMessage: string;
   downloadLink: string;
-  floatingTextStatus: string;
-  floatingText: string;
   modName: string;
   telegramChannel: string;
   telegramGroup: string;
-  features: Record<string, boolean>;
-  patches: string;
   registrator: string;
   announcement: string;
   announcementStatus: string;
 }
-
-const FEATURE_LABELS: Record<string, string> = {
-  esp: 'ESP', item: 'Item', silentAim: 'Silent Aim', aim: 'AIM',
-  bulletTrack: 'Bullet Track', memory: 'Memory', floating: 'Floating', setting: 'Setting',
-};
 
 export default function GameSettingsPage() {
   const { user } = useAuth();
@@ -112,13 +103,9 @@ export default function GameSettingsPage() {
         registrator: editGame.registrator,
         maintenanceMessage: editGame.maintenanceMessage,
         downloadLink: editGame.downloadLink,
-        floatingTextStatus: editGame.floatingTextStatus,
-        floatingText: editGame.floatingText,
         modName: editGame.modName,
         telegramChannel: editGame.telegramChannel,
         telegramGroup: editGame.telegramGroup,
-        features: editGame.features,
-        patches: editGame.patches,
         announcement: editGame.announcement,
         announcementStatus: editGame.announcementStatus,
       }),
@@ -128,11 +115,6 @@ export default function GameSettingsPage() {
       setEditGame(null);
       void fetchGames();
     } else toast.error('Failed to save game settings');
-  };
-
-  const toggleFeature = (key: string) => {
-    if (!editGame) return;
-    setEditGame({ ...editGame, features: { ...editGame.features, [key]: !editGame.features[key] } });
   };
 
   const copyFreeKeyLink = (registrator: string) => {
@@ -254,43 +236,6 @@ export default function GameSettingsPage() {
                   <Input value={editGame.telegramGroup || ''} onChange={e => setEditGame({ ...editGame, telegramGroup: e.target.value })} placeholder="https://t.me/group" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Floating Text Status</Label>
-                <Input value={editGame.floatingTextStatus || ''} onChange={e => setEditGame({ ...editGame, floatingTextStatus: e.target.value })} placeholder="// e.g. active, vip" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Floating Text</Label>
-                <Textarea value={editGame.floatingText || ''} onChange={e => setEditGame({ ...editGame, floatingText: e.target.value })} placeholder="// Text shown as floating overlay in-game" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Features</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {Object.entries(FEATURE_LABELS).map(([key, label]) => (
-                    <div key={key} className="flex items-center gap-2">
-                      <Switch checked={editGame.features?.[key] ?? false} onCheckedChange={() => toggleFeature(key)} />
-                      <span className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
-                  <Code2 className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} /> Patches (Lua)
-                </Label>
-                <Textarea
-                  value={editGame.patches || ''}
-                  onChange={e => setEditGame({ ...editGame, patches: e.target.value })}
-                  placeholder="-- Custom Lua patches here…"
-                  className="font-mono text-xs h-32"
-                  style={{ background: 'rgba(0, 0, 0, 0.4)', color: 'var(--ecto-green)' }}
-                />
-                <p className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
-                  {'// runs on client. use '}
-                  <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.05rem 0.3rem', borderRadius: 3, color: 'var(--teal-3)' }}>HexPatches.MemoryPatch</code>
-                  {' for memory edits.'}
-                </p>
-              </div>
-
               <div className="space-y-4 border-t pt-4 mt-2" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-hi)' }}>
                   <Megaphone className="h-4 w-4" style={{ color: 'var(--teal-2)' }} /> Announcement
