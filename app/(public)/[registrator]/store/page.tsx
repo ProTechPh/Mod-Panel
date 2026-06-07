@@ -126,7 +126,7 @@ export default function StorePage() {
             <ShoppingCart className="h-10 w-10" style={{ color: 'var(--red)' }} />
           </div>
           <h1 className="font-display text-2xl font-black tracking-wide" style={{ color: 'var(--text-hi)' }}>Store Not Found</h1>
-          <p className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{'// This store is unavailable or doesn’t exist.'}</p>
+          <p className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{'// This store is unavailable or doesn\'t exist.'}</p>
         </div>
       </div>
     );
@@ -374,4 +374,3 @@ export default function StorePage() {
     </div>
   );
 }
-
