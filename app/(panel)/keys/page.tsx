@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trash2, RotateCcw, Search, AlertTriangle, KeyRound, Terminal, ShieldCheck } from 'lucide-react';
+import { Trash2, RotateCcw, Search, AlertTriangle, KeyRound, Terminal, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -26,14 +26,19 @@ export default function KeysPage() {
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmData, setConfirmData] = useState<{ title: string; description: string; action: () => void } | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 50;
 
-  const fetchKeys = async (searchVal = '') => {
+  const fetchKeys = async (searchVal = '', pageVal = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ draw: '1', start: '0', length: '50', 'search[value]': searchVal });
+      const start = (pageVal - 1) * PAGE_SIZE;
+      const params = new URLSearchParams({ draw: '1', start: String(start), length: String(PAGE_SIZE), 'search[value]': searchVal });
       const res = await fetch(`/api/keys?${params}`);
       const data = await res.json();
       setKeys(data.data || []);
+      setTotalFiltered(data.recordsFiltered ?? 0);
     } catch {
       toast.error('Failed to load keys');
     } finally {
@@ -50,10 +55,10 @@ export default function KeysPage() {
     setConfirmOpen(true);
   };
   const handleConfirm = () => { if (confirmData?.action) confirmData.action(); setConfirmOpen(false); };
-  const handleSearch = () => fetchKeys(search);
+  const handleSearch = () => { setPage(1); fetchKeys(search, 1); };
   const handleDelete = (id: string) => showConfirm('Delete Key', 'Are you sure you want to delete this key? This action cannot be undone.', async () => {
     const res = await fetch(`/api/keys/${id}`, { method: 'DELETE' });
-    if (res.ok) { toast.success('Key deleted'); fetchKeys(search); } else toast.error('Failed to delete key');
+    if (res.ok) { toast.success('Key deleted'); fetchKeys(search, page); } else toast.error('Failed to delete key');
   });
   const handleReset = async (id: string) => {
     const res = await fetch('/api/keys/reset', {
@@ -61,7 +66,7 @@ export default function KeysPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
-    if (res.ok) { toast.success('Devices reset'); fetchKeys(search); } else toast.error('Failed to reset devices');
+    if (res.ok) { toast.success('Devices reset'); fetchKeys(search, page); } else toast.error('Failed to reset devices');
   };
   const handleBulkDelete = (filter: 'unused' | 'expired', label: string) => showConfirm(
     `Clear ${label.charAt(0).toUpperCase() + label.slice(1)} Keys`,
@@ -73,7 +78,7 @@ export default function KeysPage() {
         body: JSON.stringify({ filter }),
       });
       const data = await res.json();
-      if (res.ok) { toast.success(`Deleted ${data.deleted} ${label} keys`); fetchKeys(search); }
+      if (res.ok) { toast.success(`Deleted ${data.deleted} ${label} keys`); fetchKeys(search, page); }
       else toast.error(data.error || `Failed to clear ${label} keys`);
     },
   );
@@ -216,6 +221,21 @@ export default function KeysPage() {
               ))}
             </TableBody>
           </Table>
+          {totalFiltered > PAGE_SIZE && (
+            <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+              <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, totalFiltered)} of {totalFiltered}
+              </span>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { const p = page - 1; setPage(p); fetchKeys(search, p); }}>
+                  <ChevronLeft className="h-3.5 w-3.5" /> Prev
+                </Button>
+                <Button variant="outline" size="sm" disabled={page * PAGE_SIZE >= totalFiltered} onClick={() => { const p = page + 1; setPage(p); fetchKeys(search, p); }}>
+                  Next <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
