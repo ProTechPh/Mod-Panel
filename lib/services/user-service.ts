@@ -192,7 +192,7 @@ export async function checkExpiration() {
   const now = new Date();
   const result = await User.updateMany(
     { status: 1, expirationDate: { $lt: now } },
-    { status: 3 }
+    { $set: { status: 3 } }
   );
   return result.modifiedCount;
 }

@@ -113,16 +113,22 @@ export async function updateGameSetting(gameCode: string, data: {
     }
   }
   // ─────────────────────────────────────────────────────────────────────────
+  let shouldIncPatchVersion = false;
   if (data.patches !== undefined) {
     const current = await GameSetting.findOne(filter).lean();
     if (current && current.patches !== data.patches) {
-      (updateData as any).$inc = { patchVersion: 1 };
+      shouldIncPatchVersion = true;
     }
+  }
+
+  const updateOps: Record<string, unknown> = { $set: updateData };
+  if (shouldIncPatchVersion) {
+    updateOps.$inc = { patchVersion: 1 };
   }
 
   const game = await GameSetting.findOneAndUpdate(
     filter,
-    { $set: updateData },
+    updateOps,
     { returnDocument: 'after', strict: false }
   ).lean();
   clearConfigCache();

@@ -244,10 +244,11 @@ export async function listKeys(params: {
 
   const filter: Record<string, unknown> = {};
   if (params.search) {
+    const escaped = params.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     filter.$or = [
-      { userKey: { $regex: params.search, $options: 'i' } },
-      { game: { $regex: params.search, $options: 'i' } },
-      { registrator: { $regex: params.search, $options: 'i' } },
+      { userKey: { $regex: escaped, $options: 'i' } },
+      { game: { $regex: escaped, $options: 'i' } },
+      { registrator: { $regex: escaped, $options: 'i' } },
     ];
   }
   if (params.registrator) filter.registrator = params.registrator;

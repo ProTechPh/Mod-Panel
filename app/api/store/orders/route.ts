@@ -3,12 +3,34 @@ import { authenticate } from '@/lib/auth/middleware';
 import { listOrders, getOrderById, deleteOrder } from '@/lib/services/store-service';
 import { Logger } from '@/lib/utils';
 
+// In-memory rate limit for unauthenticated orderId lookups
+const orderLookupHits = new Map<string, number[]>();
+const ORDER_LOOKUP_WINDOW_MS = 60_000;
+const ORDER_LOOKUP_MAX = 10;
+
+function checkOrderLookupRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const hits = orderLookupHits.get(ip) || [];
+  const recent = hits.filter(t => now - t < ORDER_LOOKUP_WINDOW_MS);
+  if (recent.length >= ORDER_LOOKUP_MAX) return false;
+  recent.push(now);
+  orderLookupHits.set(ip, recent);
+  return true;
+}
+
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get('orderId');
 
   if (orderId) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!checkOrderLookupRateLimit(ip)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const order = await getOrderById(orderId);
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+
+    // Only return key for paid orders; never expose key for pending/failed/expired
     return NextResponse.json({
       _id: order._id,
       status: order.status,

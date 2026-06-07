@@ -168,20 +168,20 @@ export async function getOrderBySessionId(sessionId: string) {
 
 export async function markOrderPaid(orderId: string, generatedKey: string, paymentIntentId?: string) {
   await dbConnect();
-  const update: Record<string, unknown> = { status: 'paid', generatedKey };
-  if (paymentIntentId) update.paymongoPaymentIntentId = paymentIntentId;
+  const update: Record<string, unknown> = { $set: { status: 'paid', generatedKey } };
+  if (paymentIntentId) update.$set.paymongoPaymentIntentId = paymentIntentId;
   const order = await Order.findByIdAndUpdate(orderId, update, { returnDocument: 'after' }).lean();
   return order ? { ...order, _id: order._id.toString() } : null;
 }
 
 export async function markOrderFailed(orderId: string) {
   await dbConnect();
-  await Order.findByIdAndUpdate(orderId, { status: 'failed' });
+  await Order.findByIdAndUpdate(orderId, { $set: { status: 'failed' } });
 }
 
 export async function markOrderExpired(orderId: string) {
   await dbConnect();
-  await Order.findByIdAndUpdate(orderId, { status: 'expired' });
+  await Order.findByIdAndUpdate(orderId, { $set: { status: 'expired' } });
 }
 
 export async function deleteOrder(orderId: string) {
@@ -208,7 +208,7 @@ export async function expireStalePendingOrders(olderThanMinutes = 30) {
       status: 'pending',
       createdAt: { $lt: cutoff },
     },
-    { status: 'expired' }
+    { $set: { status: 'expired' } }
   );
   return result.modifiedCount;
 }

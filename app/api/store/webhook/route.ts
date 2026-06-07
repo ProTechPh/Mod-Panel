@@ -3,6 +3,7 @@ import { getOrderBySessionId, markOrderPaid } from '@/lib/services/store-service
 import { verifyWebhookSignature, getPayMongoWebhookSecret } from '@/lib/services/paymongo-service';
 import { generateKeyString } from '@/lib/utils/device';
 import Key from '@/lib/db/models/Key';
+import Order from '@/lib/db/models/Order';
 import dbConnect from '@/lib/db/connection';
 import { Logger } from '@/lib/utils';
 
@@ -43,18 +44,27 @@ export async function POST(request: NextRequest) {
 
     Logger.info('PayMongo webhook: sessionId and payment intent ID', { sessionId, paymentIntentId });
 
-    const order = await getOrderBySessionId(sessionId);
-    if (!order) {
-      Logger.warn('PayMongo webhook: no order found for session', { sessionId });
-      return NextResponse.json({ received: true });
-    }
-
-    if (order.status === 'paid') {
-      Logger.info('PayMongo webhook: order already paid, skipping', { orderId: order._id.toString() });
-      return NextResponse.json({ received: true });
-    }
-
     await dbConnect();
+
+    // Atomic: claim the order by flipping status from pending to processing
+    // This prevents duplicate key generation from concurrent webhook deliveries
+    const order = await Order.findOneAndUpdate(
+      { paymongoCheckoutSessionId: sessionId, status: 'pending' },
+      { $set: { status: 'processing' } },
+      { returnDocument: 'after' }
+    ).lean();
+
+    if (!order) {
+      // Check if already paid (idempotent)
+      const existing = await Order.findOne({ paymongoCheckoutSessionId: sessionId, status: 'paid' }).lean();
+      if (existing) {
+        Logger.info('PayMongo webhook: order already paid, skipping', { orderId: existing._id.toString() });
+      } else {
+        Logger.warn('PayMongo webhook: no pending order found for session', { sessionId });
+      }
+      return NextResponse.json({ received: true });
+    }
+
     const keyString = generateKeyString(16);
     await Key.create({
       game: order.game,

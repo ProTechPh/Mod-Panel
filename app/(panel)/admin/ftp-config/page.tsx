@@ -86,6 +86,11 @@ export default function FtpConfigPage() {
     };
     if (editing) body._id = editing._id;
 
+    // Don't send placeholder password - only send if user actually changed it
+    if (editing && body.password === '••••••') {
+      delete body.password;
+    }
+
     const res = await fetch('/api/admin/ftp-config', {
       method: editing ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },

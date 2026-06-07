@@ -56,7 +56,11 @@ export default function KeysPage() {
     if (res.ok) { toast.success('Key deleted'); fetchKeys(search); } else toast.error('Failed to delete key');
   });
   const handleReset = async (id: string) => {
-    const res = await fetch(`/api/keys/reset?id=${id}`);
+    const res = await fetch('/api/keys/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
     if (res.ok) { toast.success('Devices reset'); fetchKeys(search); } else toast.error('Failed to reset devices');
   };
   const handleBulkDelete = (filter: 'unused' | 'expired', label: string) => showConfirm(
