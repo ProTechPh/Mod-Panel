@@ -12,11 +12,12 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="min-h-screen bg-background relative">
-          {/* Background gradient orbs */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-purple-600/15 via-fuchsia-500/10 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-blue-600/10 via-cyan-500/10 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="min-h-screen relative" style={{ background: 'var(--bg-void)' }}>
+          {/* Morphing background blobs */}
+          <div className="morphbg">
+            <div className="blob blob-1" />
+            <div className="blob blob-2" />
+            <div className="blob blob-3" />
           </div>
 
           <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

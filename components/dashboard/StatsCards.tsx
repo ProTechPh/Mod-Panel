@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Key, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
 
 interface KeyStats {
@@ -16,39 +15,82 @@ interface StatsCardsProps {
 }
 
 const cards = [
-  { label: 'Total Keys', value: (s?: KeyStats) => s?.total ?? 0, icon: Key, glow: 'group-hover:shadow-purple-500/20', line: 'from-purple-500 to-fuchsia-500', iconBg: 'bg-purple-500/10 text-purple-400' },
-  { label: 'Active', value: (s?: KeyStats) => s?.active ?? 0, icon: CheckCircle, glow: 'group-hover:shadow-emerald-500/20', line: 'from-emerald-500 to-green-500', iconBg: 'bg-emerald-500/10 text-emerald-400' },
-  { label: 'Expired', value: (s?: KeyStats) => s?.expired ?? 0, icon: Clock, glow: 'group-hover:shadow-amber-500/20', line: 'from-amber-500 to-orange-500', iconBg: 'bg-amber-500/10 text-amber-400' },
-  { label: 'Blocked', value: (s?: KeyStats) => s?.blocked ?? 0, icon: XCircle, glow: 'group-hover:shadow-red-500/20', line: 'from-red-500 to-rose-500', iconBg: 'bg-red-500/10 text-red-400' },
+  {
+    label: 'Total Keys',
+    value: (s?: KeyStats) => s?.total ?? 0,
+    icon: Key,
+    accent: 'var(--teal-2)',
+    iconBg: 'rgba(20, 184, 184, 0.1)',
+    iconBorder: 'rgba(20, 184, 184, 0.2)',
+    iconGlow: 'rgba(20, 184, 184, 0.3)',
+  },
+  {
+    label: 'Active',
+    value: (s?: KeyStats) => s?.active ?? 0,
+    icon: CheckCircle,
+    accent: 'var(--ecto-green)',
+    iconBg: 'rgba(57, 255, 20, 0.08)',
+    iconBorder: 'rgba(57, 255, 20, 0.22)',
+    iconGlow: 'rgba(57, 255, 20, 0.3)',
+  },
+  {
+    label: 'Expired',
+    value: (s?: KeyStats) => s?.expired ?? 0,
+    icon: Clock,
+    accent: 'var(--gold)',
+    iconBg: 'rgba(240, 192, 64, 0.1)',
+    iconBorder: 'rgba(240, 192, 64, 0.22)',
+    iconGlow: 'rgba(240, 192, 64, 0.3)',
+  },
+  {
+    label: 'Blocked',
+    value: (s?: KeyStats) => s?.blocked ?? 0,
+    icon: XCircle,
+    accent: 'var(--red)',
+    iconBg: 'rgba(239, 68, 68, 0.1)',
+    iconBorder: 'rgba(239, 68, 68, 0.22)',
+    iconGlow: 'rgba(239, 68, 68, 0.3)',
+  },
 ];
 
 export default function StatsCards({ stats }: StatsCardsProps) {
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-      {cards.map(card => {
+    <div className="stat-row fade-up d2">
+      {cards.map((card) => {
         const val = card.value(stats);
+        const Icon = card.icon;
         return (
-          <div key={card.label} className={`relative group transition-all duration-300 hover:scale-[1.02] ${card.glow}`}>
-            <div className={`absolute -inset-[1px] bg-gradient-to-r ${card.line} rounded-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-md`} />
-            <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br opacity-[0.03]" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/[0.03] to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{card.label}</CardTitle>
-                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${card.iconBg}`}>
-                  <card.icon className="h-4 w-4" />
+          <div
+            key={card.label}
+            className="stat-card panel-corner"
+            style={
+              {
+                '--card-accent': card.accent,
+                '--icon-bg': card.iconBg,
+                '--icon-border': card.iconBorder,
+                '--icon-glow': card.iconGlow,
+              } as React.CSSProperties
+            }
+          >
+            <div className="stat-card-inner">
+              <div>
+                <div
+                  className="stat-val"
+                  style={{ color: card.accent }}
+                >
+                  {val.toLocaleString()}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-1.5">
-                  <div className="text-2xl font-bold tabular-nums">{val.toLocaleString()}</div>
-                  {val > 0 && (
-                    <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/40" />
-                  )}
-                </div>
-              </CardContent>
-              <div className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r ${card.line} opacity-30`} />
-            </Card>
+                <div className="stat-lbl">{card.label}</div>
+                {val > 0 && (
+                  <div className="stat-delta" style={{ color: card.accent, opacity: 0.7 }}>
+                    <TrendingUp style={{ fontSize: '0.7rem' }} /> Active
+                  </div>
+                )}
+              </div>
+              <div className="stat-icon-wrap" style={{ color: card.accent }}>
+                <Icon size={20} />
+              </div>
+            </div>
           </div>
         );
       })}

@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
@@ -9,49 +8,68 @@ interface KeyTrendsChartProps { data: TrendPoint[]; }
 
 export default function KeyTrendsChart({ data }: KeyTrendsChartProps) {
   return (
-    <div className="relative group">
-      <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-      <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-purple-400" />
-            Key Creation Trends
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.length === 0 ? (
-            <p className="text-sm text-muted-foreground/60 text-center py-8">No data available</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={data}>
-                <defs>
-                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#a855f7" />
-                    <stop offset="100%" stopColor="#e879f9" />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} stroke="hsl(var(--border))" tickFormatter={(v: string) => v.substring(5)} />
-                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} stroke="hsl(var(--border))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '12px',
-                    fontSize: 12,
-                    color: 'hsl(var(--foreground))',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                  }}
-                  labelStyle={{ color: '#94a3b8' }}
-                  itemStyle={{ color: '#f1f5f9' }}
-                />
-                <Line type="monotone" dataKey="count" stroke="url(#lineGrad)" strokeWidth={2.5} dot={{ fill: '#a855f7', strokeWidth: 0, r: 3 }} activeDot={{ fill: '#e879f9', strokeWidth: 0, r: 5 }} name="Keys Created" />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+    <div className="panel panel-corner fade-up d3">
+      <div className="panel-head">
+        <div className="panel-title">
+          <TrendingUp size={16} className="ico" />
+          Key Creation Trends
+        </div>
+        <span className="panel-badge">30 days</span>
+      </div>
+      <div style={{ padding: '1.25rem' }}>
+        {data.length === 0 ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-lo)', textAlign: 'center', padding: '3rem 0' }}>
+            No data available
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#14b8b8" />
+                  <stop offset="100%" stopColor="#5eead4" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fill: '#3a6168' }}
+                stroke="rgba(20, 184, 184, 0.15)"
+                tickFormatter={(v: string) => v.substring(5)}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: '#3a6168' }}
+                stroke="rgba(20, 184, 184, 0.15)"
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip
+                cursor={{ stroke: 'var(--teal-2)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                contentStyle={{
+                  backgroundColor: 'rgba(9, 19, 24, 0.98)',
+                  border: '1px solid rgba(20, 184, 184, 0.4)',
+                  borderRadius: '10px',
+                  fontSize: 12,
+                  color: '#e8f8f8',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                }}
+                labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11, letterSpacing: '0.08em' }}
+                itemStyle={{ color: '#e8f8f8' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="url(#lineGrad)"
+                strokeWidth={2.5}
+                dot={{ fill: '#14b8b8', strokeWidth: 0, r: 3 }}
+                activeDot={{ fill: '#5eead4', strokeWidth: 0, r: 5, style: { filter: 'drop-shadow(0 0 6px #5eead4)' } }}
+                name="Keys Created"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </div>
   );
 }
