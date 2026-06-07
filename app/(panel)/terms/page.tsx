@@ -3,7 +3,7 @@
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, Shield, ShoppingCart, Users, Sparkles } from 'lucide-react';
+import { ScrollText, Shield, Users, Sparkles } from 'lucide-react';
 
 const EFFECTIVE_DATE = 'May 1, 2026';
 
@@ -50,7 +50,7 @@ const GENERAL_TERMS: Section[] = [
   {
     title: '6. Privacy & Data',
     content: [
-      'Your username, IP address, and activity logs may be recorded for security and abuse prevention purposes. This data is not shared with third parties outside of our secure payment gateway (for store purchases) and Cloudflare Turnstile (for free key generation).',
+      'Your username, IP address, and activity logs may be recorded for security and abuse prevention purposes. This data is not shared with third parties outside of Cloudflare Turnstile (for free key generation).',
       'By using the Service, you consent to this data collection as described above.',
     ],
   },
@@ -90,7 +90,7 @@ const ROLE_TERMS: Record<
       {
         title: 'Owner Privileges',
         content: [
-          'Full access to all platform features: user management, key management, game settings, server configuration, private dashboard, store management, library management, referral administration, and API documentation.',
+          'Full access to all platform features: user management, key management, game settings, server configuration, private dashboard, library management, referral administration, and API documentation.',
           'Ability to ban or restore any user, including Admins and Resellers.',
           'Exclusive access to the Private Dashboard and global server configuration.',
         ],
@@ -105,7 +105,7 @@ const ROLE_TERMS: Record<
       {
         title: 'Admin Responsibilities',
         content: [
-          'As Admin, you are granted elevated access to manage keys, referrals, game settings, and your own store. You must not abuse these privileges to circumvent the Owner\'s policies or generate keys beyond your allocated saldo.',
+          'As Admin, you are granted elevated access to manage keys, referrals, and game settings. You must not abuse these privileges to circumvent the Owner\'s policies or generate keys beyond your allocated saldo.',
           'You must not share your Admin credentials or perform actions on behalf of other users without explicit authorization from the Owner.',
           'Any actions you perform — including key generation, game setting changes, and store order management — are logged and may be reviewed by the Owner at any time.',
         ],
@@ -113,8 +113,8 @@ const ROLE_TERMS: Record<
       {
         title: 'Admin Privileges',
         content: [
-          'Access to: Dashboard, Keys, Settings, History, Referrals, Game Settings, Library, API Documentation, and Store (setup, products, orders).',
-          'Ability to configure and operate a personal reseller store, with order revenue attributed to your account.',
+          'Access to: Dashboard, Keys, Settings, History, Referrals, Game Settings, Library, and API Documentation.',
+          'Ability to configure and operate the platform, with full administrative control.',
           'No access to: User Management (admin/users), Server Config, or the Private Dashboard — these are Owner-only.',
         ],
       },
@@ -137,43 +137,13 @@ const ROLE_TERMS: Record<
         title: 'Reseller Privileges',
         content: [
           'Access to: Dashboard, Keys (generate & manage within saldo), Settings, History.',
-          'No access to: Store, Admin panels, User Management, Server Config, Library, Referrals, or API Documentation.',
+          'No access to: Admin panels, User Management, Server Config, Library, Referrals, or API Documentation.',
           'Key generation is limited by the saldo balance assigned by the Owner or Admin.',
         ],
       },
     ],
   },
 };
-
-const STORE_TERMS: Section[] = [
-  {
-    title: 'Store Operations',
-    content: [
-      'Owners and Admins may configure a personal store to sell license keys to buyers. Payments are processed securely. Store operators are responsible for ensuring their store is accurately described and products are correctly priced.',
-      'Minimum product price is ₱20.00 as required by our payment processor.',
-    ],
-  },
-  {
-    title: 'Key Delivery',
-    content: [
-      'License keys are generated and delivered automatically upon successful payment confirmation. Store operators acknowledge that key delivery depends on webhook processing and may be delayed in cases of webhook failure or server downtime.',
-      'In cases of payment failure or chargeback, generated keys may be revoked.',
-    ],
-  },
-  {
-    title: 'Refund Policy',
-    content: [
-      'All sales are final. Due to the digital nature of license keys (which are delivered and potentially used immediately upon payment), refunds are generally not available unless the key was provably non-functional at the time of delivery.',
-      'Refund requests must be directed to the store operator (Reseller/Admin) who owns the store, not to the platform. The platform operators do not mediate store disputes.',
-    ],
-  },
-  {
-    title: 'Buyer Obligations',
-    content: [
-      'By purchasing from a store on this platform, you acknowledge that: (a) keys are for personal use only; (b) keys must not be shared, resold, or redistributed; (c) device limits are enforced and non-negotiable; (d) keys expire as described at the time of purchase.',
-    ],
-  },
-];
 
 export default function TermsPage() {
   const { user } = useAuth();
@@ -254,37 +224,6 @@ export default function TermsPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Store Terms (visible to Owner and Admin only) */}
-      {(level === 1 || level === 2) && (
-        <div className="relative group">
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ShoppingCart className="h-4 w-4 text-primary" />
-                Store Terms
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Governs the operation of your reseller store and transactions with buyers.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {STORE_TERMS.map((section) => (
-                <div key={section.title} className="space-y-2">
-                  <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
-                  {section.content.map((paragraph, i) => (
-                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Footer notice */}
       <p className="text-xs text-muted-foreground pb-4">

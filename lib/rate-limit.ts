@@ -116,7 +116,6 @@ export function getRateLimitTier(pathname: string): RateLimitConfig {
     return RATE_LIMIT_TIERS.public;
   }
   if (
-    pathname === '/api/store/webhook' ||
     pathname === '/api/telegram/webhook'
   ) {
     // Webhooks need high limits or bypass to avoid rate-limiting provider IPs under load

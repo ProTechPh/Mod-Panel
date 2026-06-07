@@ -6,7 +6,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
-  History, Shield, BookOpen, ShoppingCart, ScrollText,
+  History, Shield, BookOpen, ScrollText,
   BarChart3, Megaphone,
 } from 'lucide-react';
 
@@ -15,7 +15,6 @@ const navItems = [
   { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
   { href: '/history', label: 'History', icon: History, minLevel: 3 },
-  { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
@@ -52,7 +51,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
   // Group items
   const userItems = filteredItems.filter(i =>
-    ['/dashboard', '/keys', '/history', '/settings', '/terms', '/store', '/lib', '/docs'].includes(i.href)
+    ['/dashboard', '/keys', '/history', '/settings', '/terms', '/lib', '/docs'].includes(i.href)
   );
   const adminItems = filteredItems.filter(i => i.href.startsWith('/admin/') || i.href === '/server');
 
