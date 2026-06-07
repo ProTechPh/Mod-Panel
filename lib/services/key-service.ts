@@ -201,18 +201,8 @@ export async function validateKey(game: string, userKey: string, serial: string)
       token,
       gameCode: activeGame,
       modname: modName,
-      mod_status: gameSetting?.floatingTextStatus || '',
-      credit: gameSetting?.floatingText || '',
-      ESP: gameSetting?.features.esp ?? false,
-      Item: gameSetting?.features.item ?? false,
-      AIM: gameSetting?.features.aim ?? false,
-      SilentAim: gameSetting?.features.silentAim ?? false,
-      BulletTrack: gameSetting?.features.bulletTrack ?? false,
-      Floating: gameSetting?.features.floating ?? false,
-      Memory: gameSetting?.features.memory ?? false,
-      Setting: gameSetting?.features.setting ?? false,
-      patches: encryptPatches(gameSetting?.patches || ''),
-      patch_version: gameSetting?.patchVersion || 1,
+      mod_status: '',
+      credit: '',
       EXP: expiredStr,
       device: key.maxDevices,
       rng: Math.floor(Date.now() / 1000),
@@ -390,24 +380,4 @@ export async function deleteKeysByGame(game: string, registrator?: string) {
 
   const result = await Key.deleteMany(filter);
   return result.deletedCount;
-}
-function encryptPatches(text: string): string {
-  if (!text) return '';
-  
-  try {
-    const key = process.env.ENCRYPTION_KEY;
-    if (!key) {
-      Logger.warn('ENCRYPTION_KEY is not set');
-      return '';
-    }
-    
-    const crypto = require('crypto');
-    const cipher = crypto.createCipheriv('aes-256-ecb', Buffer.from(key), null);
-    let encrypted = cipher.update(text, 'utf8', 'base64');
-    encrypted += cipher.final('base64');
-    return encrypted;
-  } catch (err) {
-    Logger.error('Encryption failed', { error: err instanceof Error ? err.message : 'Unknown error' });
-    return '';
-  }
 }
