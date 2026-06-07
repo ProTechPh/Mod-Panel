@@ -23,7 +23,7 @@ export function ParticleField() {
     if (!ctx) return;
 
     let animId: number;
-    let particles: Particle[] = [];
+    const particles: Particle[] = [];
     let mouseX = -1000;
     let mouseY = -1000;
 
@@ -86,7 +86,6 @@ export function ParticleField() {
         ctx.fillStyle = `hsla(${p.hue}, 70%, ${isDark() ? '60%' : '40%'}, ${alpha})`;
         ctx.fill();
 
-        // Glow
         if (size > 1.5) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, size * 2.5, 0, Math.PI * 2);
@@ -94,7 +93,6 @@ export function ParticleField() {
           ctx.fill();
         }
 
-        // Connections
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const cdx = p.x - p2.x;

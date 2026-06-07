@@ -1,65 +1,68 @@
 'use client';
 
-import { useRef } from 'react';
 import Link from 'next/link';
-import { useGSAP } from '@gsap/react';
-import { gsap, ScrollTrigger } from '@/hooks/useGsapScroll';
+import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants/app';
-import { KeyRound } from 'lucide-react';
+import { Send } from 'lucide-react';
 import '@/components/landing/landing.css';
 
-gsap.registerPlugin(ScrollTrigger);
-
 export function Footer() {
-  const footerRef = useRef<HTMLElement>(null);
-
-  useGSAP(() => {
-    const footer = footerRef.current;
-    if (!footer) return;
-
-    gsap.fromTo(footer,
-      { y: 20, opacity: 0 },
-      {
-        y: 0, opacity: 1, duration: 0.5, ease: 'power2.out',
-        scrollTrigger: {
-          trigger: footer,
-          start: 'top 90%',
-          toggleActions: 'play none none none',
-        },
-      }
-    );
-  }, { scope: footerRef });
+  const year = new Date().getFullYear();
 
   return (
-    <footer
-      ref={footerRef}
-      className="relative py-12 px-4"
-      style={{ borderTop: '1px solid var(--glass-border)' }}
-    >
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <KeyRound className="size-5 text-emerald-500" />
-          <p className="text-sm" style={{ color: 'var(--landing-text-subtle)' }}>
-            &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+    <footer className="gs-footer">
+      <div className="footer-grid">
+        <div>
+          <div className="footer-brand">
+            <Image
+              src="/logo.jpg"
+              alt={APP_NAME}
+              width={32}
+              height={32}
+              unoptimized
+              className="nav-brand-logo"
+            />
+            <span className="footer-brand-text">{APP_NAME}</span>
+          </div>
+          <p className="footer-tag">
+            Undetectable game mods. Instant key delivery. 24/7 uptime. Dominate every match with our elite mod suite.
           </p>
         </div>
 
-        <nav className="flex items-center gap-6 text-sm" style={{ color: 'var(--landing-text-subtle)' }}>
-          <Link href="/login" className="hover:text-foreground transition-colors">
-            Login
-          </Link>
-          <Link href="/register" className="hover:text-foreground transition-colors">
-            Register
-          </Link>
+        <div>
+          <div className="footer-col-title">Store</div>
+          <Link href="/register" className="footer-link">Get Started</Link>
+          <Link href="/login" className="footer-link">Sign In</Link>
+          <a href="#downloads" className="footer-link">Downloads</a>
+          <a href="#features" className="footer-link">Modules</a>
+        </div>
+
+        <div>
+          <div className="footer-col-title">Resources</div>
+          <a href="#how-it-works" className="footer-link">Quick Start</a>
+          <a href="#status" className="footer-link">System Status</a>
+          <a href="#streamers" className="footer-link">Streamers</a>
           <a
             href="https://t.me/CanKillYouForever"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
+            className="footer-link"
           >
-            Telegram
+            <Send size={12} /> Telegram
           </a>
-        </nav>
+        </div>
+
+        <div>
+          <div className="footer-col-title">Legal</div>
+          <Link href="/store-terms" className="footer-link">Terms of Service</Link>
+          <a href="#privacy" className="footer-link">Privacy Policy</a>
+          <a href="#refund" className="footer-link">Refund Policy</a>
+        </div>
+      </div>
+
+      <div className="footer-bottom">
+        <span>© {year} {APP_NAME} · All rights reserved</span>
+        <span>Build <span className="version">v3.2</span> · Operational</span>
       </div>
     </footer>
   );

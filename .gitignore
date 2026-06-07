@@ -43,5 +43,4 @@ next-env.d.ts
 .fuse_*
 .logs/*
 
-# Android projects
-/ZENXVELD V1 (SYNTHETIC)/
+dashboard.php
