@@ -14,7 +14,6 @@ import { ActivityFeed } from './ActivityFeed';
 import { GrainOverlay } from './GrainOverlay';
 import { GradientOrbs } from './GradientOrbs';
 import { SparkleCanvas } from './SparkleCanvas';
-import { TikTokLiveSection } from './TikTokLiveSection';
 import '@/components/landing/landing.css';
 
 interface StatusData {
@@ -80,7 +79,6 @@ export default function LandingPage() {
             <Features />
             <HowItWorks />
             <DownloadSection />
-            <TikTokLiveSection />
           </div>
 
           <div className="right-col">
