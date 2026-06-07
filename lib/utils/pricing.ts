@@ -5,13 +5,15 @@ const PRICES: Record<string, number> = {
   '60': 60, '90': 90,
   '1h': 0.5,
   '3h': 0.75,
+  'lifetime': 0,
 };
 
 export function getPrice(duration: Duration, count: number, maxDevices: number): number | false {
   const key = String(duration);
-  const pricePer = PRICES[key] ?? 0;
+  if (!(key in PRICES)) return false;
+  const pricePer = PRICES[key];
   const result = pricePer * count * maxDevices;
-  return result > 0 ? result : false;
+  return result;
 }
 
 export function deductSaldo(currentSaldo: number, amount: number): number | false {

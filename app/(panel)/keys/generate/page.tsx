@@ -15,6 +15,7 @@ const DURATIONS = [
   { value: '1h', label: '1 Hour' }, { value: '3h', label: '3 Hours' },
   { value: '1', label: '1 Day' }, { value: '3', label: '3 Days' }, { value: '7', label: '7 Days' },
   { value: '14', label: '14 Days' }, { value: '30', label: '30 Days' }, { value: '60', label: '60 Days' }, { value: '90', label: '90 Days' },
+  { value: 'lifetime', label: 'Lifetime' },
 ];
 interface GameOption { gameCode: string; gameName: string; registrator: string; }
 interface KeyGenForm { game: string; duration: string; maxDevices: number; count: number; }
