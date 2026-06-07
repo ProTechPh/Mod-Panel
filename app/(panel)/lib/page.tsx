@@ -7,8 +7,10 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Upload, Trash2, Download, Link, Code, X, Copy, Check, Pencil, Save, Sparkles, History } from 'lucide-react';
+import { Upload, Trash2, Download, Link as LinkIcon, Code, X, Copy, Check, Pencil, Save, History, Library, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 
 interface Lib {
   _id: string;
@@ -48,59 +50,70 @@ function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
   const snippet = generateSnippet(lib, origin);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(snippet);
+    void navigator.clipboard.writeText(snippet);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-2xl rounded-xl border border-border/50 bg-card shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(2, 6, 8, 0.7)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl rounded-2xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(20, 184, 184, 0.1)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-2">
-            <Code className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm">Java Snippet</span>
-            <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{lib.fileName}</span>
+            <FileCode className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+            <span className="font-display font-bold text-sm" style={{ color: 'var(--text-hi)' }}>Java Snippet</span>
+            <span className="key-chip">{lib.fileName}</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-            <X className="h-4 w-4" />
-          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
 
-        {/* Info */}
-        <div className="px-5 pt-4 pb-2">
-          <p className="text-xs text-muted-foreground mb-3">
-            Dynamic na kino-fetch ng <code className="bg-muted px-1 rounded">MainActivity</code> ang libs mula sa <code className="bg-muted px-1 rounded">/api/libs/list?uploadedBy=WINTER</code>.
-            Hindi na kailangan ng hardcoded snippet — i-upload mo lang ang lib at automatic na lalabas sa app.
+        <div className="px-5 pt-4 pb-2 space-y-3">
+          <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+            Dynamic na kino-fetch ng <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>MainActivity</code> ang libs mula sa <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>/api/libs/list?uploadedBy=WINTER</code>.
           </p>
-
-          {/* Info */}
-          <div className="mb-3 rounded-lg bg-muted/50 border border-border/30 px-3 py-2 space-y-1">
-            <p className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">Display name:</span> {lib.displayName}
+          <div
+            className="rounded-lg px-3 py-2.5 space-y-1"
+            style={{ background: 'rgba(2, 6, 8, 0.4)', border: '1px solid var(--border)' }}
+          >
+            <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+              <span className="font-medium" style={{ color: 'var(--text-hi)' }}>Display name:</span> {lib.displayName}
             </p>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">File name:</span> {lib.fileName}
+            <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+              <span className="font-medium" style={{ color: 'var(--text-hi)' }}>File name:</span> {lib.fileName}
             </p>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-foreground font-medium">Uploaded by:</span> {lib.uploadedBy}
+            <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+              <span className="font-medium" style={{ color: 'var(--text-hi)' }}>Uploaded by:</span> {lib.uploadedBy}
             </p>
           </div>
         </div>
 
-        {/* Code block */}
         <div className="relative mx-5 mb-5">
-          <pre className="overflow-x-auto rounded-lg bg-[#0d0d1a] border border-border/30 p-4 text-xs font-mono text-green-400 max-h-72">
+          <pre
+            className="overflow-x-auto rounded-lg p-4 text-xs font-mono max-h-72"
+            style={{
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid var(--border)',
+              color: 'var(--ecto-green)',
+              fontFamily: 'var(--ff-mono)',
+            }}
+          >
             {snippet}
           </pre>
           <Button
             size="sm"
             variant="outline"
             onClick={handleCopy}
-            className="absolute top-2 right-2 h-7 gap-1.5 text-xs"
+            className="absolute top-2 right-2"
           >
-            {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            {copied ? <Check className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3 w-3" />}
             {copied ? 'Copied!' : 'Copy'}
           </Button>
         </div>
@@ -114,41 +127,73 @@ function LogsModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/libs/logs?libId=${lib._id}`)
-      .then(r => r.json())
-      .then(d => { setLogs(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
+    let cancelled = false;
+    void (async () => {
+      try {
+        const r = await fetch(`/api/libs/logs?libId=${lib._id}`);
+        const d = await r.json();
+        if (!cancelled) {
+          setLogs(Array.isArray(d) ? d : []);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [lib._id]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-3xl max-h-[80vh] rounded-xl border border-border/50 bg-card shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 shrink-0">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(2, 6, 8, 0.7)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-3xl max-h-[80vh] rounded-2xl overflow-hidden flex flex-col"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(20, 184, 184, 0.1)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm">Download Logs</span>
-            <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{lib.fileName}</span>
+            <History className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+            <span className="font-display font-bold text-sm" style={{ color: 'var(--text-hi)' }}>Download Logs</span>
+            <span className="key-chip">{lib.fileName}</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-            <X className="h-4 w-4" />
-          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
         <div className="overflow-y-auto p-5">
           {loading ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+            <div className="flex items-center justify-center gap-2 py-8 font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+              <span className="inline-block size-2 rounded-full animate-pulse" style={{ background: 'var(--teal-2)' }} />
+              Loading logs…
+            </div>
           ) : logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No download logs yet</p>
+            <div className="empty-state">
+              <div className="empty-icon-ring"><History size={26} /></div>
+              <div className="empty-title">No Logs Yet</div>
+              <div className="empty-sub">Download activity will appear here once users fetch the file.</div>
+            </div>
           ) : (
             <div className="space-y-2">
               {logs.map(log => (
-                <div key={log._id} className="rounded-lg border border-border/30 bg-muted/30 px-4 py-3 text-xs space-y-1">
+                <div
+                  key={log._id}
+                  className="rounded-lg px-4 py-3 text-xs space-y-1.5"
+                  style={{ border: '1px solid var(--border)', background: 'rgba(20, 184, 184, 0.04)' }}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-foreground">{log.ipAddress}</span>
-                    <span className="text-muted-foreground">{new Date(log.downloadedAt).toLocaleString()}</span>
+                    <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{log.ipAddress}</span>
+                    <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{new Date(log.downloadedAt).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">{log.device || 'Unknown'}</span>
-                    <span className="text-muted-foreground truncate">{log.userAgent}</span>
+                    <span
+                      className="rounded font-medium"
+                      style={{ background: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-3)', padding: '0.1rem 0.5rem', fontSize: '0.65rem' }}
+                    >
+                      {log.device || 'Unknown'}
+                    </span>
+                    <span className="truncate" style={{ color: 'var(--text-mid)' }}>{log.userAgent}</span>
                   </div>
                 </div>
               ))}
@@ -174,17 +219,17 @@ export default function LibPage() {
   const [editType, setEditType] = useState<'free' | 'paid'>('free');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchLibs = async () => {
-    try {
-      const res = await fetch('/api/libs');
-      const data = await res.json();
-      setLibs(Array.isArray(data) ? data : []);
-    } catch {
-      toast.error('Failed to load libraries');
-    }
-  };
-
-  useEffect(() => { fetchLibs(); }, []);
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/libs');
+        const data = await res.json();
+        setLibs(Array.isArray(data) ? data : []);
+      } catch {
+        toast.error('Failed to load libraries');
+      }
+    })();
+  }, []);
 
   if (user?.level !== 1 && user?.level !== 2) return <p className="text-muted-foreground">Access denied</p>;
 
@@ -224,7 +269,9 @@ export default function LibPage() {
       }
       setUploadProgress(100);
       toast.success('File uploaded successfully');
-      fetchLibs();
+      const r = await fetch('/api/libs');
+      const d = await r.json();
+      setLibs(Array.isArray(d) ? d : []);
     } catch {
       toast.error('Upload failed');
     } finally {
@@ -247,7 +294,9 @@ export default function LibPage() {
       if (!res.ok) { toast.error('Update failed'); return; }
       toast.success('Library updated');
       setEditingId(null);
-      fetchLibs();
+      const r = await fetch('/api/libs');
+      const d = await r.json();
+      setLibs(Array.isArray(d) ? d : []);
     } catch {
       toast.error('Update failed');
     }
@@ -258,7 +307,9 @@ export default function LibPage() {
     const res = await fetch(`/api/libs?id=${id}`, { method: 'DELETE' });
     if (res.ok) {
       toast.success('File deleted');
-      fetchLibs();
+      const r = await fetch('/api/libs');
+      const d = await r.json();
+      setLibs(Array.isArray(d) ? d : []);
     } else {
       toast.error('Delete failed');
     }
@@ -270,46 +321,52 @@ export default function LibPage() {
       {logsLib && <LogsModal lib={logsLib} onClose={() => setLogsLib(null)} />}
 
       <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Library</h2>
-              <Sparkles className="h-4 w-4 text-purple-400" />
-            </div>
+        <PageHeader
+          eyebrow="Library / Binaries"
+          title="LIB"
+          highlight="ARCHIVE"
+          sub="Upload, version, and distribute game binaries and mod libraries."
+          actions={
             <div className="flex items-center gap-2">
               <select
                 value={uploadType}
                 onChange={e => setUploadType(e.target.value as 'free' | 'paid')}
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+                className="h-8 rounded-md border bg-transparent px-3 text-xs outline-none font-mono uppercase tracking-wider"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
               >
                 <option value="free">FREE</option>
                 <option value="paid">PAID</option>
               </select>
               <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload" />
-              <label htmlFor="lib-upload" className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer", uploading && "pointer-events-none opacity-50")}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  {uploading ? 'Uploading...' : 'Upload .so'}
+              <label
+                htmlFor="lib-upload"
+                className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer", uploading && "pointer-events-none opacity-50")}
+              >
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                {uploading ? 'Uploading…' : 'Upload .so'}
               </label>
             </div>
-          </div>
+          }
+        />
 
         {uploading && (
-          <div className="space-y-2 rounded-lg border border-purple-500/20 bg-background/60 backdrop-blur-sm p-4">
+          <div
+            className="space-y-2 rounded-xl p-4 fade-up"
+            style={{ border: '1px solid var(--border)', background: 'rgba(20, 184, 184, 0.04)' }}
+          >
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate max-w-[200px] font-mono">{uploadFileName}</span>
-              <span className="text-foreground font-medium tabular-nums">{uploadProgress}%</span>
+              <span className="font-mono truncate max-w-[260px]" style={{ color: 'var(--text-mid)' }}>{uploadFileName}</span>
+              <span className="font-display font-bold tabular-nums" style={{ color: 'var(--teal-2)' }}>{uploadProgress}%</span>
             </div>
             <Progress value={uploadProgress} />
-            <p className="text-xs text-muted-foreground">
-              {uploadProgress < 95 ? 'Uploading chunks...' : uploadProgress < 100 ? 'Finalizing upload...' : 'Done!'}
+            <p className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+              {uploadProgress < 95 ? '// uploading chunks…' : uploadProgress < 100 ? '// finalizing upload…' : '// done'}
             </p>
           </div>
         )}
 
-        <div className="relative group">
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-          <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-            <CardContent className="p-0">
+        <Card className="fade-up d1 overflow-hidden">
+          <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -323,78 +380,88 @@ export default function LibPage() {
               </TableHeader>
               <TableBody>
                 {libs.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No files</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      <Library className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                      <div className="font-mono text-xs uppercase tracking-widest">No libraries in archive</div>
+                    </TableCell>
+                  </TableRow>
                 ) : libs.map(lib => (
                   <TableRow key={lib._id}>
-                    <TableCell className="font-mono">
+                    <TableCell>
                       {editingId === lib._id ? (
                         <div className="flex items-center gap-1">
                           <input
                             type="text"
                             value={editValue}
                             onChange={e => setEditValue(e.target.value)}
-                            className="h-7 w-40 rounded border border-border bg-background px-2 text-xs font-mono outline-none focus:border-primary"
+                            className="h-7 w-40 rounded border bg-transparent px-2 text-xs font-mono outline-none"
+                            style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
                             autoFocus
                             onKeyDown={e => {
-                              if (e.key === 'Enter') handleUpdate(lib._id, editValue, editType);
+                              if (e.key === 'Enter') void handleUpdate(lib._id, editValue, editType);
                               if (e.key === 'Escape') setEditingId(null);
                             }}
                           />
                           <select
                             value={editType}
                             onChange={e => setEditType(e.target.value as 'free' | 'paid')}
-                            className="h-7 rounded border border-border bg-background px-1 text-xs outline-none focus:border-primary"
+                            className="h-7 rounded border bg-transparent px-1 text-xs outline-none font-mono"
+                            style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
                           >
                             <option value="free">FREE</option>
                             <option value="paid">PAID</option>
                           </select>
-                          <Button variant="ghost" size="sm" onClick={() => handleUpdate(lib._id, editValue, editType)} className="h-7 w-7">
-                            <Save className="h-3 w-3 text-green-500" />
+                          <Button variant="ghost" size="icon-sm" onClick={() => void handleUpdate(lib._id, editValue, editType)}>
+                            <Save className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} />
                           </Button>
                         </div>
                       ) : (
-                        <span className="cursor-default">{lib.displayName || lib.fileName}</span>
+                        <div className="flex items-center gap-2">
+                          <FileCode className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
+                          <span className="font-mono">{lib.displayName || lib.fileName}</span>
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className={cn(
-                        "inline-block rounded px-2 py-0.5 text-[11px] font-semibold leading-none",
-                        lib.type === 'paid'
-                          ? "bg-amber-500/15 text-amber-500"
-                          : "bg-emerald-500/15 text-emerald-500"
-                      )}>
-                        {lib.type === 'paid' ? 'PAID' : 'FREE'}
-                      </span>
+                      {lib.type === 'paid'
+                        ? <StatusBadge status="warning">Paid</StatusBadge>
+                        : <StatusBadge status="success">Free</StatusBadge>}
                     </TableCell>
-                    <TableCell>{lib.fileSize}</TableCell>
-                    <TableCell>{lib.uploadedBy}</TableCell>
-                    <TableCell className="text-xs">{lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : ''}</TableCell>
+                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.fileSize}</TableCell>
+                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.uploadedBy}</TableCell>
+                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                      {lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : '—'}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
-                        {/* Download Logs */}
-                        <Button variant="ghost" size="sm" onClick={() => setLogsLib(lib)} title="Download Logs">
-                          <History className="h-3 w-3 text-muted-foreground" />
+                        <Button variant="ghost" size="icon-sm" onClick={() => setLogsLib(lib)} title="Download Logs">
+                          <History className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
                         </Button>
-                        {/* Edit display name */}
                         <Button
-                          variant="ghost" size="sm"
+                          variant="ghost" size="icon-sm"
                           onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); setEditType((lib.type || 'free') as 'free' | 'paid'); }}
                           title="Edit"
                         >
-                          <Pencil className="h-3 w-3 text-muted-foreground" />
+                          <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
                         </Button>
-                        {/* Java Snippet button */}
-                        <Button variant="ghost" size="sm" onClick={() => setSnippetLib(lib)} title="Get Java Snippet">
-                          <Code className="h-3 w-3 text-primary" />
+                        <Button variant="ghost" size="icon-sm" onClick={() => setSnippetLib(lib)} title="Get Java Snippet">
+                          <Code className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}>
-                          <Link className="h-3 w-3" />
+                        <Button
+                          variant="ghost" size="icon-sm"
+                          onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}
+                          title="Copy link"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5" />
                         </Button>
                         <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
-                          <Button variant="ghost" size="sm"><Download className="h-3 w-3" /></Button>
+                          <Button variant="ghost" size="icon-sm" title="Download">
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
                         </a>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(lib._id)}>
-                          <Trash2 className="h-3 w-3 text-destructive" />
+                        <Button variant="ghost" size="icon-sm" onClick={() => void handleDelete(lib._id)} title="Delete">
+                          <Trash2 className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} />
                         </Button>
                       </div>
                     </TableCell>
@@ -404,7 +471,6 @@ export default function LibPage() {
             </Table>
           </CardContent>
         </Card>
-        </div>
       </div>
     </>
   );

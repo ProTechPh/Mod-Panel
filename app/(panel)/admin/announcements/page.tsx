@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, Megaphone, Pencil, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Megaphone, Pencil, User, Calendar, Hash, Pin, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 
 interface Announcement { _id: string; title: string; content: string; isActive: boolean; priority: number; createdBy: string; createdAt: string; }
 
@@ -22,72 +23,138 @@ export default function AnnouncementsPage() {
   const [editing, setEditing] = useState<Announcement | null>(null);
   const [form, setForm] = useState({ title: '', content: '', isActive: true, priority: 0 });
 
-  const load = async () => { const res = await fetch('/api/admin/announcements'); if (res.ok) setAnnouncements(await res.json()); };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/admin/announcements');
+        if (res.ok) setAnnouncements(await res.json());
+      } catch {}
+    })();
+  }, []);
 
   const openNew = () => { setEditing(null); setForm({ title: '', content: '', isActive: true, priority: 0 }); setDialogOpen(true); };
   const openEdit = (a: Announcement) => { setEditing(a); setForm({ title: a.title, content: a.content, isActive: a.isActive, priority: a.priority }); setDialogOpen(true); };
   const save = async () => {
-    const body: any = { ...form }; if (editing) body._id = editing._id;
+    const body: Record<string, unknown> = { ...form };
+    if (editing) body._id = editing._id;
     const res = await fetch('/api/admin/announcements', { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); load(); } else { const err = await res.json(); toast.error(err.error || 'Failed'); }
+    if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); void load(); } else { const err = await res.json(); toast.error(err.error || 'Failed'); }
   };
-  const remove = async (id: string) => { if (!confirm('Delete this announcement?')) return; await fetch(`/api/admin/announcements?id=${id}`, { method: 'DELETE' }); toast.success('Deleted'); load(); };
+  const load = async () => { try { const res = await fetch('/api/admin/announcements'); if (res.ok) setAnnouncements(await res.json()); } catch {} };
+  const remove = async (id: string) => {
+    if (!confirm('Delete this announcement?')) return;
+    await fetch(`/api/admin/announcements?id=${id}`, { method: 'DELETE' });
+    toast.success('Deleted');
+    void load();
+  };
 
   if (!user || user.level !== 1) return <p className="text-muted-foreground">Unauthorized</p>;
 
-  const gc = "relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden";
-  const gh = "absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30";
-  const gw = (c: React.ReactNode) => <div className="relative group"><div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />{c}</div>;
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Announcements</h2>
-          <Sparkles className="h-4 w-4 text-purple-400" />
-        </div>
-        <Button onClick={openNew} className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25"><Plus className="h-4 w-4 mr-2" />Add Announcement</Button>
-      </div>
+      <PageHeader
+        eyebrow="Broadcast / Comms"
+        title="ANNOUNCEMENT"
+        highlight="BOARD"
+        sub="Post platform-wide messages and pin priority notices for all operators."
+        actions={
+          <Button onClick={openNew}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Announcement
+          </Button>
+        }
+      />
 
       <div className="grid gap-3">
-        {announcements.map(a => gw(
-          <Card key={a._id} className={gc}>
-            <div className={gh} />
+        {announcements.length === 0 ? (
+          <Card>
+            <CardContent className="empty-state">
+              <div className="empty-icon-ring"><Megaphone size={26} /></div>
+              <div className="empty-title">No Announcements</div>
+              <div className="empty-sub">Post your first broadcast to notify all operators.</div>
+            </CardContent>
+          </Card>
+        ) : announcements.map(a => (
+          <Card key={a._id} className="fade-up">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-1.5 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="font-medium">{a.title}</span>
-                    {!a.isActive && <Badge variant="outline" className="text-xs">Hidden</Badge>}
-                    {a.priority > 0 && <Badge className="text-xs">Priority {a.priority}</Badge>}
+                <div className="flex-1 space-y-1.5 text-sm min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Megaphone className="h-4 w-4 shrink-0" style={{ color: a.isActive ? 'var(--teal-2)' : 'var(--text-lo)' }} />
+                    <span className="font-display font-bold tracking-wide" style={{ color: 'var(--text-hi)' }}>{a.title}</span>
+                    {!a.isActive && <StatusBadge status="neutral">Hidden</StatusBadge>}
+                    {a.priority > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 font-mono font-semibold"
+                        style={{
+                          background: 'rgba(240, 192, 64, 0.1)',
+                          color: 'var(--gold)',
+                          border: '1px solid rgba(240, 192, 64, 0.3)',
+                          fontSize: '0.6rem',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '50px',
+                        }}
+                      >
+                        <Pin className="h-2.5 w-2.5" /> P{a.priority}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{a.content}</p>
-                  <p className="text-xs text-muted-foreground">by {a.createdBy} &middot; {new Date(a.createdAt).toLocaleDateString()}</p>
+                  <p className="whitespace-pre-wrap" style={{ color: 'var(--text-mid)' }}>{a.content}</p>
+                  <div className="flex items-center gap-3 pt-1">
+                    <span className="flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                      <User className="h-3 w-3" /> {a.createdBy}
+                    </span>
+                    <span className="flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                      <Calendar className="h-3 w-3" /> {new Date(a.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(a)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => remove(a._id)} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => openEdit(a)} title="Edit">
+                    <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--teal-3)' }} />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => void remove(a._id)} title="Delete">
+                    <Trash2 className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} />
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
-        {announcements.length === 0 && <p className="text-muted-foreground text-center py-8">No announcements yet.</p>}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg border-border/30 bg-background/95 backdrop-blur-xl">
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editing ? 'Edit Announcement' : 'Add Announcement'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Announcement title" className="bg-background/60 border-border/50" /></div>
-            <div><Label>Content *</Label><Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write your announcement..." rows={4} className="bg-background/60 border-border/50" /></div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2"><Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} /><Label>Active</Label></div>
-              <div className="flex items-center gap-2"><Label>Priority</Label><Input type="number" className="w-20 bg-background/60 border-border/50" value={form.priority} onChange={e => setForm({ ...form, priority: parseInt(e.target.value) || 0 })} /></div>
+            <div>
+              <Label className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
+                <Megaphone className="h-3 w-3" style={{ color: 'var(--teal-2)' }} /> Title *
+              </Label>
+              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="// e.g. Scheduled maintenance window" className="mt-1.5" />
             </div>
-            <Button onClick={save} className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">{editing ? 'Update' : 'Create'}</Button>
+            <div>
+              <Label className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
+                Content *
+              </Label>
+              <Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write your announcement…" rows={4} className="mt-1.5" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} />
+                <Label className="flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--text-mid)' }}>
+                  {form.isActive ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} Active
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label className="flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--text-mid)' }}>
+                  <Hash className="h-3 w-3" style={{ color: 'var(--gold)' }} /> Priority
+                </Label>
+                <Input type="number" className="w-20" value={form.priority} onChange={e => setForm({ ...form, priority: parseInt(e.target.value) || 0 })} />
+              </div>
+            </div>
+            <Button onClick={save} className="w-full">{editing ? 'Update' : 'Create'}</Button>
           </div>
         </DialogContent>
       </Dialog>

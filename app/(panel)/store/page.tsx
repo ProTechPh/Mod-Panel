@@ -15,9 +15,11 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
 import {
   ShoppingCart, Plus, Trash2, Pencil, Copy, Check, CheckCircle2,
-  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download, Sparkles,
+  Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download,
 } from 'lucide-react';
 import type { Duration } from '@/types';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 
 type Tab = 'setup' | 'products' | 'orders';
 
@@ -66,16 +68,16 @@ function durationLabel(d: Duration) {
 }
 
 function statusBadge(status: string) {
-  const map: Record<string, string> = {
-    paid: 'bg-green-500/15 text-green-400 border-green-500/30',
-    pending: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    failed: 'bg-destructive/15 text-destructive border-destructive/30',
-    expired: 'bg-muted text-muted-foreground',
+  const map: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
+    paid: 'success',
+    pending: 'warning',
+    failed: 'danger',
+    expired: 'neutral',
   };
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${map[status] ?? map.expired}`}>
+    <StatusBadge status={map[status] ?? 'neutral'}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -300,30 +302,36 @@ export default function StorePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Store</h2>
-          <Sparkles className="h-4 w-4 text-purple-400" />
-        </div>
-        {store && (
+      <PageHeader
+        eyebrow="Public Storefront"
+        title="STORE"
+        highlight="MANAGER"
+        sub="Branding, products, and live orders for your public store."
+        actions={store && (
           <Button variant="outline" size="sm" onClick={copyStoreLink} className="gap-1.5">
-            {copiedLink ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+            {copiedLink ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
             Copy Store Link
           </Button>
         )}
-      </div>
+      />
 
       {/* Tab bar */}
-      <div className="flex rounded-lg border border-border/50 overflow-hidden w-fit">
+      <div className="flex rounded-lg border overflow-hidden w-fit" style={{ borderColor: 'var(--border)' }}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.id
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-            }`}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
+            style={{
+              fontFamily: 'var(--ff-mono)',
+              fontSize: '0.7rem',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              background: tab === t.id ? 'rgba(20, 184, 184, 0.12)' : 'transparent',
+              color: tab === t.id ? 'var(--teal-3)' : 'var(--text-mid)',
+              borderRight: '1px solid var(--border)',
+              boxShadow: tab === t.id ? 'inset 0 0 0 1px rgba(20, 184, 184, 0.35), 0 0 14px rgba(20, 184, 184, 0.2)' : 'none',
+            }}
           >
             {t.icon}
             {t.label}
@@ -334,16 +342,13 @@ export default function StorePage() {
       {/* ── SETUP TAB ─────────────────────────────────────────── */}
       {tab === 'setup' && (
         <div className="space-y-4 max-w-xl">
-          <div className="relative group">
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-            <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4 text-primary" />
-                  Store Branding
-                </CardTitle>
-              </CardHeader>
+          <Card className="fade-up d1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+                Store Branding
+              </CardTitle>
+            </CardHeader>
               <CardContent className="space-y-4">
                 {storeLoading ? (
                   <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
@@ -375,7 +380,7 @@ export default function StorePage() {
                       />
                       <Label>Store Active (visible to buyers)</Label>
                     </div>
-                    <Button onClick={saveStore} disabled={storeSaving} className="gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
+                    <Button onClick={saveStore} disabled={storeSaving} className="gap-2">
                       {storeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                       Save Store Settings
                     </Button>
@@ -395,7 +400,6 @@ export default function StorePage() {
                 )}
               </CardContent>
             </Card>
-          </div>
         </div>
       )}
 
@@ -406,7 +410,7 @@ export default function StorePage() {
             <p className="text-sm text-muted-foreground">{products.length} product{products.length !== 1 ? 's' : ''}</p>
             <Dialog open={productDialog} onOpenChange={setProductDialog}>
               <DialogTrigger render={
-                <Button size="sm" onClick={openAddProduct} className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25"><Plus className="h-4 w-4 mr-1" />Add Product</Button>
+                <Button size="sm" onClick={openAddProduct}><Plus className="h-4 w-4 mr-1" />Add Product</Button>
               } />
               <DialogContent className="max-w-sm border-border/30 bg-background/95 backdrop-blur-xl">
                 <DialogHeader>
@@ -482,7 +486,7 @@ export default function StorePage() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">Minimum price is ₱20 (payment processor requirement)</p>
-                  <Button onClick={saveProduct} disabled={productSaving} className="w-full gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white shadow-lg shadow-purple-500/25">
+                  <Button onClick={saveProduct} disabled={productSaving} className="w-full gap-2">
                     {productSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     {editProduct ? 'Save Changes' : 'Add Product'}
                   </Button>
@@ -492,23 +496,16 @@ export default function StorePage() {
           </div>
 
           {products.length === 0 ? (
-            <div className="relative group">
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <Card className="fade-up d1">
                 <CardContent className="py-12 text-center">
                   <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-muted-foreground">No products yet. Add your first product above.</p>
                 </CardContent>
               </Card>
-            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {products.map(p => (
-                <div key={p._id} className="relative group">
-                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                  <Card className={`relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden ${!p.isActive ? 'opacity-60' : ''}`}>
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                <Card key={p._id} className={`fade-up ${!p.isActive ? 'opacity-60' : ''}`}>
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -538,7 +535,6 @@ export default function StorePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
               ))}
             </div>
           )}
@@ -555,62 +551,94 @@ export default function StorePage() {
             const convRate = orders.length > 0 ? Math.round((paid.length / orders.length) * 100) : 0;
             return (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="relative group">
-                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">Total Revenue</p>
-                          <PhilippinePeso className="h-3.5 w-3.5 text-primary" />
-                        </div>
-                        <p className="text-2xl font-bold text-primary">₱{revenue.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</p>
-                      </CardContent>
-                    </Card>
+                <div className="stat-row fade-up d1" style={{ marginBottom: 0, gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                  <div
+                    className="stat-card panel-corner"
+                    style={
+                      {
+                        '--card-accent': 'var(--teal-2)',
+                        '--icon-bg': 'rgba(20, 184, 184, 0.1)',
+                        '--icon-border': 'rgba(20, 184, 184, 0.2)',
+                        '--icon-glow': 'rgba(20, 184, 184, 0.3)',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="stat-card-inner">
+                      <div>
+                        <div className="stat-val" style={{ color: 'var(--teal-2)' }}>₱{revenue.toLocaleString()}</div>
+                        <div className="stat-lbl">Total Revenue</div>
+                        <div className="stat-delta">{paid.length} paid order{paid.length !== 1 ? 's' : ''}</div>
+                      </div>
+                      <div className="stat-icon-wrap" style={{ color: 'var(--teal-2)' }}>
+                        <PhilippinePeso size={20} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="relative group">
-                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">Total Orders</p>
-                          <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                        <p className="text-2xl font-bold">{orders.length}</p>
-                        <p className="text-xs text-muted-foreground mt-1">All time</p>
-                      </CardContent>
-                    </Card>
+                  <div
+                    className="stat-card panel-corner"
+                    style={
+                      {
+                        '--card-accent': 'var(--ecto-green)',
+                        '--icon-bg': 'rgba(57, 255, 20, 0.08)',
+                        '--icon-border': 'rgba(57, 255, 20, 0.22)',
+                        '--icon-glow': 'rgba(57, 255, 20, 0.3)',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="stat-card-inner">
+                      <div>
+                        <div className="stat-val" style={{ color: 'var(--ecto-green)' }}>{orders.length}</div>
+                        <div className="stat-lbl">Total Orders</div>
+                        <div className="stat-delta">All time</div>
+                      </div>
+                      <div className="stat-icon-wrap" style={{ color: 'var(--ecto-green)' }}>
+                        <ClipboardList size={20} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="relative group">
-                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">Pending</p>
-                          <KeyRound className="h-3.5 w-3.5 text-amber-500" />
-                        </div>
-                        <p className="text-2xl font-bold text-amber-500">{orders.filter(o => o.status === 'pending').length}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Awaiting payment</p>
-                      </CardContent>
-                    </Card>
+                  <div
+                    className="stat-card panel-corner"
+                    style={
+                      {
+                        '--card-accent': 'var(--gold)',
+                        '--icon-bg': 'rgba(240, 192, 64, 0.1)',
+                        '--icon-border': 'rgba(240, 192, 64, 0.22)',
+                        '--icon-glow': 'rgba(240, 192, 64, 0.3)',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="stat-card-inner">
+                      <div>
+                        <div className="stat-val" style={{ color: 'var(--gold)' }}>{orders.filter(o => o.status === 'pending').length}</div>
+                        <div className="stat-lbl">Pending</div>
+                        <div className="stat-delta" style={{ color: 'var(--gold)', opacity: 0.7 }}>Awaiting payment</div>
+                      </div>
+                      <div className="stat-icon-wrap" style={{ color: 'var(--gold)' }}>
+                        <KeyRound size={20} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="relative group">
-                    <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs text-muted-foreground">Conversion</p>
-                          <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                        </div>
-                        <p className="text-2xl font-bold text-green-500">{convRate}%</p>
-                        <p className="text-xs text-muted-foreground mt-1">Paid vs total</p>
-                      </CardContent>
-                    </Card>
+                  <div
+                    className="stat-card panel-corner"
+                    style={
+                      {
+                        '--card-accent': 'var(--teal-3)',
+                        '--icon-bg': 'rgba(94, 234, 212, 0.08)',
+                        '--icon-border': 'rgba(94, 234, 212, 0.22)',
+                        '--icon-glow': 'rgba(94, 234, 212, 0.3)',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="stat-card-inner">
+                      <div>
+                        <div className="stat-val" style={{ color: 'var(--teal-3)' }}>{convRate}<span style={{ fontSize: '1rem', color: 'var(--text-mid)' }}>%</span></div>
+                        <div className="stat-lbl">Conversion</div>
+                        <div className="stat-delta">Paid vs total</div>
+                      </div>
+                      <div className="stat-icon-wrap" style={{ color: 'var(--teal-3)' }}>
+                        <TrendingUp size={20} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -626,10 +654,7 @@ export default function StorePage() {
                   const rows = Object.entries(byRegistrator).sort((a, b) => b[1].revenue - a[1].revenue);
                   if (rows.length <= 1) return null;
                   return (
-                    <div className="relative group">
-                      <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                      <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                    <Card className="fade-up d1">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-primary" />
@@ -665,7 +690,6 @@ export default function StorePage() {
                           </div>
                         </CardContent>
                       </Card>
-                    </div>
                   );
                 })()}
               </>
@@ -675,23 +699,16 @@ export default function StorePage() {
           {ordersLoading ? (
             <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
           ) : orders.length === 0 ? (
-            <div className="relative group">
-              <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+            <Card className="fade-up d1">
                 <CardContent className="py-12 text-center">
                   <ClipboardList className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-muted-foreground">No orders yet.</p>
                 </CardContent>
               </Card>
-            </div>
           ) : (
             orders.map(o => (
               <div key={o._id}>
-                <div className="relative group">
-                  <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                  <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+                <Card className="fade-up d1">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1 flex-1">
@@ -737,7 +754,6 @@ export default function StorePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
 
                 {/* Hidden GCash-style Receipt Template */}
                 <div className="fixed left-[-9999px] top-[-9999px]">

@@ -3,17 +3,21 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Search, Trash2, Edit, Users, Gift, Sparkles } from 'lucide-react';
+import { Search, Trash2, Edit, Users, Gift, Mail, AtSign, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import ReferralsTable from '@/components/shared/ReferralsTable';
 
-interface User { _id: string; username: string; email: string; fullname: string; level: number; saldo: number; status: number; expirationDate: string; telegramId: number | null; telegramUsername: string; }
+interface User {
+  _id: string; username: string; email: string; fullname: string;
+  level: number; saldo: number; status: number; expirationDate: string;
+  telegramId: number | null; telegramUsername: string;
+}
 interface Referral { _id: string; code: string; level: number; setSaldo: number; usedBy: string; createdBy: string; accExpiration: string; }
 type Tab = 'users' | 'referrals';
 
@@ -24,7 +28,27 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [referrals, setReferrals] = useState<Referral[]>([]);
 
-  const fetchUsers = async (searchVal = '') => {
+  useEffect(() => {
+    void (async () => {
+      try {
+        const params = new URLSearchParams({ draw: '1', start: '0', length: '50', 'search[value]': '' });
+        const res = await fetch(`/api/users?${params}`);
+        const data = await res.json();
+        setUsers(data.data || []);
+      } catch {}
+    })();
+    void (async () => {
+      try {
+        const res = await fetch('/api/referrals');
+        const data = await res.json();
+        setReferrals(Array.isArray(data) ? data : []);
+      } catch {}
+    })();
+  }, []);
+
+  if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
+
+  const fetchUsers = async (searchVal: string) => {
     const params = new URLSearchParams({ draw: '1', start: '0', length: '50', 'search[value]': searchVal });
     const res = await fetch(`/api/users?${params}`);
     const data = await res.json();
@@ -35,83 +59,151 @@ export default function UsersPage() {
     const data = await res.json();
     setReferrals(Array.isArray(data) ? data : []);
   };
-  useEffect(() => { fetchUsers(); fetchReferrals(); }, []);
-
-  if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
 
   const handleDeleteUser = async (id: string) => {
     if (!confirm('Delete this user?')) return;
     const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) { toast.success('User deleted'); fetchUsers(search); } else toast.error('Failed to delete');
+    if (res.ok) { toast.success('User deleted'); void fetchUsers(search); } else toast.error('Failed to delete');
   };
   const statusLabel = (s: number) => s === 1 ? 'Active' : s === 2 ? 'Banned' : 'Expired';
+  const statusKind = (s: number): 'active' | 'blocked' | 'warning' => s === 1 ? 'active' : s === 2 ? 'blocked' : 'warning';
   const levelLabel = (l: number) => l === 1 ? 'Owner' : l === 2 ? 'Admin' : 'Reseller';
+  const levelKind = (l: number): 'success' | 'info' | 'neutral' => l === 1 ? 'success' : l === 2 ? 'info' : 'neutral';
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Users & Referrals</h2>
-          <Sparkles className="h-4 w-4 text-purple-400" />
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setTab('users')} className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors', tab === 'users' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg shadow-purple-500/25' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground')}>
-            <Users className="h-4 w-4" /> Users
-          </button>
-          <button onClick={() => setTab('referrals')} className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors', tab === 'referrals' ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg shadow-purple-500/25' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground')}>
-            <Gift className="h-4 w-4" /> Referrals
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="User Management"
+        title="USERS"
+        highlight="REFERRALS"
+        sub="Manage operator accounts, levels, balances, and invite codes."
+        actions={
+          <div
+            className="flex rounded-lg border overflow-hidden"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            <button
+              onClick={() => setTab('users')}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                fontFamily: 'var(--ff-mono)',
+                fontSize: '0.7rem',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                background: tab === 'users' ? 'rgba(20, 184, 184, 0.12)' : 'transparent',
+                color: tab === 'users' ? 'var(--teal-3)' : 'var(--text-mid)',
+                borderRight: '1px solid var(--border)',
+                boxShadow: tab === 'users' ? 'inset 0 0 0 1px rgba(20, 184, 184, 0.35)' : 'none',
+              }}
+            >
+              <Users className="h-3.5 w-3.5" /> Users
+            </button>
+            <button
+              onClick={() => setTab('referrals')}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                fontFamily: 'var(--ff-mono)',
+                fontSize: '0.7rem',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                background: tab === 'referrals' ? 'rgba(20, 184, 184, 0.12)' : 'transparent',
+                color: tab === 'referrals' ? 'var(--teal-3)' : 'var(--text-mid)',
+                boxShadow: tab === 'referrals' ? 'inset 0 0 0 1px rgba(20, 184, 184, 0.35)' : 'none',
+              }}
+            >
+              <Gift className="h-3.5 w-3.5" /> Referrals
+            </button>
+          </div>
+        }
+      />
 
       {tab === 'users' ? (
         <>
           <div className="flex gap-2">
-            <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchUsers(search)} className="max-w-sm bg-background/60 border-border/50" />
-            <Button variant="outline" onClick={() => fetchUsers(search)} className="border-border/50"><Search className="h-4 w-4" /></Button>
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-lo)] pointer-events-none" />
+              <Input
+                placeholder="// search by username, email, fullname…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && void fetchUsers(search)}
+                className="pl-8"
+              />
+            </div>
+            <Button variant="outline" onClick={() => void fetchUsers(search)}>
+              <Search className="h-3.5 w-3.5" />
+            </Button>
           </div>
-          <div className="relative group">
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-            <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
+
+          <Card className="fade-up d1 overflow-hidden">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Level</TableHead>
+                    <TableHead>Saldo</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Telegram</TableHead>
+                    <TableHead>Expires</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.length === 0 ? (
                     <TableRow>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Level</TableHead>
-                      <TableHead>Saldo</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Telegram</TableHead>
-                      <TableHead>Expires</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                        <Users className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                        <div className="font-mono text-xs uppercase tracking-widest">No users in registry</div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map(u => (
-                      <TableRow key={u._id}>
-                        <TableCell>{u.username}</TableCell>
-                        <TableCell className="text-xs">{u.email}</TableCell>
-                        <TableCell><Badge variant="outline">{levelLabel(u.level)}</Badge></TableCell>
-                        <TableCell className="font-mono">${u.saldo?.toFixed(2)}</TableCell>
-                        <TableCell><Badge variant={u.status === 1 ? 'default' : 'destructive'}>{statusLabel(u.status)}</Badge></TableCell>
-                        <TableCell>{u.telegramId ? <Badge variant="default" className="gap-1 bg-blue-600 hover:bg-blue-700">@ {u.telegramUsername || u.telegramId}</Badge> : <Badge variant="secondary" className="text-muted-foreground">Not linked</Badge>}</TableCell>
-                        <TableCell className="text-xs">{u.expirationDate ? new Date(u.expirationDate).toLocaleDateString() : ''}</TableCell>
-                        <TableCell className="text-right"><div className="flex gap-1 justify-end">
-                          <Link href={`/admin/users/${u._id}`}><Button variant="ghost" size="sm"><Edit className="h-3 w-3" /></Button></Link>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(u._id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
-                        </div></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
+                  ) : users.map(u => (
+                    <TableRow key={u._id}>
+                      <TableCell className="font-mono" style={{ color: 'var(--text-hi)' }}>{u.username}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-mid)' }}>
+                          <Mail className="h-3 w-3" style={{ color: 'var(--text-lo)' }} />
+                          {u.email}
+                        </div>
+                      </TableCell>
+                      <TableCell><StatusBadge status={levelKind(u.level)}>{levelLabel(u.level)}</StatusBadge></TableCell>
+                      <TableCell className="font-mono" style={{ color: 'var(--ecto-green)' }}>${u.saldo?.toFixed(2)}</TableCell>
+                      <TableCell><StatusBadge status={statusKind(u.status)} withDot>{statusLabel(u.status)}</StatusBadge></TableCell>
+                      <TableCell>
+                        {u.telegramId
+                          ? <span className="inline-flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--teal-3)' }}>
+                              <AtSign className="h-3 w-3" /> {u.telegramUsername || u.telegramId}
+                            </span>
+                          : <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>Not linked</span>}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-mid)' }}>
+                          {u.expirationDate && <Calendar className="h-3 w-3" style={{ color: 'var(--text-lo)' }} />}
+                          {u.expirationDate ? new Date(u.expirationDate).toLocaleDateString() : '—'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Link href={`/admin/users/${u._id}`}>
+                            <Button variant="ghost" size="icon-sm" title="Edit user">
+                              <Edit className="h-3.5 w-3.5" style={{ color: 'var(--teal-3)' }} />
+                            </Button>
+                          </Link>
+                          <Button variant="ghost" size="icon-sm" onClick={() => void handleDeleteUser(u._id)} title="Delete user">
+                            <Trash2 className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </>
       ) : (
-        <ReferralsTable referrals={referrals} onRefresh={fetchReferrals} />
+        <ReferralsTable referrals={referrals} onRefresh={() => void fetchReferrals()} />
       )}
     </div>
   );
