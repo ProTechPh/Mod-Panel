@@ -147,3 +147,18 @@
   color: var(--teal-2);
   flex-shrink: 0;
 }
+
+
+/* ============================================
+   SPARKLE CANVAS (fixed-position particle bg)
+   ============================================ */
+
+.sparkle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
