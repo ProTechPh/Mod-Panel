@@ -76,6 +76,7 @@ export default function KeysPage() {
   const formatDuration = (d: number | string) => {
     if (d === '1h') return '1 Hour';
     if (d === '3h') return '3 Hours';
+    if (d === 'lifetime') return 'Lifetime';
     return `${d} Day${Number(d) > 1 ? 's' : ''}`;
   };
 
