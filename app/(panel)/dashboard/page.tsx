@@ -5,6 +5,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import {
   Key, CheckCircle, Clock, XCircle, User, Shield, DollarSign,
   TrendingUp, KeyRound, History, Activity, Gamepad2, Sparkles,
+  ArrowUpRight, Zap, Terminal, Activity as Pulse,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -45,9 +46,19 @@ const PIE_COLORS: Record<string, string> = {
   unused: '#6b7280',
 };
 
+function useLiveClock() {
+  const [now, setNow] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return now;
+}
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const now = useLiveClock();
 
   useEffect(() => {
     fetch('/api/analytics')
@@ -92,44 +103,112 @@ export default function DashboardPage() {
       <ExpiryNotificationBanner />
       <Announcements />
 
-      {/* Welcome Banner */}
-      <section className="welcome-banner fade-up">
-        <div className="banner-accent" />
-        <div className="welcome-left">
-          <div className="welcome-greeting">
-            {greeting} · {levelLabel}
-            <span style={{ color: 'var(--text-lo)' }}>· {new Date().toLocaleDateString()}</span>
+      {/* Welcome Banner — Tactical HUD */}
+      <section className="cmd-banner fade-up">
+        <div className="cmd-glow cmd-glow-1" />
+        <div className="cmd-glow cmd-glow-2" />
+        <div className="cmd-grid" />
+        <div className="cmd-corner cmd-corner-tl" />
+        <div className="cmd-corner cmd-corner-tr" />
+        <div className="cmd-corner cmd-corner-bl" />
+        <div className="cmd-corner cmd-corner-br" />
+
+        {/* Top status bar */}
+        <div className="cmd-statusbar">
+          <div className="cmd-status-left">
+            <span className="cmd-pulse" />
+            <span className="cmd-status-text">ALL SYSTEMS NOMINAL</span>
+            <span className="cmd-status-sep">·</span>
+            <span className="cmd-status-text dim">{levelLabel.toUpperCase()} ACCESS</span>
           </div>
-          <h1 className="welcome-name">
-            Welcome back, <span className="highlight">{user?.fullname || user?.username || 'Operator'}</span>
-          </h1>
-          <p className="welcome-sub">
-            Your command centre is live. All systems operational — manage your keys, monitor activity, and watch your store dominate.
-          </p>
-          <div className="welcome-actions">
-            <Link href="/keys/generate" className="btn-primary">
-              <KeyRound size={14} />
-              <span>Generate Keys</span>
-            </Link>
-            <Link href="/keys" className="btn-outline">
-              <History size={14} />
-              <span>View Keys</span>
-            </Link>
+          <div className="cmd-status-right">
+            <Terminal size={11} className="cmd-status-icon" />
+            <span className="cmd-clock">
+              {now.toLocaleTimeString('en-GB')} <span className="cmd-clock-sep">·</span> {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+            </span>
+            <span className="cmd-live-tag">
+              <span className="cmd-live-dot" />
+              LIVE
+            </span>
           </div>
         </div>
 
-        <div className="welcome-metrics">
-          <div className="metric-pill">
-            <span className="metric-val cyan">{active.toLocaleString()}</span>
-            <span className="metric-lbl">Active</span>
+        <div className="cmd-body">
+          {/* Left — welcome */}
+          <div className="cmd-main">
+            <div className="cmd-eyebrow">
+              <span className="cmd-bracket">[</span>
+              <span className="cmd-eyebrow-text">COMMAND CENTRE / OPERATOR</span>
+              <span className="cmd-bracket">]</span>
+            </div>
+            <h1 className="cmd-title">
+              <span className="cmd-title-prefix">Welcome back,</span>
+              <span className="cmd-title-name">{(user?.fullname || user?.username || 'Operator').toUpperCase()}</span>
+            </h1>
+            <p className="cmd-sub">
+              <span className="cmd-sub-tag">{greeting.toUpperCase()}</span>
+              Your command centre is online. Manage your keys, monitor activity, and dominate the market.
+            </p>
+            <div className="cmd-actions">
+              <Link href="/keys/generate" className="cmd-btn cmd-btn-primary">
+                <KeyRound size={14} />
+                <span>Generate Keys</span>
+                <ArrowUpRight size={12} className="cmd-btn-arrow" />
+              </Link>
+              <Link href="/keys" className="cmd-btn cmd-btn-ghost">
+                <History size={14} />
+                <span>View Keys</span>
+              </Link>
+            </div>
           </div>
-          <div className="metric-pill">
-            <span className="metric-val green">{usageRate}%</span>
-            <span className="metric-lbl">Usage</span>
-          </div>
-          <div className="metric-pill">
-            <span className="metric-val gold">${user?.saldo?.toFixed(2) ?? '0.00'}</span>
-            <span className="metric-lbl">Saldo</span>
+
+          {/* Right — telemetry */}
+          <div className="cmd-telemetry">
+            <div className="cmd-telemetry-head">
+              <Pulse size={11} />
+              <span>TELEMETRY</span>
+              <span className="cmd-telemetry-line" />
+            </div>
+            <div className="cmd-telemetry-grid">
+              <div className="cmd-tele-block teal">
+                <div className="cmd-tele-icon">
+                  <Activity size={14} />
+                </div>
+                <div className="cmd-tele-meta">
+                  <div className="cmd-tele-lbl">Active</div>
+                  <div className="cmd-tele-val">{active.toLocaleString()}</div>
+                </div>
+                <div className="cmd-tele-bar">
+                  <div className="cmd-tele-bar-fill" style={{ width: `${total > 0 ? (active / total) * 100 : 0}%` }} />
+                </div>
+              </div>
+
+              <div className="cmd-tele-block green">
+                <div className="cmd-tele-icon">
+                  <Zap size={14} />
+                </div>
+                <div className="cmd-tele-meta">
+                  <div className="cmd-tele-lbl">Usage</div>
+                  <div className="cmd-tele-val">{usageRate}<span className="cmd-tele-unit">%</span></div>
+                </div>
+                <div className="cmd-tele-bar">
+                  <div className="cmd-tele-bar-fill" style={{ width: `${usageRate}%` }} />
+                </div>
+              </div>
+
+              <div className="cmd-tele-block gold">
+                <div className="cmd-tele-icon">
+                  <DollarSign size={14} />
+                </div>
+                <div className="cmd-tele-meta">
+                  <div className="cmd-tele-lbl">Saldo</div>
+                  <div className="cmd-tele-val">${user?.saldo?.toFixed(2) ?? '0.00'}</div>
+                </div>
+                <div className="cmd-tele-bar">
+                  <div className="cmd-tele-bar-fill" style={{ width: '100%' }} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
