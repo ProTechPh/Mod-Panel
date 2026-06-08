@@ -31,19 +31,6 @@ export default function UsersPage() {
   const [totalFiltered, setTotalFiltered] = useState(0);
   const PAGE_SIZE = 50;
 
-  useEffect(() => {
-    void fetchUsers('');
-    void (async () => {
-      try {
-        const res = await fetch('/api/referrals');
-        const data = await res.json();
-        setReferrals(Array.isArray(data) ? data : []);
-      } catch {}
-    })();
-  }, []);
-
-  if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
-
   const fetchUsers = async (searchVal: string, pageVal = 1) => {
     const params = new URLSearchParams({ draw: '1', start: String((pageVal - 1) * PAGE_SIZE), length: String(PAGE_SIZE), 'search[value]': searchVal });
     const res = await fetch(`/api/users?${params}`);
@@ -56,6 +43,19 @@ export default function UsersPage() {
     const data = await res.json();
     setReferrals(Array.isArray(data) ? data : []);
   };
+
+  useEffect(() => {
+    void fetchUsers('');
+    void (async () => {
+      try {
+        const res = await fetch('/api/referrals');
+        const data = await res.json();
+        setReferrals(Array.isArray(data) ? data : []);
+      } catch {}
+    })();
+  }, []);
+
+  if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
 
   const handleDeleteUser = async (id: string) => {
     if (!confirm('Delete this user?')) return;
