@@ -31,7 +31,7 @@ const AuditLogSchema = new Schema<AuditLogDoc & Document>({
     ],
   },
   actor: { type: String, required: true, trim: true },
-  actorLevel: { type: Number, required: true, enum: [1, 2, 3] },
+  actorLevel: { type: Number, required: true, enum: [0, 1, 2, 3, 4] },
   target: { type: String, default: '' },
   details: { type: Schema.Types.Mixed, default: {} },
   ip: { type: String, default: '' },
