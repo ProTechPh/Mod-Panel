@@ -6,7 +6,7 @@ const UserSchema = new Schema<UserDoc & Document>({
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   fullname: { type: String, default: '' },
   password: { type: String, required: true },
-  level: { type: Number, required: true, enum: [1, 2, 3] as UserLevel[] },
+  level: { type: Number, required: true, enum: [1, 2, 3, 4] as UserLevel[] },
   saldo: { type: Number, default: 0 },
   status: { type: Number, required: true, enum: [1, 2, 3] as UserStatus[], default: 1 },
   uplink: { type: String, default: '' },
