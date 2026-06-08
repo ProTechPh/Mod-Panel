@@ -18,6 +18,17 @@ export async function getStore(registrator: string) {
   };
 }
 
+export async function getAllActiveStores() {
+  await dbConnect();
+  const stores = await Store.find({ isActive: true }).sort({ storeName: 1 }).lean();
+  return stores.map(s => ({
+    ...s,
+    _id: s._id.toString(),
+    createdAt: s.createdAt?.toISOString(),
+    updatedAt: s.updatedAt?.toISOString(),
+  }));
+}
+
 export async function upsertStore(registrator: string, data: {
   storeName: string;
   storeDescription?: string;

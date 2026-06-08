@@ -7,15 +7,16 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
   History, Shield, BookOpen, ScrollText, ShoppingCart,
-  BarChart3, Megaphone, ClipboardList,
+  BarChart3, Megaphone, ClipboardList, Store,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 4 },
   { href: '/keys', label: 'Keys', icon: Key, minLevel: 4 },
+  { href: '/marketplace', label: 'Marketplace', icon: Store, minLevel: 4 },
   { href: '/settings', label: 'Settings', icon: Shield, minLevel: 4 },
   { href: '/history', label: 'History', icon: History, minLevel: 4 },
-  { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
+  { href: '/store', label: 'Store Manager', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
@@ -53,7 +54,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
   // Group items
   const userItems = filteredItems.filter(i =>
-    ['/dashboard', '/keys', '/history', '/settings', '/terms', '/store', '/lib', '/docs'].includes(i.href)
+    ['/dashboard', '/keys', '/marketplace', '/history', '/settings', '/terms', '/store', '/lib', '/docs'].includes(i.href)
   );
   const adminItems = filteredItems.filter(i => i.href.startsWith('/admin/') || i.href === '/server');
 
