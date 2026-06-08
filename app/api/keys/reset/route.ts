@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { getKey, resetDevices } from '@/lib/services/key-service';
+import { logAudit } from '@/lib/services/audit-service';
 
 export async function POST(request: NextRequest) {
   const user = await authenticate(request);
@@ -17,6 +18,9 @@ export async function POST(request: NextRequest) {
 
   const result = await resetDevices(id);
   if (!result) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  logAudit({ action: 'key.reset', actor: user.username, actorLevel: user.level, target: id, ip });
 
   return NextResponse.json({ success: true });
 }

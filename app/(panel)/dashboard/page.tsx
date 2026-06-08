@@ -5,7 +5,7 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import {
   Key, CheckCircle, Clock, XCircle, User, Shield, DollarSign,
   TrendingUp, KeyRound, History, Activity, Gamepad2, Sparkles,
-  ArrowUpRight, Zap, Terminal, Activity as Pulse,
+  ArrowUpRight, Zap, Terminal, Activity as Pulse, AlertTriangle, Timer,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -58,12 +58,28 @@ function useLiveClock() {
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [expiringCount, setExpiringCount] = useState<number>(0);
+  const [durationDistribution, setDurationDistribution] = useState<{ duration: string; count: number }[]>([]);
+  const [avgDeviceUsage, setAvgDeviceUsage] = useState<number>(0);
   const now = useLiveClock();
 
   useEffect(() => {
     fetch('/api/analytics')
       .then(res => res.json())
       .then(setAnalytics)
+      .catch(() => {});
+
+    fetch('/api/keys/expiring?days=7')
+      .then(res => res.json())
+      .then((data) => setExpiringCount(data.count ?? data.length ?? 0))
+      .catch(() => {});
+
+    fetch('/api/keys/stats')
+      .then(res => res.json())
+      .then((data) => {
+        if (data.durationDistribution) setDurationDistribution(data.durationDistribution);
+        if (typeof data.avgDeviceUsage === 'number') setAvgDeviceUsage(data.avgDeviceUsage);
+      })
       .catch(() => {});
   }, []);
 
@@ -317,6 +333,78 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           ) : <EmptyChart />}
         </ChartPanel>
+      </div>
+
+      {/* Key Usage Insights */}
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="panel panel-corner fade-up d3">
+          <div className="panel-head">
+            <div className="panel-title">
+              <span className="ico" style={{ color: 'var(--gold)' }}><AlertTriangle size={16} /></span>
+              Expiring Soon
+            </div>
+            <span className="panel-badge">7 days</span>
+          </div>
+          <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}>
+            <div className="stat-card-inner" style={{ justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div className="stat-val" style={{ color: 'var(--gold)', fontSize: '2.2rem' }}>{expiringCount}</div>
+                <div className="stat-lbl" style={{ marginTop: '0.25rem' }}>keys expiring within 7 days</div>
+                <div className="stat-delta" style={{ color: 'var(--gold)', opacity: 0.7, marginTop: '0.35rem' }}>
+                  <Clock size={10} />
+                  {expiringCount > 0 ? 'Renew soon to avoid disruption' : 'All clear'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel panel-corner fade-up d3">
+          <div className="panel-head">
+            <div className="panel-title">
+              <span className="ico" style={{ color: 'var(--teal-2)' }}><Timer size={16} /></span>
+              Keys by Duration
+            </div>
+            <span className="panel-badge">distribution</span>
+          </div>
+          <div style={{ padding: '1.25rem' }}>
+            {durationDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={durationDistribution} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" vertical={false} />
+                  <XAxis dataKey="duration" tick={{ fontSize: 11, fill: '#8ab8be' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
+                  <Tooltip cursor={{ fill: 'rgba(20, 184, 184, 0.06)' }} contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#e8f8f8' }} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} name="Keys">
+                    {durationDistribution.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} fillOpacity={0.85} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <EmptyChart />}
+          </div>
+        </div>
+
+        <div className="panel panel-corner fade-up d3">
+          <div className="panel-head">
+            <div className="panel-title">
+              <span className="ico" style={{ color: 'var(--ecto-green)' }}><Activity size={16} /></span>
+              Device Usage
+            </div>
+            <span className="panel-badge">average</span>
+          </div>
+          <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}>
+            <div className="stat-card-inner" style={{ justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div className="stat-val" style={{ color: 'var(--ecto-green)', fontSize: '2.2rem' }}>{Math.round(avgDeviceUsage * 100)}<span className="cmd-tele-unit">%</span></div>
+                <div className="stat-lbl" style={{ marginTop: '0.25rem' }}>avg device utilization</div>
+                <div className="stat-delta" style={{ color: 'var(--ecto-green)', opacity: 0.7, marginTop: '0.35rem' }}>
+                  <Zap size={10} />
+                  {avgDeviceUsage >= 0.7 ? 'High usage' : avgDeviceUsage >= 0.3 ? 'Moderate usage' : 'Low usage'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Top performers + Account info */}

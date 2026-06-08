@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
   History, Shield, BookOpen, ScrollText, ShoppingCart,
-  BarChart3, Megaphone,
+  BarChart3, Megaphone, ClipboardList,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,6 +21,7 @@ const navItems = [
   { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
+  { href: '/admin/audit', label: 'Audit Log', icon: ClipboardList, minLevel: 1 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
   { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },

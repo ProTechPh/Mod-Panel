@@ -381,3 +381,34 @@ export async function deleteKeysByGame(game: string, registrator?: string) {
   const result = await Key.deleteMany(filter);
   return result.deletedCount;
 }
+
+export async function bulkDeleteByIds(ids: string[]) {
+  await dbConnect();
+  const result = await Key.deleteMany({ _id: { $in: ids } });
+  return result.deletedCount;
+}
+
+export async function bulkExtendKeys(keyIds: string[], additionalDays: number, user: { level: number; username: string }) {
+  await dbConnect();
+
+  const now = new Date();
+  const keys = await Key.find({ _id: { $in: keyIds } }).lean();
+
+  let extended = 0;
+  for (const key of keys) {
+    const currentExpired = key.expiredDate ? new Date(key.expiredDate) : now;
+    const newExpiredDate = new Date(Math.max(currentExpired.getTime(), now.getTime()) + additionalDays * 24 * 60 * 60 * 1000);
+    const update: Record<string, unknown> = { expiredDate: newExpiredDate };
+    if (key.status !== 1) update.status = 1;
+
+    await Key.updateOne({ _id: key._id }, update);
+    await History.create({
+      keyId: key._id.toString(),
+      userDo: user.username,
+      info: `Bulk extended key ${key.userKey} by ${additionalDays} days`,
+    });
+    extended++;
+  }
+
+  return extended;
+}

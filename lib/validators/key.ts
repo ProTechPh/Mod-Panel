@@ -21,9 +21,19 @@ export const connectSchema = z.object({
   serial: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Invalid serial format'),
 });
 
-export const bulkDeleteSchema = z.object({
-  filter: z.enum(['expired', 'blocked', 'unused', 'all']),
-  game: z.string().optional(),
+export const bulkDeleteSchema = z.union([
+  z.object({
+    filter: z.enum(['expired', 'blocked', 'unused', 'all']),
+    game: z.string().optional(),
+  }),
+  z.object({
+    ids: z.array(z.string().min(1)).min(1, 'At least one key ID is required'),
+  }),
+]);
+
+export const bulkExtendSchema = z.object({
+  keyIds: z.array(z.string().min(1)).min(1, 'At least one key ID is required'),
+  additionalDays: z.number().int().min(1, 'Additional days must be at least 1'),
 });
 
 export const bulkDeleteAllSchema = z.object({
@@ -40,6 +50,7 @@ export type GenerateKeyInput = z.infer<typeof generateKeySchema>;
 export type EditKeyInput = z.infer<typeof editKeySchema>;
 export type ConnectInput = z.infer<typeof connectSchema>;
 export type BulkDeleteInput = z.infer<typeof bulkDeleteSchema>;
+export type BulkExtendInput = z.infer<typeof bulkExtendSchema>;
 export type ExtendKeyInput = z.infer<typeof extendKeySchema>;
 
 export function parseDuration(raw: string): number | '1h' | '3h' | 'lifetime' {

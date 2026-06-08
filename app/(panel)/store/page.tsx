@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import {
   ShoppingCart, Plus, Trash2, Pencil, Copy, Check, CheckCircle2,
   Package, Settings, ClipboardList, KeyRound, Loader2, TrendingUp, PhilippinePeso, Download,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import type { Duration } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -103,6 +104,10 @@ export default function StorePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersTotal, setOrdersTotal] = useState(0);
+
+  const ORDERS_PAGE_SIZE = 20;
 
   useEffect(() => {
     if (!user || (user.level !== 1 && user.level !== 2)) return;
@@ -136,10 +141,16 @@ export default function StorePage() {
       setOrdersLoading(true);
       fetch('/api/store/orders')
         .then(r => r.json())
-        .then(data => setOrders(Array.isArray(data) ? data : []))
+        .then(data => {
+          const list = Array.isArray(data) ? data : [];
+          setOrders(list);
+          setOrdersTotal(list.length);
+        })
         .finally(() => setOrdersLoading(false));
     }
   }, [tab]);
+
+  const paginatedOrders = orders.slice((ordersPage - 1) * ORDERS_PAGE_SIZE, ordersPage * ORDERS_PAGE_SIZE);
 
   if (!user || (user.level !== 1 && user.level !== 2)) {
     return <p style={{ color: 'var(--text-mid)' }}>Access denied</p>;
@@ -572,50 +583,82 @@ export default function StorePage() {
               </CardContent>
             </Card>
           ) : (
-            orders.map(o => (
-              <Card key={o._id} className="fade-up d1">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {statusBadge(o.status)}
-                        <Badge variant="outline" className="font-mono text-xs">{o.game}</Badge>
-                        <span className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>{o.label}</span>
-                        {user.level === 1 && o.registrator && (
-                          <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ color: 'var(--text-mid)', background: 'rgba(2, 6, 8, 0.6)' }}>{o.registrator}</span>
+            <>
+              {paginatedOrders.map(o => (
+                <Card key={o._id} className="fade-up d1">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {statusBadge(o.status)}
+                          <Badge variant="outline" className="font-mono text-xs">{o.game}</Badge>
+                          <span className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>{o.label}</span>
+                          {user.level === 1 && o.registrator && (
+                            <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ color: 'var(--text-mid)', background: 'rgba(2, 6, 8, 0.6)' }}>{o.registrator}</span>
+                          )}
+                        </div>
+                        {o.buyerName && (
+                          <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Buyer: {o.buyerName}</p>
+                        )}
+                        {o.generatedKey && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <KeyRound className="h-3.5 w-3.5 shrink-0" style={{ color: 'var(--teal-2)' }} />
+                            <code className="text-xs font-mono break-all" style={{ color: 'var(--text-mid)' }}>{o.generatedKey}</code>
+                            <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 transition-colors" style={{ color: 'var(--text-mid)' }} title="Copy Key">
+                              {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
                         )}
                       </div>
-                      {o.buyerName && (
-                        <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Buyer: {o.buyerName}</p>
-                      )}
-                      {o.generatedKey && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <KeyRound className="h-3.5 w-3.5 shrink-0" style={{ color: 'var(--teal-2)' }} />
-                          <code className="text-xs font-mono break-all" style={{ color: 'var(--text-mid)' }}>{o.generatedKey}</code>
-                          <button onClick={() => copyKey(o.generatedKey!)} className="shrink-0 transition-colors" style={{ color: 'var(--text-mid)' }} title="Copy Key">
-                            {copiedKey === o.generatedKey ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
+                      <div className="text-right shrink-0">
+                        <p className="font-semibold" style={{ color: 'var(--teal-2)' }}>₱{o.price.toFixed(0)}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-mid)' }}>{new Date(o.createdAt).toLocaleDateString()}</p>
+                        {o.status !== 'paid' && (
+                          <button
+                            onClick={() => deleteOrder(o._id)}
+                            className="mt-1 transition-colors"
+                            style={{ color: 'var(--text-mid)' }}
+                            title="Delete order"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-semibold" style={{ color: 'var(--teal-2)' }}>₱{o.price.toFixed(0)}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-mid)' }}>{new Date(o.createdAt).toLocaleDateString()}</p>
-                      {o.status !== 'paid' && (
-                        <button
-                          onClick={() => deleteOrder(o._id)}
-                          className="mt-1 transition-colors"
-                          style={{ color: 'var(--text-mid)' }}
-                          title="Delete order"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {ordersTotal > ORDERS_PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-xs font-mono" style={{ color: 'var(--text-mid)' }}>
+                    Showing {(ordersPage - 1) * ORDERS_PAGE_SIZE + 1}–{Math.min(ordersPage * ORDERS_PAGE_SIZE, ordersTotal)} of {ordersTotal}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={ordersPage <= 1}
+                      onClick={() => setOrdersPage(p => p - 1)}
+                      className="h-7 gap-1 text-xs"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" /> Prev
+                    </Button>
+                    <span className="text-xs font-mono" style={{ color: 'var(--text-mid)' }}>
+                      {ordersPage} / {Math.ceil(ordersTotal / ORDERS_PAGE_SIZE)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={ordersPage * ORDERS_PAGE_SIZE >= ordersTotal}
+                      onClick={() => setOrdersPage(p => p + 1)}
+                      className="h-7 gap-1 text-xs"
+                    >
+                      Next <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

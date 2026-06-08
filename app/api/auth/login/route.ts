@@ -5,6 +5,7 @@ import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 import { loginSchema } from '@/lib/validators/auth';
 import { recordFailedAttempt, clearFailedAttempts } from '@/lib/auth/brute-force';
 import { verifyTurnstile } from '@/lib/auth/turnstile';
+import { logAudit } from '@/lib/services/audit-service';
 import { Logger } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     const user = await loginUser(parsed.data.identifier, parsed.data.password);
     if (!user) {
+      logAudit({ action: 'auth.failed_login', actor: parsed.data.identifier, actorLevel: 0, details: { reason: 'invalid credentials' }, ip });
       const { delayMs } = recordFailedAttempt(ip);
       await new Promise(r => setTimeout(r, delayMs));
       return NextResponse.json({ error: 'Invalid username/email or password' }, { status: 401 });
@@ -38,6 +40,8 @@ export async function POST(request: NextRequest) {
     }
 
     clearFailedAttempts(ip);
+
+    logAudit({ action: 'auth.login', actor: user.username, actorLevel: user.level, ip });
 
     const accessToken = await signAccessToken(user.userId, user.username, user.level);
     const refreshToken = await signRefreshToken(user.userId);

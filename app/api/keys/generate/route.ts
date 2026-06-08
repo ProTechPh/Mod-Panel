@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { generateKeys } from '@/lib/services/key-service';
+import { sendNotification } from '@/lib/services/notification-service';
 import { generateKeySchema, parseDuration } from '@/lib/validators/key';
+import { logAudit } from '@/lib/services/audit-service';
 import User from '@/lib/db/models/User';
 
 export async function POST(request: NextRequest) {
@@ -35,6 +37,17 @@ export async function POST(request: NextRequest) {
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    sendNotification('key.generated', {
+      keys: result.keys?.map((k: any) => k.key || k).join(', '),
+      game: parsed.data.game,
+      duration: parsed.data.duration,
+      count: parsed.data.count,
+      generatedBy: user.username,
+    }).catch(console.error);
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    logAudit({ action: 'key.generate', actor: user.username, actorLevel: user.level, target: `game:${parsed.data.game}`, details: { count: parsed.data.count, duration: parsed.data.duration, maxDevices: parsed.data.maxDevices }, ip });
 
     return NextResponse.json({ success: true, keys: result.keys, newSaldo: result.newSaldo });
   } catch (error) {

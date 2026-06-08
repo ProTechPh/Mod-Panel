@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/middleware';
 import { getKey, updateKey, deleteKey } from '@/lib/services/key-service';
 import { editKeySchema } from '@/lib/validators/key';
+import { logAudit } from '@/lib/services/audit-service';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await authenticate(request);
@@ -37,6 +38,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const updated = await updateKey(id, parsed.data as Parameters<typeof updateKey>[1]);
   if (!updated) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  logAudit({ action: 'key.update', actor: user.username, actorLevel: user.level, target: id, details: body, ip });
+
   return NextResponse.json(updated);
 }
 
@@ -53,6 +57,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const deleted = await deleteKey(id);
   if (!deleted) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  logAudit({ action: 'key.delete', actor: user.username, actorLevel: user.level, target: id, ip });
 
   return NextResponse.json({ success: true });
 }

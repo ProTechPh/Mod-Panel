@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Search, Trash2, Edit, Users, Gift, Mail, AtSign, Calendar } from 'lucide-react';
+import { Search, Trash2, Edit, Users, Gift, Mail, AtSign, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -27,16 +27,12 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState('');
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const PAGE_SIZE = 50;
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const params = new URLSearchParams({ draw: '1', start: '0', length: '50', 'search[value]': '' });
-        const res = await fetch(`/api/users?${params}`);
-        const data = await res.json();
-        setUsers(data.data || []);
-      } catch {}
-    })();
+    void fetchUsers('');
     void (async () => {
       try {
         const res = await fetch('/api/referrals');
@@ -48,11 +44,12 @@ export default function UsersPage() {
 
   if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
 
-  const fetchUsers = async (searchVal: string) => {
-    const params = new URLSearchParams({ draw: '1', start: '0', length: '50', 'search[value]': searchVal });
+  const fetchUsers = async (searchVal: string, pageVal = 1) => {
+    const params = new URLSearchParams({ draw: '1', start: String((pageVal - 1) * PAGE_SIZE), length: String(PAGE_SIZE), 'search[value]': searchVal });
     const res = await fetch(`/api/users?${params}`);
     const data = await res.json();
     setUsers(data.data || []);
+    setTotalFiltered(data.recordsFiltered ?? 0);
   };
   const fetchReferrals = async () => {
     const res = await fetch('/api/referrals');
@@ -63,7 +60,7 @@ export default function UsersPage() {
   const handleDeleteUser = async (id: string) => {
     if (!confirm('Delete this user?')) return;
     const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) { toast.success('User deleted'); void fetchUsers(search); } else toast.error('Failed to delete');
+    if (res.ok) { toast.success('User deleted'); void fetchUsers(search, page); } else toast.error('Failed to delete');
   };
   const statusLabel = (s: number) => s === 1 ? 'Active' : s === 2 ? 'Banned' : 'Expired';
   const statusKind = (s: number): 'active' | 'blocked' | 'warning' => s === 1 ? 'active' : s === 2 ? 'blocked' : 'warning';
@@ -126,11 +123,11 @@ export default function UsersPage() {
                 placeholder="// search by username, email, fullname…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && void fetchUsers(search)}
+                onKeyDown={e => e.key === 'Enter' && (setPage(1), void fetchUsers(search, 1))}
                 className="pl-8"
               />
             </div>
-            <Button variant="outline" onClick={() => void fetchUsers(search)}>
+            <Button variant="outline" onClick={() => { setPage(1); void fetchUsers(search, 1); }}>
               <Search className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -199,6 +196,31 @@ export default function UsersPage() {
                   ))}
                 </TableBody>
               </Table>
+              {totalFiltered > PAGE_SIZE && (
+                <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalFiltered)} of {totalFiltered}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      disabled={page <= 1}
+                      onClick={() => { setPage(p => p - 1); void fetchUsers(search, page - 1); }}
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" style={{ color: page <= 1 ? 'var(--text-lo)' : 'var(--teal-2)' }} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      disabled={page * PAGE_SIZE >= totalFiltered}
+                      onClick={() => { setPage(p => p + 1); void fetchUsers(search, page + 1); }}
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" style={{ color: page * PAGE_SIZE >= totalFiltered ? 'var(--text-lo)' : 'var(--teal-2)' }} />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </>
