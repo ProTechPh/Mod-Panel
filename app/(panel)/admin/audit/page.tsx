@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Search, ChevronLeft, ChevronRight, Terminal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,21 +26,29 @@ const ACTIONS = [
   { value: '', label: 'All' },
   { value: 'key.generate', label: 'key.generate' },
   { value: 'key.delete', label: 'key.delete' },
+  { value: 'key.update', label: 'key.update' },
   { value: 'key.reset', label: 'key.reset' },
-  { value: 'key.edit', label: 'key.edit' },
-  { value: 'user.login', label: 'user.login' },
-  { value: 'user.logout', label: 'user.logout' },
+  { value: 'key.extend', label: 'key.extend' },
+  { value: 'key.bulk_delete', label: 'key.bulk_delete' },
+  { value: 'user.update', label: 'user.update' },
+  { value: 'user.delete', label: 'user.delete' },
+  { value: 'auth.login', label: 'auth.login' },
+  { value: 'auth.failed_login', label: 'auth.failed_login' },
   { value: 'settings.update', label: 'settings.update' },
 ];
 
 const ACTION_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   'key.generate': { bg: 'rgba(22, 163, 74, 0.12)', text: 'var(--ecto-green)', border: 'rgba(22, 163, 74, 0.3)' },
   'key.delete': { bg: 'rgba(239, 68, 68, 0.12)', text: 'var(--red)', border: 'rgba(239, 68, 68, 0.3)' },
+  'key.update': { bg: 'rgba(234, 179, 8, 0.12)', text: '#eab308', border: 'rgba(234, 179, 8, 0.3)' },
   'key.reset': { bg: 'rgba(234, 179, 8, 0.12)', text: '#eab308', border: 'rgba(234, 179, 8, 0.3)' },
-  'key.edit': { bg: 'rgba(234, 179, 8, 0.12)', text: '#eab308', border: 'rgba(234, 179, 8, 0.3)' },
-  'user.login': { bg: 'rgba(20, 184, 184, 0.12)', text: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' },
-  'user.logout': { bg: 'rgba(20, 184, 184, 0.12)', text: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' },
-  'settings.update': { bg: 'rgba(234, 179, 8, 0.12)', text: '#eab308', border: 'rgba(234, 179, 8, 0.3)' },
+  'key.extend': { bg: 'rgba(20, 184, 184, 0.12)', text: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' },
+  'key.bulk_delete': { bg: 'rgba(239, 68, 68, 0.12)', text: 'var(--red)', border: 'rgba(239, 68, 68, 0.3)' },
+  'user.update': { bg: 'rgba(20, 184, 184, 0.12)', text: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' },
+  'user.delete': { bg: 'rgba(239, 68, 68, 0.12)', text: 'var(--red)', border: 'rgba(239, 68, 68, 0.3)' },
+  'auth.login': { bg: 'rgba(57, 255, 20, 0.08)', text: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.25)' },
+  'auth.failed_login': { bg: 'rgba(239, 68, 68, 0.12)', text: 'var(--red)', border: 'rgba(239, 68, 68, 0.3)' },
+  'settings.update': { bg: 'rgba(167, 139, 250, 0.12)', text: 'var(--purple)', border: 'rgba(167, 139, 250, 0.3)' },
 };
 
 function relativeTime(dateStr: string): string {
@@ -120,29 +129,30 @@ export default function AuditPage() {
                   className="pl-8"
                 />
               </div>
-              <select
-                value={action}
-                onChange={e => { setAction(e.target.value); setPage(1); }}
-                className="flex h-9 rounded-md border px-3 py-1 text-sm font-mono bg-transparent"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
-              >
-                {ACTIONS.map(a => (
-                  <option key={a.value} value={a.value}>{a.label}</option>
-                ))}
-              </select>
-              <input
+              <Select value={action} onValueChange={v => { setAction(v === 'all' ? '' : v); setPage(1); }}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="All Actions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Actions</SelectItem>
+                  {ACTIONS.filter(a => a.value).map(a => (
+                    <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="flex h-9 rounded-md border px-3 py-1 text-sm font-mono bg-transparent"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
+                className="w-[150px] font-mono text-xs"
+                placeholder="Start date"
               />
-              <input
+              <Input
                 type="date"
                 value={endDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="flex h-9 rounded-md border px-3 py-1 text-sm font-mono bg-transparent"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
+                className="w-[150px] font-mono text-xs"
+                placeholder="End date"
               />
               <Button variant="outline" onClick={handleSearch}>
                 <Search className="h-3.5 w-3.5" />
