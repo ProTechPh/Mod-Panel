@@ -6,12 +6,11 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Copy, Check, RefreshCw, Loader2,
-  Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
-  Download, Plus, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
+  Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
+  Download, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
   ShieldCheck, Cpu, AlertTriangle, Activity, Globe, ExternalLink, Hash, Calendar,
   LogIn, UserPlus,
 } from 'lucide-react';
@@ -87,7 +86,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('key');
-  const [duration, setDuration] = useState<'1h' | '3h'>('1h');
 
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
   const [keyLoading, setKeyLoading] = useState(false);
@@ -95,8 +93,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [resetLoading, setResetLoading] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [claiming, setClaiming] = useState(false);
-  const [extending, setExtending] = useState(false);
-  const [extendingRequest, setExtendingRequest] = useState(false);
 
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
   const [store, setStore] = useState<StoreInfo | null>(null);
@@ -158,25 +154,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     if (tab === 'top-users') void fetchTopUsers();
   }, [tab, fetchHistory, fetchTopUsers]);
 
-  const handleExtendKey = async () => {
-    if (!game) return;
-    setExtendingRequest(true);
-    try {
-      const res = await fetch('/api/free-key/extend-request', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, registrator }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        if (data.adUrl) {
-          toast.success('Redirecting to ad link to extend key…');
-          setTimeout(() => { window.location.href = data.adUrl; }, 1500);
-        } else toast.error('Failed to generate extension link');
-      } else toast.error(data.error || 'Failed to request extension');
-    } catch { toast.error('Network error'); }
-    finally { setExtendingRequest(false); }
-  };
-
   useEffect(() => {
     if (game) { setKeyStatus(null); void fetchMyKey(game, true); }
   }, [game, fetchMyKey]);
@@ -234,27 +211,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         finally { setClaiming(false); }
       })();
     }
-
-    const extendToken = searchParams.get('extendToken');
-    if (extendToken) {
-      void (async () => {
-        setExtending(true);
-        try {
-          const res = await fetch('/api/free-key/extend-claim', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: extendToken }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            toast.success('Key extended by 1 hour!');
-            setGame(data.game);
-            await fetchMyKey(data.game, true);
-            window.history.replaceState({}, '', window.location.pathname);
-          } else toast.error(data.error || 'Failed to extend key');
-        } catch { toast.error('Extension error'); }
-        finally { setExtending(false); }
-      })();
-    }
   }, [registrator, searchParams, fetchMyKey]);
 
   useEffect(() => {
@@ -288,19 +244,14 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
     try {
       const res = await fetch('/api/free-key', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, turnstileToken, registrator, duration }),
+        body: JSON.stringify({ game, turnstileToken, registrator, duration: '3h' }),
       });
       const data = await res.json();
       if (res.ok) {
-        if (duration === '3h') {
-          if (data.adUrl) {
-            toast.success('Redirecting to ad link…');
-            setTimeout(() => { window.location.href = data.adUrl; }, 1500);
-          } else toast.error('Failed to generate ad link. Please try again later or contact support.');
-          return;
-        }
-        toast.success('Free key generated!');
-        await fetchMyKey(game, true);
+        if (data.adUrl) {
+          toast.success('Redirecting to ad link…');
+          setTimeout(() => { window.location.href = data.adUrl; }, 1500);
+        } else toast.error('Failed to generate ad link. Please try again later or contact support.');
       } else toast.error(data.error || 'Failed to generate key');
     } catch { toast.error('Network error'); }
     finally { setGenerating(false); setTurnstileToken(''); }
@@ -358,21 +309,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             Claiming your 3-hour key…
           </p>
           <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Please wait while we verify your ad completion.</p>
-        </div>
-      )}
-      {extending && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4"
-          style={{ background: 'rgba(2, 6, 8, 0.85)', backdropFilter: 'blur(8px)' }}
-        >
-          <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--teal-2)' }} />
-          <p
-            className="font-display text-lg font-bold tracking-wide"
-            style={{ background: 'linear-gradient(135deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-          >
-            Extending your key…
-          </p>
-          <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Please wait while we apply your 1-hour bonus.</p>
         </div>
       )}
 
@@ -598,16 +534,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       <span className="metric-tile-label">
                         {keyStatus.isActivated ? 'Time Remaining' : 'Grace Period Ends'}
                       </span>
-                      {keyStatus.isActivated && !keyStatus.isExpired && (
-                        <Button variant="link" size="sm" onClick={handleExtendKey} disabled={extendingRequest}
-                                className="h-auto p-0 text-xs font-bold flex items-center gap-1"
-                                style={{ color: 'var(--teal-2)' }}>
-                          {extendingRequest
-                            ? <Loader2 className="h-3 w-3 animate-spin" />
-                            : <Plus className="h-3 w-3" />}
-                          Extend (+1h)
-                        </Button>
-                      )}
                     </div>
                     <p className="font-mono text-2xl font-black tracking-wider" style={{ color: keyStatus.isExpired ? 'var(--red)' : 'var(--text-hi)' }}>
                       {keyStatus.isExpired ? 'Expired' : countdown}
@@ -654,30 +580,12 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Choose Duration</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDuration('1h')}
-                          className={duration === '1h' ? 'duration-tile active' : 'duration-tile'}
-                        >
-                          <div className="flex flex-col items-center gap-0.5 w-full py-1">
-                            <Clock className="h-5 w-5" style={{ color: duration === '1h' ? 'var(--teal-2)' : 'var(--text-mid)' }} />
-                            <span className="text-sm font-extrabold" style={{ color: duration === '1h' ? 'var(--teal-3)' : 'var(--text-hi)' }}>1 Hour</span>
-                            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>No Ads</span>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDuration('3h')}
-                          className={duration === '3h' ? 'duration-tile active' : 'duration-tile'}
-                        >
-                          <div className="flex flex-col items-center gap-0.5 w-full py-1">
-                            <Timer className="h-5 w-5" style={{ color: duration === '3h' ? 'var(--teal-2)' : 'var(--text-mid)' }} />
-                            <span className="text-sm font-extrabold" style={{ color: duration === '3h' ? 'var(--teal-3)' : 'var(--text-hi)' }}>3 Hours</span>
-                            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>With Ads</span>
-                          </div>
-                        </button>
+                      <div className="duration-tile active">
+                        <div className="flex flex-col items-center gap-0.5 w-full py-1">
+                          <Timer className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
+                          <span className="text-sm font-extrabold" style={{ color: 'var(--teal-3)' }}>3 Hours</span>
+                          <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>With Ads</span>
+                        </div>
                       </div>
                     </div>
 
@@ -693,9 +601,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                         ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
                         : !authUser
                           ? <><LogIn className="h-3.5 w-3.5 mr-1.5" /> Sign in to Generate</>
-                          : duration === '3h'
-                            ? <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
-                            : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Get Free {game} Key</>
+                          : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
                       }
                     </Button>
 
