@@ -129,7 +129,7 @@ export default function AuditPage() {
                   className="pl-8"
                 />
               </div>
-              <Select value={action} onValueChange={v => { setAction(v === 'all' ? '' : v); setPage(1); }}>
+              <Select value={action || 'all'} onValueChange={v => { setAction(v === 'all' ? '' : (v ?? '')); setPage(1); }}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="All Actions" />
                 </SelectTrigger>
