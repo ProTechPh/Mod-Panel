@@ -10,6 +10,4 @@ const TelegramAuthLogSchema = new Schema<TelegramAuthLogDoc & Document>({
   createdAt: { type: Date, default: Date.now, expires: 86400 },
 }, { collection: 'telegram_auth_logs' });
 
-TelegramAuthLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
-
 export default mongoose.models.TelegramAuthLog || mongoose.model<TelegramAuthLogDoc & Document>('TelegramAuthLog', TelegramAuthLogSchema);
