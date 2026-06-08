@@ -65,7 +65,7 @@ export default function KeysPage() {
 
   useEffect(() => { void fetchKeys(); }, []);
 
-  if (user?.level !== 1 && user?.level !== 2) return <p className="text-muted-foreground">Access denied</p>;
+  if (!user) return <p className="text-muted-foreground">Loading…</p>;
 
   const showConfirm = (title: string, description: string, action: () => void) => {
     setConfirmData({ title, description, action });

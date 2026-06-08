@@ -47,7 +47,7 @@ const sectionTitle = (label: string) => (
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const level = user?.level ?? 3;
+  const level = user?.level ?? 4;
 
   const filteredItems = navItems.filter(item => level <= item.minLevel);
 
