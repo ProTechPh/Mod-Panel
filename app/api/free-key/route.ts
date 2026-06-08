@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateFreeKey } from '@/lib/services/free-key-service';
 import { extractClientIp } from '@/lib/utils/ip';
+import { authenticate } from '@/lib/auth/middleware';
 import { z } from 'zod/v4';
 
 const freeKeySchema = z.object({
   game: z.string().min(1, 'Game is required'),
   turnstileToken: z.string().min(1, 'Captcha verification required'),
   registrator: z.string().min(1, 'Registrator is required'),
-  duration: z.enum(['1h', '3h']).optional().default('1h'),
 });
 
 export async function POST(request: NextRequest) {
@@ -18,6 +18,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
     }
 
+    const user = await authenticate(request);
+    if (!user?.username) {
+      return NextResponse.json({ error: 'You must be logged in to generate free keys' }, { status: 401 });
+    }
+
     const ip = extractClientIp(request, []);
 
     const result = await generateFreeKey(
@@ -25,13 +30,13 @@ export async function POST(request: NextRequest) {
       parsed.data.turnstileToken,
       ip,
       parsed.data.registrator,
-      parsed.data.duration as '1h' | '3h'
+      user.username,
     );
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, key: result.key, adUrl: result.adUrl });
+    return NextResponse.json({ success: true, adUrl: result.adUrl });
   } catch (error) {
     console.error('Free key error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

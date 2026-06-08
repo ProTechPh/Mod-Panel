@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { claimFreeKey } from '@/lib/services/free-key-service';
 import { extractClientIp } from '@/lib/utils/ip';
+import { authenticate } from '@/lib/auth/middleware';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,8 +10,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
+    const user = await authenticate(request);
+    if (!user?.username) {
+      return NextResponse.json({ error: 'You must be logged in' }, { status: 401 });
+    }
+
     const ip = extractClientIp(request, []);
-    const result = await claimFreeKey(token, ip);
+    const result = await claimFreeKey(token, ip, user.username);
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });

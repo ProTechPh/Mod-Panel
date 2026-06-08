@@ -26,7 +26,6 @@ import { shortenUrl } from './reshortfly-service';
 
 import { SignJWT, jwtVerify } from 'jose';
 
-// Use AUTH_SECRET as the JWT secret for consistency across the codebase
 const JWT_SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 
 async function createClaimToken(payload: any) {
@@ -45,12 +44,11 @@ async function verifyClaimToken(token: string) {
   }
 }
 
-export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string, duration: '1h' | '3h' = '1h') {
+export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string, username: string) {
   await dbConnect();
 
-  // Reject requests with unidentifiable IPs
-  if (!ip || ip === 'unknown') {
-    return { error: 'Unable to verify your IP address. Please try again.' };
+  if (!username) {
+    return { error: 'You must be logged in to generate free keys' };
   }
 
   const gameSetting = await GameSetting.findOne({
@@ -69,13 +67,12 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     return { error: 'Captcha verification failed' };
   }
 
-  const bannedTracker = await IpTracker.findOne({ ipAddress: ip, isBanned: true }).lean();
+  const bannedTracker = await IpTracker.findOne({ username, isBanned: true }).lean();
   if (bannedTracker) {
-    return { error: 'Your IP has been banned' };
+    return { error: 'Your account has been banned' };
   }
 
-  // Block only if the IP already has a non-expired free key FOR THIS SPECIFIC GAME.
-  const existingTrackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+  const existingTrackers = await IpTracker.find({ username, isBanned: false })
     .sort({ createdAt: -1 })
     .lean();
   if (existingTrackers.length) {
@@ -95,50 +92,18 @@ export async function generateFreeKey(game: string, turnstileToken: string, ip: 
     }
   }
 
-
-  // For 3h keys, we return an adUrl with a claim token. 
-  // The key is ONLY created after they return from the ad link.
-  if (duration === '3h') {
-    const claimToken = await createClaimToken({ game, duration, registrator, ip });
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
-    const adUrl = await shortenUrl(targetUrl);
-    return { adUrl: adUrl || targetUrl };
-  }
-
-  // 1h keys are created immediately as before
-  const keyString = generateKeyString(16);
-  const pendingExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const key = await Key.create({
-    game: game.toUpperCase(),
-    userKey: keyString,
-    duration: '1h',
-    maxDevices: 1,
-    devices: [],
-    status: 1,
-    registrator,
-    isFreeKey: true,
-    expiredDate: pendingExpiry,
-  });
-
-  await IpTracker.create({
-    userId: '0',
-    ipAddress: ip,
-    generatorIp: ip,
-    keyId: key._id,
-    isp: '',
-    org: '',
-    isAdClaim: false,
-  });
-
-  return { key: keyString };
+  const claimToken = await createClaimToken({ game, registrator, username, ip });
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
+  const adUrl = await shortenUrl(targetUrl);
+  return { adUrl: adUrl || targetUrl };
 }
 
-export async function claimFreeKey(token: string, currentIp: string) {
+export async function claimFreeKey(token: string, currentIp: string, currentUsername: string) {
   await dbConnect();
 
-  if (!currentIp || currentIp === 'unknown') {
-    return { error: 'Unable to verify your IP address. Please try again.' };
+  if (!currentUsername) {
+    return { error: 'You must be logged in to claim free keys' };
   }
 
   const payload = await verifyClaimToken(token);
@@ -146,13 +111,12 @@ export async function claimFreeKey(token: string, currentIp: string) {
     return { error: 'Invalid or expired claim token' };
   }
 
-  const { game, duration, registrator, ip: originalIp } = payload as any;
+  const { game, registrator, username: originalUsername } = payload as any;
 
-  if (originalIp !== currentIp) {
-    return { error: 'IP mismatch. You must claim the key from the same IP that generated the request.' };
+  if (originalUsername !== currentUsername) {
+    return { error: 'Account mismatch. You must claim the key from the same account that generated the request.' };
   }
 
-  // Verify the game is still enabled for free keys (admin may have disabled it)
   const gameSetting = await GameSetting.findOne({
     gameCode: game.toUpperCase(),
     registrator,
@@ -164,8 +128,7 @@ export async function claimFreeKey(token: string, currentIp: string) {
     return { error: 'Free keys are no longer available for this game. The offer may have ended.' };
   }
 
-  // Final check for existing active keys to prevent double-claiming or bypassing limits
-  const existingTrackers = await IpTracker.find({ ipAddress: currentIp, isBanned: false })
+  const existingTrackers = await IpTracker.find({ username: currentUsername, isBanned: false })
     .sort({ createdAt: -1 })
     .lean();
   
@@ -180,27 +143,28 @@ export async function claimFreeKey(token: string, currentIp: string) {
     
     const now = new Date();
     if (existingKey && existingKey.expiredDate && new Date(existingKey.expiredDate) > now) {
-      return { key: existingKey.userKey, game: existingKey.game }; // Return existing key if still active
+      return { key: existingKey.userKey, game: existingKey.game };
     }
   }
 
-  // Actually create the key now
   const keyString = generateKeyString(16);
-  const pendingExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const expiryHours = 3;
+  const expiredDate = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
   const key = await Key.create({
     game: game.toUpperCase(),
     userKey: keyString,
-    duration,
+    duration: '3h',
     maxDevices: 1,
     devices: [],
     status: 1,
     registrator,
     isFreeKey: true,
-    expiredDate: pendingExpiry,
+    expiredDate,
   });
 
   await IpTracker.create({
     userId: '0',
+    username: currentUsername,
     ipAddress: currentIp,
     generatorIp: currentIp,
     keyId: key._id,
@@ -212,128 +176,19 @@ export async function claimFreeKey(token: string, currentIp: string) {
   return { key: keyString, game };
 }
 
-export async function generateExtendToken(game: string, ip: string, registrator: string) {
+export async function getMyFreeKey(username: string, registrator: string, game: string) {
   await dbConnect();
 
-  if (!ip || ip === 'unknown') {
-    return { error: 'Unable to verify your IP address. Please try again.' };
-  }
+  if (!username) return { error: 'You must be logged in' };
 
-  // Find the active key for this IP and game
-  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+  const trackers = await IpTracker.find({ username, isBanned: false })
     .sort({ createdAt: -1 })
     .lean();
 
-  if (!trackers.length) return { error: 'No active key found to extend' };
-
-  const keyIds = trackers.map(t => t.keyId);
-  const key = await Key.findOne({
-    _id: { $in: keyIds },
-    isFreeKey: true,
-    game: game.toUpperCase(),
-    status: 1,
-  }).lean() as import('@/types').KeyDoc | null;
-
-  if (!key) return { error: 'No active key found to extend' };
-
-  const now = new Date();
-  if (!key.expiredDate || new Date(key.expiredDate) <= now) {
-    return { error: 'Only active (non-expired) keys can be extended' };
-  }
-
-  // Check extension limit early so users don't watch ads only to be rejected
-  const extensionCount = await IpTracker.countDocuments({ keyId: key._id, isAdClaim: true });
-  if (extensionCount >= 3) {
-    return { error: 'Maximum extensions reached (3). Generate a new key after this one expires.' };
-  }
-
-  // Create a claim token for extension
-  const claimToken = await createClaimToken({
-    type: 'extend',
-    keyId: key._id.toString(),
-    game: game.toUpperCase(),
-    ip,
-    registrator
-  });
-
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const targetUrl = `${baseUrl}/${registrator}/free-key?extendToken=${encodeURIComponent(claimToken)}`;
-  const adUrl = await shortenUrl(targetUrl);
-
-  return { adUrl: adUrl || targetUrl };
-}
-
-export async function extendFreeKey(token: string, currentIp: string) {
-  await dbConnect();
-
-  if (!currentIp || currentIp === 'unknown') {
-    return { error: 'Unable to verify your IP address. Please try again.' };
-  }
-
-  const payload = await verifyClaimToken(token);
-  if (!payload || typeof payload !== 'object' || (payload as any).type !== 'extend') {
-    return { error: 'Invalid or expired extension token' };
-  }
-
-  const { keyId, ip: originalIp, game } = payload as any;
-
-  if (originalIp !== currentIp) {
-    return { error: 'IP mismatch' };
-  }
-
-  const key = await Key.findById(keyId);
-  if (!key || !key.isFreeKey || key.status !== 1) {
-    return { error: 'Key not found or invalid' };
-  }
-
-  const now = new Date();
-  const currentExpiry = key.expiredDate ? new Date(key.expiredDate) : now;
-
-  if (currentExpiry <= now) {
-    return { error: 'Key has already expired and cannot be extended' };
-  }
-
-  // Limit extensions to 3 per key to prevent indefinite extension
-  const extensionCount = await IpTracker.countDocuments({ keyId: key._id, isAdClaim: true });
-  if (extensionCount >= 3) {
-    return { error: 'Maximum extensions reached (3). Generate a new key after this one expires.' };
-  }
-
-  // Add 1 hour to the current expiry
-  const newExpiry = new Date(currentExpiry.getTime() + 60 * 60 * 1000);
-  await Key.updateOne({ _id: key._id }, { expiredDate: newExpiry });
-
-  // Track extension as an ad claim
-  await IpTracker.create({
-    userId: '0',
-    ipAddress: currentIp,
-    generatorIp: currentIp,
-    keyId: key._id,
-    isp: '',
-    org: '',
-    isAdClaim: true,
-  });
-
-  return { success: true, game, newExpiry: newExpiry.toISOString() };
-}
-
-/**
- * Get the current user's free key for a given registrator + game, identified by IP.
- * Each game is independent — a user can have one active free key per game.
- */
-export async function getMyFreeKey(ip: string, registrator: string, game: string) {
-  await dbConnect();
-
-  // Collect all tracker keyIds for this IP
-  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
-    .sort({ createdAt: -1 })
-    .lean();
-
-  if (!trackers.length) return { error: 'No free key found for your IP' };
+  if (!trackers.length) return { error: 'No free key found' };
 
   const keyIds = trackers.map(t => t.keyId);
 
-  // Find the most recent free key for this IP + registrator + game
   const key = await Key.findOne({
     _id: { $in: keyIds },
     isFreeKey: true,
@@ -341,7 +196,7 @@ export async function getMyFreeKey(ip: string, registrator: string, game: string
     game: game.toUpperCase(),
   }).sort({ createdAt: -1 }).lean() as import('@/types').KeyDoc | null;
 
-  if (!key) return { error: 'No free key found for your IP' };
+  if (!key) return { error: 'No free key found' };
 
   const now = new Date();
   const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
@@ -357,19 +212,19 @@ export async function getMyFreeKey(ip: string, registrator: string, game: string
     expiredDate: key.expiredDate ? new Date(key.expiredDate).toISOString() : null,
     deviceCount: key.devices?.length ?? 0,
     resetsRemaining,
-    duration: key.duration || '1h',
+    duration: key.duration || '3h',
   };
 }
 
-export async function getMyFreeKeyHistory(ip: string, registrator: string) {
+export async function getMyFreeKeyHistory(username: string, registrator: string) {
   await dbConnect();
 
-  // Find all trackers for this IP. 
-  // We populate the keyId to get the full key document in one go.
-  const trackers = await IpTracker.find({ ipAddress: ip, isBanned: false })
+  if (!username) return [];
+
+  const trackers = await IpTracker.find({ username, isBanned: false })
     .populate({
       path: 'keyId',
-      match: { isFreeKey: true, registrator } // Only include keys for this reseller
+      match: { isFreeKey: true, registrator }
     })
     .sort({ createdAt: -1 })
     .lean();
@@ -378,12 +233,10 @@ export async function getMyFreeKeyHistory(ip: string, registrator: string) {
 
   const now = new Date();
   
-  // Map trackers to history entries. 
-  // If keyId is null (e.g. key deleted or didn't match the 'match' filter), we filter it out.
   const results = trackers
-    .filter(t => t.keyId && typeof t.keyId === 'object') // Ensure key was found and matched
+    .filter(t => t.keyId && typeof t.keyId === 'object')
     .map((tracker) => {
-      const key = tracker.keyId as any; // Cast to any because it's populated
+      const key = tracker.keyId as any;
       
       const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
       const isActivated = (key.devices?.length ?? 0) > 0;
@@ -403,20 +256,19 @@ export async function getMyFreeKeyHistory(ip: string, registrator: string) {
   return results;
 }
 
-export async function resetFreeKeyDevices(userKey: string, ip: string) {
+export async function resetFreeKeyDevices(userKey: string, username: string) {
   await dbConnect();
 
-  if (!ip || ip === 'unknown') {
-    return { error: 'Unable to verify your IP address. Please try again.' };
+  if (!username) {
+    return { error: 'You must be logged in' };
   }
 
   const key = await Key.findOne({ userKey, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
   if (!key) return { error: 'Key not found' };
 
-  // Verify IP ownership via IpTracker
-  const tracker = await IpTracker.findOne({ keyId: key._id, isBanned: false }).lean();
-  if (!tracker || tracker.generatorIp !== ip) {
-    return { error: 'You can only reset devices from the same IP that generated this key' };
+  const tracker = await IpTracker.findOne({ keyId: key._id, username }).lean();
+  if (!tracker) {
+    return { error: 'You can only reset devices for your own key' };
   }
 
   const resetsDone = key.deviceResetCount ?? 0;
@@ -433,10 +285,10 @@ export async function getTopAdClaimers(limit: number = 10) {
   await dbConnect();
 
   const results = await IpTracker.aggregate([
-    { $match: { isAdClaim: true } },
+    { $match: { isAdClaim: true, username: { $ne: '' } } },
     {
       $group: {
-        _id: '$ipAddress',
+        _id: '$username',
         count: { $sum: 1 },
         lastClaim: { $max: '$createdAt' }
       }
@@ -446,16 +298,12 @@ export async function getTopAdClaimers(limit: number = 10) {
     {
       $project: {
         _id: 0,
-        ip: '$_id',
+        username: '$_id',
         count: 1,
         lastClaim: 1
       }
     }
   ]);
 
-  // Mask IP for privacy
-  return results.map(r => ({
-    ...r,
-    maskedIp: r.ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, '$1.***.***.$4'),
-  }));
+  return results;
 }

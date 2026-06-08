@@ -125,6 +125,7 @@ export interface LibLogDoc {
 export interface IpTrackerDoc {
   _id: ObjectId;
   userId: string;
+  username: string;
   ipAddress: string;
   generatorIp: string;
   keyId: string | ObjectId;

@@ -3,6 +3,7 @@ import type { IpTrackerDoc } from '@/types';
 
 const IpTrackerSchema = new Schema<IpTrackerDoc & Document>({
   userId: { type: String, default: '0' },
+  username: { type: String, default: '' },
   ipAddress: { type: String, required: true },
   generatorIp: { type: String, default: '' },
   keyId: { type: Schema.Types.ObjectId, required: true, ref: 'Key' },
@@ -17,8 +18,9 @@ const IpTrackerSchema = new Schema<IpTrackerDoc & Document>({
 IpTrackerSchema.index({ ipAddress: 1, createdAt: -1 });
 IpTrackerSchema.index({ keyId: 1 });
 IpTrackerSchema.index({ ipAddress: 1, isBanned: 1 });
-IpTrackerSchema.index({ userId: 1 });
-IpTrackerSchema.index({ isAdClaim: 1, ipAddress: 1 });
+IpTrackerSchema.index({ username: 1 });
+IpTrackerSchema.index({ username: 1, createdAt: -1 });
+IpTrackerSchema.index({ isAdClaim: 1, username: 1 });
 // TTL index to automatically clean up old unbanned entries after 7 days
 IpTrackerSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60, partialFilterExpression: { isBanned: false } });
 

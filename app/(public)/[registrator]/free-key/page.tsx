@@ -30,7 +30,7 @@ interface KeyHistoryEntry {
   key: string; game: string; generatedAt: string | null; expiredDate: string | null;
   status: number; isActivated: boolean; isExpired: boolean; isAdClaim?: boolean;
 }
-interface TopUser { maskedIp: string; count: number; lastClaim: string; }
+interface TopUser { username: string; count: number; lastClaim: string; }
 interface StoreInfo { storeName: string; isActive: boolean; }
 interface AuthUser { username: string; fullname: string; level: number; }
 type Tab = 'key' | 'history' | 'downloads' | 'top-users';
@@ -825,7 +825,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
               <div className="space-y-2">
                 {topUsers.map((u, i) => (
                   <div
-                    key={u.maskedIp}
+                    key={u.username}
                     className={i === 0 ? 'leader-row rank-1' : i === 1 ? 'leader-row rank-2' : i === 2 ? 'leader-row rank-3' : 'leader-row'}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -833,7 +833,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                         {i === 0 ? <Trophy className="h-4 w-4" /> : `#${i + 1}`}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-mono text-xs font-extrabold" style={{ color: 'var(--text-hi)' }}>User {u.maskedIp}</p>
+                        <p className="font-mono text-xs font-extrabold" style={{ color: 'var(--text-hi)' }}>@{u.username}</p>
                         <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>Last: {formatDate(u.lastClaim)}</p>
                       </div>
                     </div>
