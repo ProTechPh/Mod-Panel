@@ -12,7 +12,7 @@ export const registerSchema = z.object({
   fullname: z.string().min(1, 'Full name is required').max(100),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  referralCode: z.string().min(1, 'Referral code is required'),
+  referralCode: z.string().optional(),
   turnstileToken: z.string().min(1, 'CAPTCHA verification is required'),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',

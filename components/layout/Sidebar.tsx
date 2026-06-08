@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
-  { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
-  { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
-  { href: '/history', label: 'History', icon: History, minLevel: 3 },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 4 },
+  { href: '/keys', label: 'Keys', icon: Key, minLevel: 4 },
+  { href: '/settings', label: 'Settings', icon: Shield, minLevel: 4 },
+  { href: '/history', label: 'History', icon: History, minLevel: 4 },
   { href: '/store', label: 'Store', icon: ShoppingCart, minLevel: 2 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
@@ -25,7 +25,7 @@ const navItems = [
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
   { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },
-  { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 3 },
+  { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 4 },
 ];
 
 const sectionTitle = (label: string) => (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import {
   ShoppingCart, Loader2, Gamepad2, Smartphone, Zap,
   ShieldCheck, Trophy, Sparkles, KeyRound, Star, ArrowRight, CreditCard, Tag, Activity,
+  LogIn, UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,9 +17,11 @@ import { GradientOrbs } from '@/components/landing/GradientOrbs';
 import { SparkleCanvas } from '@/components/landing/SparkleCanvas';
 import { GrainOverlay } from '@/components/landing/GrainOverlay';
 import { PageHeader } from '@/components/shared/PageHeader';
+import Link from 'next/link';
 
 interface Store { storeName: string; storeDescription: string; }
 interface Product { _id: string; game: string; label: string; duration: number | string; maxDevices: number; price: number; }
+interface AuthUser { username: string; fullname: string; level: number; }
 
 function formatDuration(duration: number | string): string {
   if (duration === 'lifetime') return 'Lifetime';
@@ -59,6 +62,7 @@ const DURATION_STYLES: Record<DurationKind, { color: string; bg: string; border:
 
 export default function StorePage() {
   const { registrator } = useParams<{ registrator: string }>();
+  const router = useRouter();
 
   const [store, setStore] = useState<Store | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -67,6 +71,21 @@ export default function StorePage() {
   const [buyerName, setBuyerName] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setAuthUser(data.user);
+        }
+      } catch {}
+      finally { setAuthLoading(false); }
+    })();
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -85,15 +104,29 @@ export default function StorePage() {
     })();
   }, [registrator]);
 
-  const openBuyDialog = (product: Product) => { setSelectedProduct(product); setBuyerName(''); setDialogOpen(true); };
+  const openBuyDialog = (product: Product) => {
+    if (!authUser) {
+      toast.error('Please register or sign in to purchase');
+      router.push('/register');
+      return;
+    }
+    setSelectedProduct(product);
+    setBuyerName(authUser.fullname || authUser.username);
+    setDialogOpen(true);
+  };
 
   const handlePurchase = async () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || !authUser) return;
     setPurchasing(true);
     try {
       const res = await fetch('/api/store/checkout', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: selectedProduct._id, registrator, buyerName: buyerName.trim() }),
+        body: JSON.stringify({
+          productId: selectedProduct._id,
+          registrator,
+          buyerName: authUser.fullname || authUser.username,
+          buyerUsername: authUser.username,
+        }),
       });
       const data = await res.json();
       if (res.ok && data.checkoutUrl) window.location.href = data.checkoutUrl;
@@ -151,6 +184,35 @@ export default function StorePage() {
       </header>
 
       <main className="relative z-10 max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-10">
+        {!authLoading && !authUser && (
+          <div
+            className="rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap"
+            style={{ background: 'rgba(20, 184, 184, 0.06)', border: '1px solid rgba(20, 184, 184, 0.2)' }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(20, 184, 184, 0.12)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>
+                <LogIn className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+              </div>
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>Sign in to purchase</p>
+                <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Create an account to buy keys and manage your purchases.</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <LogIn className="h-3.5 w-3.5" /> Sign In
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5" /> Register
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <PageHeader
           eyebrow="Official Reseller"
           title={store.storeName.toUpperCase()}
@@ -349,15 +411,22 @@ export default function StorePage() {
                   </p>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="flex items-center gap-1 text-xs font-mono uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
-                    Your Name <span className="font-normal normal-case" style={{ color: 'var(--text-lo)' }}>(optional)</span>
-                  </Label>
-                  <Input value={buyerName} onChange={e => setBuyerName(e.target.value)} placeholder="// e.g. Juan dela Cruz" />
-                  <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>{'// used for order reference only'}</p>
-                </div>
+                {authUser && (
+                  <div
+                    className="rounded-lg px-3 py-2 flex items-center gap-2"
+                    style={{ background: 'rgba(20, 184, 184, 0.06)', border: '1px solid var(--border)' }}
+                  >
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(20, 184, 184, 0.15)', color: 'var(--teal-2)' }}>
+                      {(authUser.fullname || authUser.username).charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium" style={{ color: 'var(--text-hi)' }}>{authUser.fullname || authUser.username}</p>
+                      <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>@{authUser.username}</p>
+                    </div>
+                  </div>
+                )}
 
-                <Button className="w-full" onClick={handlePurchase} disabled={purchasing}>
+                <Button className="w-full" onClick={handlePurchase} disabled={purchasing || !authUser}>
                   {purchasing
                     ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Redirecting…</>
                     : <><ShoppingCart className="h-3.5 w-3.5 mr-1.5" /> Proceed to Pay ₱{selectedProduct.price.toFixed(0)}</>

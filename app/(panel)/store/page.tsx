@@ -47,6 +47,7 @@ interface Order {
   status: string;
   generatedKey: string | null;
   buyerName: string;
+  buyerUsername: string;
   registrator: string;
   createdAt: string;
 }
@@ -597,9 +598,12 @@ export default function StorePage() {
                             <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ color: 'var(--text-mid)', background: 'rgba(2, 6, 8, 0.6)' }}>{o.registrator}</span>
                           )}
                         </div>
-                        {o.buyerName && (
-                          <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Buyer: {o.buyerName}</p>
-                        )}
+                      {o.buyerName && (
+                        <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+                          Buyer: {o.buyerName}
+                          {o.buyerUsername && <span className="font-mono ml-1" style={{ color: 'var(--text-lo)' }}>@{o.buyerUsername}</span>}
+                        </p>
+                      )}
                         {o.generatedKey && (
                           <div className="flex items-center gap-2 mt-1">
                             <KeyRound className="h-3.5 w-3.5 shrink-0" style={{ color: 'var(--teal-2)' }} />

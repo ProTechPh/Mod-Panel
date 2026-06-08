@@ -199,12 +199,14 @@ export default function KeysPage() {
         highlight="REGISTRY"
         sub="Issue, track, and revoke licence keys across all games."
         actions={
-          <Link href="/keys/generate">
-            <Button>
-              <KeyRound className="h-3.5 w-3.5 mr-1.5" />
-              Generate
-            </Button>
-          </Link>
+          user?.level !== 4 && (
+            <Link href="/keys/generate">
+              <Button>
+                <KeyRound className="h-3.5 w-3.5 mr-1.5" />
+                Generate
+              </Button>
+            </Link>
+          )
         }
       />
 

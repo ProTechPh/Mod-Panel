@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongoose';
 
-export type UserLevel = 1 | 2 | 3;
+export type UserLevel = 1 | 2 | 3 | 4;
 export type UserStatus = 1 | 2 | 3;
 export type KeyStatus = 0 | 1;
 export type MaintenanceStatus = 'on' | 'off';

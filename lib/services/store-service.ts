@@ -121,6 +121,7 @@ export async function createOrder(data: {
   maxDevices: number;
   price: number;
   buyerName?: string;
+  buyerUsername?: string;
   paymongoCheckoutSessionId?: string;
 }) {
   await dbConnect();
@@ -133,6 +134,7 @@ export async function createOrder(data: {
     maxDevices: data.maxDevices,
     price: data.price,
     buyerName: data.buyerName || '',
+    buyerUsername: data.buyerUsername || '',
     paymongoCheckoutSessionId: data.paymongoCheckoutSessionId || '',
     status: 'pending',
     generatedKey: null,

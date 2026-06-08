@@ -48,17 +48,9 @@ export async function registerUser(data: {
   email: string;
   fullname: string;
   password: string;
-  referralCode: string;
+  referralCode?: string;
 }) {
   await dbConnect();
-
-  const { createHash } = await import('crypto');
-  const codeHash = createHash('md5').update(data.referralCode).digest('hex');
-
-  const Referral = (await import('@/lib/db/models/Referral')).default;
-  const referral = await Referral.findOne({ code: codeHash });
-
-  if (!referral || referral.usedBy) return null;
 
   const existingUser = await User.findOne({
     $or: [{ username: data.username }, { email: data.email }],
@@ -67,23 +59,44 @@ export async function registerUser(data: {
 
   const hashedPassword = await hashPassword(data.password);
   const now = new Date();
-  const durationMs = referral.accExpiration.getTime() - referral.createdAt.getTime();
-  const expirationDate = new Date(now.getTime() + durationMs);
+
+  let level: UserLevel = 4;
+  let saldo = 0;
+  let uplink: string | undefined;
+  let expirationDate: Date;
+
+  if (data.referralCode) {
+    const { createHash } = await import('crypto');
+    const codeHash = createHash('md5').update(data.referralCode).digest('hex');
+
+    const Referral = (await import('@/lib/db/models/Referral')).default;
+    const referral = await Referral.findOne({ code: codeHash });
+
+    if (!referral || referral.usedBy) return null;
+
+    const durationMs = referral.accExpiration.getTime() - referral.createdAt.getTime();
+    expirationDate = new Date(now.getTime() + durationMs);
+    level = referral.level;
+    saldo = referral.setSaldo;
+    uplink = referral.createdBy;
+
+    await Referral.updateOne({ _id: referral._id }, { usedBy: data.username });
+  } else {
+    expirationDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  }
 
   const user = await User.create({
     username: data.username,
     email: data.email,
     fullname: data.fullname,
     password: hashedPassword,
-    level: referral.level,
-    saldo: referral.setSaldo,
+    level,
+    saldo,
     status: 1,
-    uplink: referral.createdBy,
+    uplink,
     expirationDate,
     loggedIn: 0,
   });
-
-  await Referral.updateOne({ _id: referral._id }, { usedBy: data.username });
 
   return {
     userId: user._id.toString(),

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   Clock, Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
   Download, Plus, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
   ShieldCheck, Cpu, AlertTriangle, Activity, Globe, ExternalLink, Hash, Calendar,
+  LogIn, UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -32,6 +33,7 @@ interface KeyHistoryEntry {
 }
 interface TopUser { maskedIp: string; count: number; lastClaim: string; }
 interface StoreInfo { storeName: string; isActive: boolean; }
+interface AuthUser { username: string; fullname: string; level: number; }
 type Tab = 'key' | 'history' | 'downloads' | 'top-users';
 
 function formatCountdown(targetIso: string | null): string {
@@ -77,6 +79,7 @@ export default function FreeKeyPage() {
 
 function FreeKeyContent({ registrator }: { registrator: string }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [games, setGames] = useState<GameOption[]>([]);
   const [game, setGame] = useState(searchParams.get('game') || '');
@@ -101,6 +104,9 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [ipAddress, setIpAddress] = useState<string>('');
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [topUsersLoading, setTopUsersLoading] = useState(false);
+
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
     if (!selectedGame) return;
@@ -132,6 +138,19 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       setTopUsers(Array.isArray(data) ? data : []);
     } catch { setTopUsers([]); }
     finally { setTopUsersLoading(false); }
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setAuthUser(data.user);
+        }
+      } catch {}
+      finally { setAuthLoading(false); }
+    })();
   }, []);
 
   useEffect(() => {
@@ -259,6 +278,11 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authUser) {
+      toast.error('Please register or sign in to generate keys');
+      router.push('/register');
+      return;
+    }
     if (!turnstileToken) { toast.error('Complete captcha verification'); return; }
     setGenerating(true);
     try {
@@ -372,6 +396,35 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       </header>
 
       <main className="relative z-10 max-w-lg mx-auto px-4 py-6 md:py-8 space-y-5">
+        {!authLoading && !authUser && (
+          <div
+            className="rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap"
+            style={{ background: 'rgba(20, 184, 184, 0.06)', border: '1px solid rgba(20, 184, 184, 0.2)' }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(20, 184, 184, 0.12)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>
+                <LogIn className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+              </div>
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>Sign in to generate keys</p>
+                <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Create an account to claim free keys and track your history.</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <LogIn className="h-3.5 w-3.5" /> Sign In
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5" /> Register
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="text-center space-y-4">
           <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl"
                style={{ background: 'rgba(20, 184, 184, 0.1)', border: '1px solid rgba(20, 184, 184, 0.3)' }}>
@@ -635,12 +688,14 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       />
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={generating || !turnstileToken}>
+                    <Button type="submit" className="w-full" disabled={generating || !turnstileToken || !authUser}>
                       {generating
                         ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
-                        : duration === '3h'
-                          ? <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
-                          : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Get Free {game} Key</>
+                        : !authUser
+                          ? <><LogIn className="h-3.5 w-3.5 mr-1.5" /> Sign in to Generate</>
+                          : duration === '3h'
+                            ? <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
+                            : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Get Free {game} Key</>
                       }
                     </Button>
 
@@ -691,6 +746,20 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
 
         {tab === 'history' && (
           <div className="space-y-3 fade-up d1">
+            {!authLoading && !authUser ? (
+              <Card>
+                <CardContent className="empty-state">
+                  <div className="empty-icon-ring"><LogIn size={26} /></div>
+                  <div className="empty-title">Sign In Required</div>
+                  <div className="empty-sub">Sign in to view your key history.</div>
+                  <Link href="/login">
+                    <Button className="mt-3 gap-1.5">
+                      <LogIn className="h-3.5 w-3.5" /> Sign In
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ) : (<>
             <div className="flex items-center justify-between">
               <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
                 <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP
@@ -768,6 +837,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                 </div>
               </div>
             )}
+            </>)}
           </div>
         )}
 

@@ -7,7 +7,7 @@ import { Logger } from '@/lib/utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productId, registrator, buyerName } = body;
+    const { productId, registrator, buyerName, buyerUsername } = body;
 
     if (!productId || !registrator) {
       return NextResponse.json({ error: 'productId and registrator are required' }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       maxDevices: product.maxDevices,
       price: product.price,
       buyerName: buyerName?.trim() || '',
+      buyerUsername: buyerUsername?.trim() || '',
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

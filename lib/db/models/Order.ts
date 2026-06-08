@@ -17,6 +17,7 @@ export interface OrderDoc {
   status: OrderStatus;
   generatedKey: string | null;
   buyerName: string;
+  buyerUsername: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +39,7 @@ const OrderSchema = new Schema<OrderDoc & Document>({
   },
   generatedKey: { type: String, default: null },
   buyerName: { type: String, default: '' },
+  buyerUsername: { type: String, default: '' },
 }, { timestamps: true, collection: 'store_orders' });
 
 OrderSchema.index({ registrator: 1 });

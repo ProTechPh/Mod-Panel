@@ -64,8 +64,8 @@ export default function UsersPage() {
   };
   const statusLabel = (s: number) => s === 1 ? 'Active' : s === 2 ? 'Banned' : 'Expired';
   const statusKind = (s: number): 'active' | 'blocked' | 'warning' => s === 1 ? 'active' : s === 2 ? 'blocked' : 'warning';
-  const levelLabel = (l: number) => l === 1 ? 'Owner' : l === 2 ? 'Admin' : 'Reseller';
-  const levelKind = (l: number): 'success' | 'info' | 'neutral' => l === 1 ? 'success' : l === 2 ? 'info' : 'neutral';
+  const levelLabel = (l: number) => l === 1 ? 'Owner' : l === 2 ? 'Admin' : l === 3 ? 'Reseller' : 'Buyer';
+  const levelKind = (l: number): 'success' | 'info' | 'warning' | 'neutral' => l === 1 ? 'success' : l === 2 ? 'info' : l === 3 ? 'warning' : 'neutral';
 
   return (
     <div className="space-y-4">

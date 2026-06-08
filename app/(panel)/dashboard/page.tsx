@@ -23,7 +23,7 @@ interface DashboardAnalytics {
   keyTrends: { date: string; count: number }[];
   gameDistribution: { game: string; count: number }[];
   statusDistribution: { status: string; count: number }[];
-  userLevelDistribution: { owners: number; admins: number; resellers: number };
+  userLevelDistribution: { owners: number; admins: number; resellers: number; buyers: number };
   recentActivity: { date: string; created: number; expired: number }[];
   topPerformers: { username: string; fullname: string; keysUsed: number; totalKeys: number; rank: number }[];
 }
@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const usageRate = total > 0 ? Math.round((active / total) * 100) : 0;
 
   const level = user?.level ?? 3;
-  const levelLabel = level === 1 ? 'Owner' : level === 2 ? 'Admin' : 'Reseller';
+  const levelLabel = level === 1 ? 'Owner' : level === 2 ? 'Admin' : level === 3 ? 'Reseller' : 'Buyer';
 
   return (
     <div className="space-y-6">
@@ -603,7 +603,9 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
       ? { bg: 'rgba(240, 192, 64, 0.12)', color: 'var(--gold)', border: 'rgba(240, 192, 64, 0.3)' }
       : level === 2
       ? { bg: 'rgba(96, 165, 250, 0.12)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.3)' }
-      : { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' };
+      : level === 3
+      ? { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' }
+      : { bg: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' };
 
   return (
     <div className="panel panel-corner fade-up d4">
@@ -631,7 +633,7 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
                 letterSpacing: '0.08em',
               }}
             >
-              {level === 1 ? 'Owner' : level === 2 ? 'Admin' : 'Reseller'}
+              {level === 1 ? 'Owner' : level === 2 ? 'Admin' : level === 3 ? 'Reseller' : 'Buyer'}
             </span>
           }
         />

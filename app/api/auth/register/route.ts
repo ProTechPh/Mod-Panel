@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       const { delayMs } = recordFailedAttempt(ip);
       await new Promise(r => setTimeout(r, delayMs));
-      return NextResponse.json({ error: 'Invalid or already used referral code, or username/email taken' }, { status: 400 });
+      return NextResponse.json({ error: 'Username or email already taken' }, { status: 400 });
     }
 
     clearFailedAttempts(ip);
