@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongoose';
 
-export type UserLevel = 1 | 2 | 3 | 4;
+export type UserLevel = 1 | 2 | 3;
 export type UserStatus = 1 | 2 | 3;
 export type KeyStatus = 0 | 1;
 export type MaintenanceStatus = 'on' | 'off';
@@ -17,9 +17,6 @@ export interface UserDoc {
   status: UserStatus;
   uplink: string;
   userIp: string;
-  telegramContact: string;
-  telegramId?: number | null;
-  telegramUsername?: string;
   expirationDate: Date;
   loggedIn: number;
   resetLinkToken?: string;
@@ -69,8 +66,6 @@ export interface GameSettingDoc {
   maintenanceStartedAt: Date | null;
   downloadLink: string;
   modName: string;
-  telegramChannel: string;
-  telegramGroup: string;
   registrator: string;
   announcement: string;
   announcementStatus: 'on' | 'off';
@@ -86,8 +81,6 @@ export interface ServerConfigDoc {
   maintenanceStartedAt: Date | null;
   announcement: string;
   announcementStatus: 'on' | 'off';
-  telegramChannel: string;
-  telegramGroup: string;
   updatedAt: Date;
 }
 
@@ -108,7 +101,6 @@ export interface LibDoc {
   fileSizeBytes: number;
   uploadedBy: string;
   uploadedAt: Date;
-  ftpConfigId?: string;
 }
 
 export interface LibLogDoc {
@@ -170,45 +162,3 @@ export const KEY_INACTIVE: KeyStatus = 0;
 export const STATIC_WORDS = 'Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E';
 export const SERVER_CONFIG_ID = '000000000000000000000001';
 
-export type OrderStatus = 'pending' | 'paid' | 'failed' | 'expired';
-
-export interface StoreDoc {
-  _id: ObjectId;
-  registrator: string;
-  storeName: string;
-  storeDescription: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface StoreProductDoc {
-  _id: ObjectId;
-  registrator: string;
-  game: string;
-  label: string;
-  duration: Duration;
-  maxDevices: number;
-  price: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface OrderDoc {
-  _id: ObjectId;
-  registrator: string;
-  productId: ObjectId;
-  game: string;
-  label: string;
-  duration: Duration;
-  maxDevices: number;
-  price: number;
-  paymongoCheckoutSessionId: string;
-  paymongoPaymentIntentId: string;
-  status: OrderStatus;
-  generatedKey: string | null;
-  buyerName: string;
-  createdAt: Date;
-  updatedAt: Date;
-}

@@ -46,24 +46,6 @@ export function clearConfigCache() {
   gameCacheExpiry = 0;
 }
 
-const DEFAULT_CONTACT = '@CanKillYouForever';
-
-const contactCache = new Map<string, { contact: string; expiry: number }>();
-
-async function getTelegramContact(registrator: string, gameSetting?: GameSettingDoc | null): Promise<string> {
-  if (gameSetting?.telegramChannel) return gameSetting.telegramChannel;
-  if (registrator === 'FreeKey') return DEFAULT_CONTACT;
-
-  const now = Date.now();
-  const cached = contactCache.get(registrator);
-  if (cached && now < cached.expiry) return cached.contact;
-
-  const admin = await User.findOne({ username: registrator }).lean();
-  const contact = admin?.telegramContact || DEFAULT_CONTACT;
-  contactCache.set(registrator, { contact, expiry: now + CONFIG_TTL_MS });
-  return contact;
-}
-
 export async function generateKeys(
   userId: string,
   username: string,
@@ -134,7 +116,6 @@ export async function validateKey(game: string, userKey: string, serial: string)
   const activeGame = normalizedGame;
 
   const gameSetting = await getGameSetting(activeGame, key.registrator);
-  const contact = await getTelegramContact(key.registrator, gameSetting);
 
   if (gameSetting && !gameSetting.connectEnabled) {
     return {
@@ -144,7 +125,7 @@ export async function validateKey(game: string, userKey: string, serial: string)
   }
 
   if (key.status !== 1) {
-    return { status: false, reason: `Suspended Key, Contact: ${contact}` };
+    return { status: false, reason: 'Suspended Key' };
   }
 
 
@@ -174,12 +155,12 @@ export async function validateKey(game: string, userKey: string, serial: string)
   }
 
   if (finalExpiredDate && new Date(finalExpiredDate) < now) {
-    return { status: false, reason: `Expired Key, Contact: ${contact}` };
+    return { status: false, reason: 'Expired Key' };
   }
 
   const { allowed, shouldAdd } = checkDeviceSlot(key.devices || [], serial, key.maxDevices);
   if (!allowed) {
-    return { status: false, reason: `Max Device Reached, Contact: ${contact}` };
+    return { status: false, reason: 'Max Device Reached' };
   }
   if (shouldAdd) {
     update.$push = { devices: serial };

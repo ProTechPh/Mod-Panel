@@ -10,7 +10,6 @@ const LibSchema = new Schema<LibDoc & Document>({
   fileSizeBytes: { type: Number, default: 0 },
   uploadedBy: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now },
-  ftpConfigId: { type: Schema.Types.ObjectId, ref: 'FtpConfig' },
 }, { collection: 'libs' });
 
 LibSchema.index({ uploadedAt: -1 });

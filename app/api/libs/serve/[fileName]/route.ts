@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const stream = await downloadFromFtp(fileName, lib.ftpConfigId);
+    const stream = await downloadFromFtp(fileName);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/octet-stream',
@@ -66,7 +66,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         ...headers,
         'Cache-Control': 'public, max-age=86400, must-revalidate',
         'CDN-Cache-Control': 'public, max-age=86400, must-revalidate',
-        'Cloudflare-CDN-Cache-Control': 'public, max-age=86400, must-revalidate',
       },
     });
   } catch {

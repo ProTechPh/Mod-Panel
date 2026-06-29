@@ -23,8 +23,6 @@ interface GameSetting {
   maintenanceMessage: string;
   downloadLink: string;
   modName: string;
-  telegramChannel: string;
-  telegramGroup: string;
   registrator: string;
   announcement: string;
   announcementStatus: string;
@@ -104,8 +102,6 @@ export default function GameSettingsPage() {
         maintenanceMessage: editGame.maintenanceMessage,
         downloadLink: editGame.downloadLink,
         modName: editGame.modName,
-        telegramChannel: editGame.telegramChannel,
-        telegramGroup: editGame.telegramGroup,
         announcement: editGame.announcement,
         announcementStatus: editGame.announcementStatus,
       }),
@@ -225,16 +221,6 @@ export default function GameSettingsPage() {
                   <SettingsIcon className="h-3 w-3" style={{ color: 'var(--teal-2)' }} /> Mod Name
                 </Label>
                 <Input value={editGame.modName || ''} onChange={e => setEditGame({ ...editGame, modName: e.target.value })} placeholder="// e.g. Winter Mod" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Telegram Channel</Label>
-                  <Input value={editGame.telegramChannel || ''} onChange={e => setEditGame({ ...editGame, telegramChannel: e.target.value })} placeholder="https://t.me/channel" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>Telegram Group</Label>
-                  <Input value={editGame.telegramGroup || ''} onChange={e => setEditGame({ ...editGame, telegramGroup: e.target.value })} placeholder="https://t.me/group" />
-                </div>
               </div>
               <div className="space-y-4 border-t pt-4 mt-2" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-hi)' }}>

@@ -16,9 +16,6 @@ export async function GET(request: NextRequest) {
       level: authUser.level,
       fullname: user.fullname || '',
       saldo: user.saldo ?? 0,
-      telegramContact: user.telegramContact || '',
-      telegramId: user.telegramId ?? null,
-      telegramUsername: user.telegramUsername || '',
     },
   });
 }

@@ -16,8 +16,6 @@ export async function getServerConfig() {
       maintenanceStartedAt: null,
       announcement: '',
       announcementStatus: 'off',
-      telegramChannel: '',
-      telegramGroup: '',
     });
   }
   return {
@@ -27,8 +25,6 @@ export async function getServerConfig() {
     maintenanceStartedAt: config.maintenanceStartedAt || null,
     announcement: config.announcement || '',
     announcementStatus: config.announcementStatus || 'off',
-    telegramChannel: config.telegramChannel || '',
-    telegramGroup: config.telegramGroup || '',
     _id: config._id.toString(),
   };
 }
@@ -39,8 +35,6 @@ export async function updateServerConfig(data: {
   maintenanceMessage?: string;
   announcement?: string;
   announcementStatus?: 'on' | 'off';
-  telegramChannel?: string;
-  telegramGroup?: string;
 }) {
   await dbConnect();
 
@@ -49,9 +43,6 @@ export async function updateServerConfig(data: {
   if (data.maintenanceMessage !== undefined) update.maintenanceMessage = data.maintenanceMessage;
   if (data.announcement !== undefined) update.announcement = data.announcement;
   if (data.announcementStatus !== undefined) update.announcementStatus = data.announcementStatus;
-  if (data.telegramChannel !== undefined) update.telegramChannel = data.telegramChannel;
-  if (data.telegramGroup !== undefined) update.telegramGroup = data.telegramGroup;
-
   // ── Maintenance timer pause / resume ─────────────────────────────────────
   if (data.maintenanceStatus !== undefined) {
     update.maintenanceStatus = data.maintenanceStatus;

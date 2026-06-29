@@ -50,16 +50,6 @@ export function ActivityFeed({ version }: ActivityFeedProps) {
         </div>
 
         <div className="activity-item">
-          <span className="activity-dot purple" />
-          <div>
-            <div className="activity-text">
-              <strong>24/7 Support</strong> — Telegram helpdesk always online.
-            </div>
-            <div className="activity-time">t.me/CanKillYouForever</div>
-          </div>
-        </div>
-
-        <div className="activity-item">
           <span className="activity-dot green" />
           <div>
             <div className="activity-text">

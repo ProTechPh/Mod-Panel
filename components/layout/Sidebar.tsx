@@ -6,27 +6,24 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
-  History, Shield, BookOpen, ScrollText, ShoppingCart,
-  BarChart3, Megaphone, ClipboardList, Store,
+  History, Shield, BookOpen, ScrollText,
+  BarChart3, Megaphone, ClipboardList,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 4 },
-  { href: '/keys', label: 'Keys', icon: Key, minLevel: 4 },
-  { href: '/marketplace', label: 'Marketplace', icon: Store, minLevel: 4 },
-  { href: '/settings', label: 'Settings', icon: Shield, minLevel: 4 },
-  { href: '/history', label: 'History', icon: History, minLevel: 4 },
-  { href: '/store', label: 'Store Manager', icon: ShoppingCart, minLevel: 2 },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
+  { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
+  { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
+  { href: '/history', label: 'History', icon: History, minLevel: 3 },
   { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
   { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
-  { href: '/admin/ftp-config', label: 'FTP Config', icon: Server, minLevel: 1 },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },
   { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
   { href: '/admin/audit', label: 'Audit Log', icon: ClipboardList, minLevel: 1 },
   { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
   { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
   { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },
-  { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 4 },
+  { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 3 },
 ];
 
 const sectionTitle = (label: string) => (
@@ -48,13 +45,13 @@ const sectionTitle = (label: string) => (
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const level = user?.level ?? 4;
+  const level = user?.level ?? 3;
 
   const filteredItems = navItems.filter(item => level <= item.minLevel);
 
   // Group items
   const userItems = filteredItems.filter(i =>
-    ['/dashboard', '/keys', '/marketplace', '/history', '/settings', '/terms', '/store', '/lib', '/docs'].includes(i.href)
+    ['/dashboard', '/keys', '/history', '/settings', '/terms', '/lib', '/docs'].includes(i.href)
   );
   const adminItems = filteredItems.filter(i => i.href.startsWith('/admin/') || i.href === '/server');
 

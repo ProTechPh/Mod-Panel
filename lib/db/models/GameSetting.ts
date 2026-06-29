@@ -11,8 +11,6 @@ const GameSettingSchema = new Schema<GameSettingDoc & Document>({
   maintenanceStartedAt: { type: Date, default: null },
   downloadLink: { type: String, default: '' },
   modName: { type: String, default: '' },
-  telegramChannel: { type: String, default: '' },
-  telegramGroup: { type: String, default: '' },
   registrator: { type: String, required: true },
   announcement: { type: String, default: '' },
   announcementStatus: { type: String, enum: ['on', 'off'], default: 'off' },

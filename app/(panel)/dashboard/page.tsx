@@ -6,7 +6,6 @@ import {
   Key, CheckCircle, Clock, XCircle, User, Shield, DollarSign,
   TrendingUp, KeyRound, History, Activity, Gamepad2, Sparkles,
   ArrowUpRight, Zap, Terminal, Activity as Pulse, AlertTriangle, Timer,
-  ShoppingCart, Store,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -24,7 +23,7 @@ interface DashboardAnalytics {
   keyTrends: { date: string; count: number }[];
   gameDistribution: { game: string; count: number }[];
   statusDistribution: { status: string; count: number }[];
-  userLevelDistribution: { owners: number; admins: number; resellers: number; buyers: number };
+  userLevelDistribution: { owners: number; admins: number; resellers: number };
   recentActivity: { date: string; created: number; expired: number }[];
   topPerformers: { username: string; fullname: string; keysUsed: number; totalKeys: number; rank: number }[];
 }
@@ -113,7 +112,7 @@ export default function DashboardPage() {
   const usageRate = total > 0 ? Math.round((active / total) * 100) : 0;
 
   const level = user?.level ?? 3;
-  const levelLabel = level === 1 ? 'Owner' : level === 2 ? 'Admin' : level === 3 ? 'Reseller' : 'Buyer';
+  const levelLabel = level === 1 ? 'Owner' : level === 2 ? 'Admin' : 'Reseller';
 
   return (
     <div className="space-y-6">
@@ -167,20 +166,11 @@ export default function DashboardPage() {
               Your command centre is online. Manage your keys, monitor activity, and dominate the market.
             </p>
             <div className="cmd-actions">
-              {(user?.level as number) !== 4 && (
-                <Link href="/keys/generate" className="cmd-btn cmd-btn-primary">
-                  <KeyRound size={14} />
-                  <span>Generate Keys</span>
-                  <ArrowUpRight size={12} className="cmd-btn-arrow" />
-                </Link>
-              )}
-              {(user?.level as number) === 4 && (
-                <Link href="/marketplace" className="cmd-btn cmd-btn-primary">
-                  <ShoppingCart size={14} />
-                  <span>Browse Marketplace</span>
-                  <ArrowUpRight size={12} className="cmd-btn-arrow" />
-                </Link>
-              )}
+              <Link href="/keys/generate" className="cmd-btn cmd-btn-primary">
+                <KeyRound size={14} />
+                <span>Generate Keys</span>
+                <ArrowUpRight size={12} className="cmd-btn-arrow" />
+              </Link>
               <Link href="/keys" className="cmd-btn cmd-btn-ghost">
                 <History size={14} />
                 <span>View Keys</span>
@@ -239,18 +229,15 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Stat row — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
+      {/* Stat row */}
       <div className="stat-row fade-up d1" style={{ marginBottom: 0 }}>
         <StatCard accent="var(--teal-2)" icon={<Key size={20} />} value={total} label="Total Keys" delta="Issued" deltaIcon={<Key size={10} />} deltaColor="var(--teal-2)" />
         <StatCard accent="var(--ecto-green)" icon={<CheckCircle size={20} />} value={active} label="Active" delta="Running" deltaIcon={<TrendingUp size={10} />} deltaColor="var(--ecto-green)" />
         <StatCard accent="var(--gold)" icon={<Clock size={20} />} value={expired} label="Expired" delta="Past due" deltaIcon={<Clock size={10} />} deltaColor="var(--gold)" />
         <StatCard accent="var(--red)" icon={<XCircle size={20} />} value={blocked} label="Blocked" delta="Restricted" deltaIcon={<XCircle size={10} />} deltaColor="var(--red)" />
       </div>
-      )}
 
-      {/* Charts row 1 — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
+      {/* Charts row 1 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <ChartPanel title="Key Creation Trends" icon={<TrendingUp size={16} />} badge="30 days">
           {analytics?.keyTrends?.length ? (
@@ -303,10 +290,8 @@ export default function DashboardPage() {
           ) : <EmptyChart />}
         </ChartPanel>
       </div>
-      )}
 
-      {/* Charts row 2 — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
+      {/* Charts row 2 */}
       <div className="grid gap-5 lg:grid-cols-2">
         <ChartPanel title="Key Activity (30 Days)" icon={<Activity size={16} />} badge="Live">
           {analytics?.recentActivity?.length ? (
@@ -349,10 +334,8 @@ export default function DashboardPage() {
           ) : <EmptyChart />}
         </ChartPanel>
       </div>
-      )}
 
-      {/* Key Usage Insights — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
+      {/* Key Usage Insights */}
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="panel panel-corner fade-up d3">
           <div className="panel-head">
@@ -423,68 +406,18 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      )}
 
-      {/* Top performers — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
+      {/* Top performers */}
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <TopPerformers data={analytics?.topPerformers ?? []} />
         </div>
         <AccountInfo user={user} />
       </div>
-      )}
 
-      {/* Buyer: simple account info */}
-      {(user?.level as number) === 4 && (
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="panel panel-corner fade-up d3">
-            <div className="panel-head">
-              <div className="panel-title">
-                <ShoppingCart size={16} className="ico" style={{ color: 'var(--teal-2)' }} />
-                Quick Actions
-              </div>
-            </div>
-            <div className="quick-actions">
-              <Link href="/marketplace" className="qa-btn">
-                <div className="qa-icon" style={{ background: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-2)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>
-                  <Store size={18} />
-                </div>
-                <span className="qa-label">Marketplace</span>
-              </Link>
-              <Link href="/keys" className="qa-btn">
-                <div className="qa-icon" style={{ background: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: '1px solid rgba(57, 255, 20, 0.25)' }}>
-                  <Key size={18} />
-                </div>
-                <span className="qa-label">My Keys</span>
-              </Link>
-              <Link href="/settings" className="qa-btn">
-                <div className="qa-icon" style={{ background: 'rgba(240, 192, 64, 0.1)', color: 'var(--gold)', border: '1px solid rgba(240, 192, 64, 0.25)' }}>
-                  <Shield size={18} />
-                </div>
-                <span className="qa-label">Settings</span>
-              </Link>
-              <Link href="/history" className="qa-btn">
-                <div className="qa-icon" style={{ background: 'rgba(167, 139, 250, 0.1)', color: 'var(--purple)', border: '1px solid rgba(167, 139, 250, 0.25)' }}>
-                  <History size={18} />
-                </div>
-                <span className="qa-label">History</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-        <AccountInfo user={user} />
-      </div>
-      )}
-
-      {/* FTP Stats + Lib Logs — admin/reseller only */}
-      {(user?.level as number) !== 4 && (
-      <>
+      {/* FTP Stats + Lib Logs */}
       <FtpStats />
       <LibDownloadLogs />
-      </>
-      )}
     </div>
   );
 }
@@ -671,9 +604,7 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
       ? { bg: 'rgba(240, 192, 64, 0.12)', color: 'var(--gold)', border: 'rgba(240, 192, 64, 0.3)' }
       : level === 2
       ? { bg: 'rgba(96, 165, 250, 0.12)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.3)' }
-      : level === 3
-      ? { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' }
-      : { bg: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-2)', border: 'rgba(20, 184, 184, 0.3)' };
+      : { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' };
 
   return (
     <div className="panel panel-corner fade-up d4">
@@ -701,7 +632,7 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
                 letterSpacing: '0.08em',
               }}
             >
-              {level === 1 ? 'Owner' : level === 2 ? 'Admin' : level === 3 ? 'Reseller' : 'Buyer'}
+              {level === 1 ? 'Owner' : level === 2 ? 'Admin' : 'Reseller'}
             </span>
           }
         />

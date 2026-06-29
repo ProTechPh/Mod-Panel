@@ -12,21 +12,11 @@ export const registerSchema = z.object({
   fullname: z.string().min(1, 'Full name is required').max(100),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  referralCode: z.string().optional(),
+  referralCode: z.string().min(1, 'Referral code is required'),
   turnstileToken: z.string().min(1, 'CAPTCHA verification is required'),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
-});
-
-export const telegramCallbackSchema = z.object({
-  id: z.string().min(1),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  username: z.string().optional(),
-  photo_url: z.string().optional(),
-  auth_date: z.string().min(1),
-  hash: z.string().min(1),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -45,6 +35,5 @@ export const resetPasswordSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type TelegramCallbackInput = z.infer<typeof telegramCallbackSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

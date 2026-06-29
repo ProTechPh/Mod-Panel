@@ -1,30 +1,12 @@
 import dbConnect from '@/lib/db/connection';
 import Lib from '@/lib/db/models/Lib';
 import LibraryLog from '@/lib/db/models/LibraryLog';
-import FtpConfig from '@/lib/db/models/FtpConfig';
 import { uploadToFtp, deleteFromFtp } from '@/lib/ftp/client';
 import { Readable } from 'stream';
 
 function sanitize(lib: any) {
   const { ftpUrl, ...rest } = lib.toObject ? lib.toObject() : lib;
   return { ...rest, _id: rest._id.toString(), uploadedAt: rest.uploadedAt?.toISOString() };
-}
-
-export async function resolveFtpConfigId(ftpConfigId?: string): Promise<string | undefined> {
-  if (ftpConfigId) return ftpConfigId;
-  await dbConnect();
-  const active = await FtpConfig.find({ isActive: true }).sort({ order: 1 }).lean();
-  if (active.length === 0) return undefined;
-  if (active.length === 1) return active[0]._id.toString();
-
-  // Pick the FTP config with the fewest libs (least-used distribution)
-  const counts = await Promise.all(active.map(c =>
-    Lib.countDocuments({ ftpConfigId: c._id.toString() })
-  ));
-  const minCount = Math.min(...counts);
-  const candidates = active.filter((_, i) => counts[i] === minCount);
-  const picked = candidates[Math.floor(Math.random() * candidates.length)];
-  return picked._id.toString();
 }
 
 export async function listLibs(registrator?: string) {
@@ -41,10 +23,8 @@ export async function getLib(id: string) {
   return sanitize(lib);
 }
 
-export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free', ftpConfigId?: string) {
+export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free') {
   await dbConnect();
-
-  const resolvedId = await resolveFtpConfigId(ftpConfigId);
 
   const existing = await Lib.findOne({ fileName }).lean();
 
@@ -56,13 +36,13 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
     }
 
     try {
-      await deleteFromFtp(fileName, existing.ftpConfigId || resolvedId);
+      await deleteFromFtp(fileName);
     } catch {
       // FTP file may already be gone, continue anyway
     }
   }
 
-  const ftpUrl = await uploadToFtp(fileName, stream, resolvedId);
+  const ftpUrl = await uploadToFtp(fileName, stream);
 
   const lib = await Lib.findOneAndUpdate(
     { fileName },
@@ -75,7 +55,6 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
       fileSizeBytes,
       uploadedBy,
       uploadedAt: new Date(),
-      ftpConfigId: resolvedId,
     },
     { upsert: true, returnDocument: 'after' }
   );
@@ -135,7 +114,7 @@ export async function deleteLib(id: string) {
   if (!lib) return false;
 
   try {
-    await deleteFromFtp(lib.fileName, lib.ftpConfigId);
+    await deleteFromFtp(lib.fileName);
   } catch {
     // FTP delete may fail if file already removed; continue with DB delete
   }

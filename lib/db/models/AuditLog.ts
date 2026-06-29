@@ -24,7 +24,6 @@ const AuditLogSchema = new Schema<AuditLogDoc & Document>({
       'user.delete',
       'user.update',
       'game_settings.update',
-      'store.order_delete',
       'auth.login',
       'auth.failed_login',
       'system.maintenance',

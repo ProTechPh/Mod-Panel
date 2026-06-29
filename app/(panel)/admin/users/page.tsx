@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Search, Trash2, Edit, Users, Gift, Mail, AtSign, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Trash2, Edit, Users, Gift, Mail, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -16,7 +16,6 @@ import ReferralsTable from '@/components/shared/ReferralsTable';
 interface User {
   _id: string; username: string; email: string; fullname: string;
   level: number; saldo: number; status: number; expirationDate: string;
-  telegramId: number | null; telegramUsername: string;
 }
 interface Referral { _id: string; code: string; level: number; setSaldo: number; usedBy: string; createdBy: string; accExpiration: string; }
 type Tab = 'users' | 'referrals';
@@ -64,8 +63,8 @@ export default function UsersPage() {
   };
   const statusLabel = (s: number) => s === 1 ? 'Active' : s === 2 ? 'Banned' : 'Expired';
   const statusKind = (s: number): 'active' | 'blocked' | 'warning' => s === 1 ? 'active' : s === 2 ? 'blocked' : 'warning';
-  const levelLabel = (l: number) => l === 1 ? 'Owner' : l === 2 ? 'Admin' : l === 3 ? 'Reseller' : 'Buyer';
-  const levelKind = (l: number): 'success' | 'info' | 'warning' | 'neutral' => l === 1 ? 'success' : l === 2 ? 'info' : l === 3 ? 'warning' : 'neutral';
+  const levelLabel = (l: number) => l === 1 ? 'Owner' : l === 2 ? 'Admin' : 'Reseller';
+  const levelKind = (l: number): 'success' | 'info' | 'warning' => l === 1 ? 'success' : l === 2 ? 'info' : 'warning';
 
   return (
     <div className="space-y-4">
@@ -142,7 +141,6 @@ export default function UsersPage() {
                     <TableHead>Level</TableHead>
                     <TableHead>Saldo</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Telegram</TableHead>
                     <TableHead>Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -150,7 +148,7 @@ export default function UsersPage() {
                 <TableBody>
                   {users.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                         <Users className="h-6 w-6 mx-auto mb-2 opacity-40" />
                         <div className="font-mono text-xs uppercase tracking-widest">No users in registry</div>
                       </TableCell>
@@ -167,13 +165,6 @@ export default function UsersPage() {
                       <TableCell><StatusBadge status={levelKind(u.level)}>{levelLabel(u.level)}</StatusBadge></TableCell>
                       <TableCell className="font-mono" style={{ color: 'var(--ecto-green)' }}>${u.saldo?.toFixed(2)}</TableCell>
                       <TableCell><StatusBadge status={statusKind(u.status)} withDot>{statusLabel(u.status)}</StatusBadge></TableCell>
-                      <TableCell>
-                        {u.telegramId
-                          ? <span className="inline-flex items-center gap-1 font-mono text-xs" style={{ color: 'var(--teal-3)' }}>
-                              <AtSign className="h-3 w-3" /> {u.telegramUsername || u.telegramId}
-                            </span>
-                          : <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>Not linked</span>}
-                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-mid)' }}>
                           {u.expirationDate && <Calendar className="h-3 w-3" style={{ color: 'var(--text-lo)' }} />}

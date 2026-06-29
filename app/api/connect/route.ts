@@ -9,8 +9,6 @@ const LICENSE_KEY = process.env.LICENSE_KEY || '5G7B3F8J2H';
 
 export async function GET() {
   const config = await getServerConfig();
-  const channel = config?.telegramChannel || 'https://t.me/@CanKillYouForever';
-  const group = config?.telegramGroup || 'https://t.me/@CanKillYouForever';
 
   return NextResponse.json({
     web_info: {
@@ -21,8 +19,6 @@ export async function GET() {
     },
     web__dev: {
       author: 'ProTech Dev',
-      Channel: channel,
-      Group: group,
     },
   });
 }

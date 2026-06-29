@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Copy, Check, RefreshCw, Loader2,
-  Smartphone, ShieldAlert, KeyRound, Zap, History, ShoppingBag,
+  Smartphone, ShieldAlert, KeyRound, Zap, History,
   Download, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
   ShieldCheck, Cpu, AlertTriangle, Activity, Globe, ExternalLink, Hash, Calendar,
   LogIn, UserPlus,
@@ -31,7 +31,6 @@ interface KeyHistoryEntry {
   status: number; isActivated: boolean; isExpired: boolean; isAdClaim?: boolean;
 }
 interface TopUser { username: string; count: number; lastClaim: string; }
-interface StoreInfo { storeName: string; isActive: boolean; }
 interface AuthUser { username: string; fullname: string; level: number; }
 type Tab = 'key' | 'history' | 'downloads' | 'top-users';
 
@@ -95,7 +94,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [claiming, setClaiming] = useState(false);
 
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
-  const [store, setStore] = useState<StoreInfo | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [ipAddress, setIpAddress] = useState<string>('');
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
@@ -181,14 +179,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         setGames(list);
         if (list.length === 1) setGame(list[0].code);
       } catch { setGames([]); }
-    })();
-
-    void (async () => {
-      try {
-        const res = await fetch(`/api/store?registrator=${encodeURIComponent(registrator)}`);
-        const data = await res.json();
-        if (data && !data.error) setStore(data);
-      } catch { setStore(null); }
     })();
 
     const claimToken = searchParams.get('claimToken');
@@ -320,13 +310,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
           <div className="flex items-center gap-2">
             <KeyRound className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
             <span className="font-display font-bold tracking-wide" style={{ color: 'var(--text-hi)' }}>Free Key</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {store && (
-              <Link href={`/${registrator}/store`} aria-label="Open store">
-                <Button variant="ghost" size="icon-sm"><ShoppingBag className="h-4 w-4" /></Button>
-              </Link>
-            )}
           </div>
         </div>
       </header>
@@ -628,25 +611,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
               </p>
             )}
 
-            {store && (
-              <Card style={{ background: 'linear-gradient(135deg, rgba(57, 255, 20, 0.05), transparent)', border: '1px solid rgba(57, 255, 20, 0.2)' }}>
-                <CardContent className="p-5 space-y-3 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl" style={{ background: 'rgba(20, 184, 184, 0.1)' }}>
-                    <ShoppingBag className="h-6 w-6" style={{ color: 'var(--teal-2)' }} />
-                  </div>
-                  <div>
-                    <p className="font-display font-black tracking-wide" style={{ color: 'var(--text-hi)' }}>Want more time?</p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-mid)' }}>Purchase premium keys with longer duration at our official shop.</p>
-                  </div>
-                  <Link href={`/${registrator}/store`} className="block">
-                    <Button className="w-full">
-                      <ShoppingBag className="h-3.5 w-3.5 mr-1.5" /> Visit {store.storeName}
-                      <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
           </div>
         )}
 

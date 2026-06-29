@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +20,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 export default function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [tgLoading, setTgLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -28,57 +27,6 @@ export default function LoginForm() {
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
-
-  useEffect(() => {
-    const fragment = window.location.hash;
-    if (!fragment.startsWith('#tgAuthResult=')) return;
-
-    try {
-      const base64 = fragment.slice('#tgAuthResult='.length);
-      const decoded = decodeURIComponent(escape(atob(base64)));
-      const user = JSON.parse(decoded);
-
-      if (user.id && user.hash) {
-        window.location.hash = '';
-        handleTelegramAuth(user);
-      }
-    } catch {
-      toast.error('Invalid Telegram authentication data');
-    }
-  }, []);
-
-  const handleTelegramAuth = async (user: { id: number; first_name?: string; last_name?: string; username?: string; photo_url?: string; auth_date: number; hash: string }) => {
-    setTgLoading(true);
-    try {
-      const res = await fetch('/api/auth/telegram/callback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: String(user.id),
-          first_name: user.first_name || '',
-          last_name: user.last_name || '',
-          username: user.username || '',
-          photo_url: user.photo_url || '',
-          auth_date: String(user.auth_date),
-          hash: user.hash,
-        }),
-      });
-      const result = await res.json();
-
-      if (res.ok) {
-        toast.success('Login successful');
-        router.replace('/dashboard');
-      } else if (result.code === 'TELEGRAM_NOT_LINKED') {
-        toast.error('No account linked to this Telegram. Please register first, then connect your Telegram in Settings.');
-      } else {
-        toast.error(result.error || 'Telegram login failed');
-      }
-    } catch {
-      toast.error('Network error');
-    } finally {
-      setTgLoading(false);
-    }
-  };
 
   const onSubmit = async (data: LoginInput) => {
     if (siteKey && !data.turnstileToken) {
@@ -105,13 +53,6 @@ export default function LoginForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTelegramLogin = () => {
-    sessionStorage.setItem('telegram_auth_mode', 'login');
-    const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID;
-    const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${origin}/auth/telegram/callback&request_access=write`;
   };
 
   return (
@@ -212,30 +153,6 @@ export default function LoginForm() {
                   Signing in...
                 </span>
               ) : 'Sign In'}
-            </Button>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid rgba(20, 184, 184, 0.15)' }} /></div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="px-3" style={{ background: 'rgba(9, 19, 24, 0.9)', color: 'var(--text-lo)' }}>or continue with</span>
-              </div>
-            </div>
-
-            <Button type="button" variant="outline" className="w-full h-11 transition-all duration-300 group/btn" style={{ borderColor: 'rgba(20, 184, 184, 0.2)', background: 'rgba(2, 6, 8, 0.4)' }} disabled={tgLoading} onClick={handleTelegramLogin}>
-              {tgLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Authenticating...
-                </span>
-              ) : (
-                <>
-                  <svg className="mr-2 h-5 w-5 text-[#26A5E4] group-hover/btn:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.504-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
-                  <span className="group-hover/btn:text-teal-300 transition-colors">Sign In with Telegram</span>
-                </>
-              )}
             </Button>
 
             <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>

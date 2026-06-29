@@ -4,12 +4,10 @@ import { checkRateLimit, checkUserRateLimit, getRateLimitTier, getUserRateLimitT
 import { extractClientIp } from '@/lib/utils/ip';
 import { isLockedOut, cleanupBruteForce } from '@/lib/auth/brute-force';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/connect', '/download', '/auth/telegram/callback', '/store-terms'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/connect', '/download'];
 const API_PUBLIC = ['/api/ip', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', 
-'/api/auth/reset-password', '/api/auth/refresh', '/api/auth/telegram/callback', '/api/connect', '/api/free-key', 
-'/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status', '/api/store/webhook', 
-'/api/store/checkout', '/api/store/orders', '/api/store/products', '/api/store', '/api/telegram/webhook', 
-'/api/cron/store-cleanup', '/api/cron/key-expiry'];
+'/api/auth/reset-password', '/api/auth/refresh', '/api/connect', '/api/free-key',
+'/api/download', '/api/libs/serve', '/api/libs/list', '/api/server-status'];
 
 const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || '').split(',').filter(Boolean);
 const MAX_BODY_SIZE = 1024 * 1024;
@@ -24,11 +22,9 @@ function isApiPublic(pathname: string): boolean {
     || API_PUBLIC_REGEX.some(r => r.test(pathname));
 }
 
-// Dynamic public paths: /<registrator>/free-key, /<registrator>/store, /<registrator>/store/success, /<registrator>/announcement
+// Dynamic public paths: /<registrator>/free-key, /<registrator>/announcement
 const PUBLIC_REGEX = [
   /^\/[^/]+\/free-key(?:\/)?$/,
-  /^\/[^/]+\/store(?:\/)?$/,
-  /^\/[^/]+\/store\/success(?:\/.*)?$/,
   /^\/[^/]+\/announcement(?:\/)?$/,
 ];
 

@@ -23,7 +23,7 @@ const GENERAL_TERMS: Section[] = [
   {
     title: '2. Description of Service',
     content: [
-      'Mod Panel is a private license key management platform for authorized game modification software. The Service enables management of license keys, user accounts, referral programs, and optional storefront functionality for reselling keys to end buyers.',
+      'Mod Panel is a private license key management platform for authorized game modification software. The Service enables management of license keys, user accounts, and referral programs.',
       'Access to the Service is granted exclusively by invite or referral and is subject to the role assigned by the platform Owner.',
     ],
   },
@@ -52,14 +52,6 @@ const GENERAL_TERMS: Section[] = [
     content: [
       'Your username, IP address, and activity logs may be recorded for security and abuse prevention purposes. This data is not shared with third parties outside of Cloudflare Turnstile (for free key generation).',
       'By using the Service, you consent to this data collection as described above.',
-    ],
-  },
-  {
-    title: '7. Mandatory Telegram Connection',
-    content: [
-      'All users (Admins and Resellers) are required to have a connected Telegram account linked to their profile for identity verification and notification purposes.',
-      'A weekly automated sweep is performed. Any account found without a linked Telegram ID will be automatically suspended (banned).',
-      'Suspended users must contact @CanKillYouForever on Telegram to appeal their ban and provide their Telegram ID for manual verification.',
     ],
   },
   {
@@ -107,7 +99,7 @@ const ROLE_TERMS: Record<
         content: [
           'As Admin, you are granted elevated access to manage keys, referrals, and game settings. You must not abuse these privileges to circumvent the Owner\'s policies or generate keys beyond your allocated saldo.',
           'You must not share your Admin credentials or perform actions on behalf of other users without explicit authorization from the Owner.',
-          'Any actions you perform — including key generation, game setting changes, and store order management — are logged and may be reviewed by the Owner at any time.',
+          'Any actions you perform — including key generation and game setting changes — are logged and may be reviewed by the Owner at any time.',
         ],
       },
       {

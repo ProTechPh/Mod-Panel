@@ -48,7 +48,7 @@ export async function registerUser(data: {
   email: string;
   fullname: string;
   password: string;
-  referralCode?: string;
+  referralCode: string;
 }) {
   await dbConnect();
 
@@ -57,33 +57,24 @@ export async function registerUser(data: {
   });
   if (existingUser) return null;
 
+  const { createHash } = await import('crypto');
+  const codeHash = createHash('md5').update(data.referralCode).digest('hex');
+
+  const Referral = (await import('@/lib/db/models/Referral')).default;
+  const referral = await Referral.findOne({ code: codeHash });
+
+  if (!referral || referral.usedBy) return null;
+
   const hashedPassword = await hashPassword(data.password);
   const now = new Date();
 
-  let level: UserLevel = 4;
-  let saldo = 0;
-  let uplink: string | undefined;
-  let expirationDate: Date;
+  const durationMs = referral.accExpiration.getTime() - referral.createdAt.getTime();
+  const expirationDate = new Date(now.getTime() + durationMs);
+  const level = referral.level;
+  const saldo = referral.setSaldo;
+  const uplink = referral.createdBy;
 
-  if (data.referralCode) {
-    const { createHash } = await import('crypto');
-    const codeHash = createHash('md5').update(data.referralCode).digest('hex');
-
-    const Referral = (await import('@/lib/db/models/Referral')).default;
-    const referral = await Referral.findOne({ code: codeHash });
-
-    if (!referral || referral.usedBy) return null;
-
-    const durationMs = referral.accExpiration.getTime() - referral.createdAt.getTime();
-    expirationDate = new Date(now.getTime() + durationMs);
-    level = referral.level;
-    saldo = referral.setSaldo;
-    uplink = referral.createdBy;
-
-    await Referral.updateOne({ _id: referral._id }, { usedBy: data.username });
-  } else {
-    expirationDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  }
+  await Referral.updateOne({ _id: referral._id }, { usedBy: data.username });
 
   const user = await User.create({
     username: data.username,
@@ -165,7 +156,6 @@ export async function updateUser(id: string, data: {
   saldo?: number;
   status?: UserStatus;
   expirationDate?: string;
-  telegramContact?: string;
 }) {
   await dbConnect();
   const update: Record<string, unknown> = {};
@@ -175,8 +165,6 @@ export async function updateUser(id: string, data: {
   if (data.saldo !== undefined) update.saldo = data.saldo;
   if (data.status !== undefined) update.status = data.status;
   if (data.expirationDate !== undefined) update.expirationDate = new Date(data.expirationDate);
-  if (data.telegramContact !== undefined) update.telegramContact = data.telegramContact;
-
   const user = await User.findByIdAndUpdate(id, update, { returnDocument: 'after' }).select('-password').lean();
   return user ? { ...user, _id: user._id.toString() } : null;
 }
@@ -248,46 +236,3 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
 
 // Export escapeRegex for other modules to use
 export { escapeRegex };
-
-export async function loginWithTelegram(telegramId: number) {
-  await dbConnect();
-  const user = await User.findOne({ telegramId }).lean();
-  if (!user) return null;
-
-  await User.updateOne({ _id: user._id }, { $inc: { loggedIn: 1 } });
-
-  return {
-    userId: user._id.toString(),
-    username: user.username,
-    level: user.level as UserLevel,
-    status: user.status as UserStatus,
-    fullname: user.fullname,
-    saldo: user.saldo,
-    expirationDate: user.expirationDate,
-  };
-}
-
-export async function connectTelegram(userId: string, telegramId: number, telegramUsername: string) {
-  await dbConnect();
-  const existing = await User.findOne({ telegramId }).lean();
-  if (existing) return { error: 'already_linked' };
-
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { telegramId, telegramUsername },
-    { returnDocument: 'after' }
-  ).select('-password').lean();
-
-  return user ? { ...user, _id: user._id.toString() } : null;
-}
-
-export async function disconnectTelegram(userId: string) {
-  await dbConnect();
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { telegramId: null, telegramUsername: '' },
-    { returnDocument: 'after' }
-  ).select('-password').lean();
-
-  return user ? { ...user, _id: user._id.toString() } : null;
-}

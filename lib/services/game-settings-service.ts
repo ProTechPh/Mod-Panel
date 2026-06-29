@@ -43,8 +43,6 @@ export async function addGameSetting(data: {
     maintenanceMessage: '',
     downloadLink: '',
     modName: '',
-    telegramChannel: '',
-    telegramGroup: '',
     announcement: '',
     announcementStatus: 'off',
   });
@@ -60,8 +58,6 @@ export async function updateGameSetting(gameCode: string, data: {
   maintenanceMessage?: string;
   downloadLink?: string;
   modName?: string;
-  telegramChannel?: string;
-  telegramGroup?: string;
 }, registrator?: string) {
   await dbConnect();
   const filter: Record<string, unknown> = { gameCode: gameCode.toUpperCase() };

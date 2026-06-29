@@ -8,9 +8,6 @@ interface AuthUser {
   level: UserLevel;
   fullname: string;
   saldo: number;
-  telegramContact: string;
-  telegramId: number | null;
-  telegramUsername: string;
 }
 
 interface AuthContextType {

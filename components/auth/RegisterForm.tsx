@@ -206,7 +206,7 @@ export default function RegisterForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="referralCode" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Referral Code <span style={{ color: 'var(--text-lo)' }}>(optional)</span></Label>
+              <Label htmlFor="referralCode" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Referral Code</Label>
               <div className="relative">
                 <Input
                   id="referralCode"

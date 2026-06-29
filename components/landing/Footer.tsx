@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants/app';
-import { Send } from 'lucide-react';
 import '@/components/landing/landing.css';
 
 export function Footer() {
@@ -41,14 +40,6 @@ export function Footer() {
           <div className="footer-col-title">Resources</div>
           <a href="#how-it-works" className="footer-link">Quick Start</a>
           <a href="#status" className="footer-link">System Status</a>
-          <a
-            href="https://t.me/CanKillYouForever"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            <Send size={12} /> Telegram
-          </a>
         </div>
 
         <div>

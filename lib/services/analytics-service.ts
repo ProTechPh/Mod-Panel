@@ -24,7 +24,6 @@ interface UserLevelDist {
   owners: number;
   admins: number;
   resellers: number;
-  buyers: number;
 }
 
 export interface KeyStats {
@@ -64,7 +63,6 @@ interface UserLevelFacetResult {
   owners: FacetCount;
   admins: FacetCount;
   resellers: FacetCount;
-  buyers: FacetCount;
 }
 
 export async function getDashboardAnalytics(registrator?: string): Promise<DashboardAnalytics> {
@@ -120,14 +118,13 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
   ]);
 
   const userLevelPromise: Promise<UserLevelDist | UserLevelFacetResult[]> = registrator
-    ? Promise.resolve({ owners: 0, admins: 0, resellers: 0, buyers: 0 })
+    ? Promise.resolve({ owners: 0, admins: 0, resellers: 0 })
     : User.aggregate<UserLevelFacetResult>([
       {
         $facet: {
           owners: [{ $match: { level: 1 } }, { $count: 'count' }],
           admins: [{ $match: { level: 2 } }, { $count: 'count' }],
           resellers: [{ $match: { level: 3 } }, { $count: 'count' }],
-          buyers: [{ $match: { level: 4 } }, { $count: 'count' }],
         },
       },
     ]) as Promise<UserLevelFacetResult[]>;
@@ -198,8 +195,8 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
 
   const isUserLevelFacet = Array.isArray(userLevelDist);
   const ulDist: UserLevelFacetResult = isUserLevelFacet
-    ? (userLevelDist as UserLevelFacetResult[])[0] || { owners: [], admins: [], resellers: [], buyers: [] }
-    : { owners: [], admins: [], resellers: [], buyers: [] };
+    ? (userLevelDist as UserLevelFacetResult[])[0] || { owners: [], admins: [], resellers: [] }
+    : { owners: [], admins: [], resellers: [] };
 
   const userLevelResult = isUserLevelFacet ? ulDist : (userLevelDist as UserLevelDist);
   const userLevelDistribution: UserLevelDist = isUserLevelFacet
@@ -207,7 +204,6 @@ export async function getDashboardAnalytics(registrator?: string): Promise<Dashb
         owners: ulDist.owners?.[0]?.count ?? 0,
         admins: ulDist.admins?.[0]?.count ?? 0,
         resellers: ulDist.resellers?.[0]?.count ?? 0,
-        buyers: ulDist.buyers?.[0]?.count ?? 0,
       }
     : (userLevelResult as UserLevelDist);
 

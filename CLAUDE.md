@@ -23,16 +23,15 @@ No test framework is configured. No test commands exist.
 - `(auth)/` — Login, register (centered card layout, ThemeProvider only)
 - `(panel)/` — Main panel pages (Navbar + Sidebar + AuthProvider)
 - `(public)/` — Free key page (ThemeProvider only)
-- `auth/telegram/callback/` — Telegram OAuth handler
 
 ### Middleware / Edge Proxy
 
 `proxy.ts` is the Edge middleware (not `middleware.ts`). It:
 - Allows public pages: `/`, `/login`, `/register`, `/connect`, `/free-key`, `/download`
-- Allows public APIs: `/api/auth/*` (login/register/refresh/telegram), `/api/connect`, `/api/free-key`
+- Allows public APIs: `/api/auth/*` (login/register/refresh), `/api/connect`, `/api/free-key`
 - Protects all other routes via JWT verification on `wp_access` cookie
 - Injects `x-user-id`, `x-username`, `x-user-level` headers for downstream handlers
-- Enforces role-based access: Owner (level 1) only for `/admin/users` and `/admin/private-dashboard`; Admin+ (level 1-2) for `/admin/referrals` and `/admin/game-settings`
+- Enforces role-based access: Owner (level 1) only for `/admin/users` and `/admin/private-dashboard`; Admin+ (level 1-2) for `/admin/game-settings`
 
 ### Authentication
 
@@ -41,22 +40,25 @@ Custom JWT system using `jose` (not NextAuth):
 - **Refresh token**: 7d TTL, HS256, signed with `AUTH_REFRESH_SECRET`
 - **Cookies**: `wp_access` (httpOnly, secure in prod) and `wp_refresh`
 - **Password**: bcryptjs with legacy MD5+bcrypt migration via `PASSWORD_LEGACY_SALT`
-- **Telegram auth**: HMAC-SHA256 verification of Telegram Login Widget data
+
+Registration requires a valid referral code. Referral codes are created by Owner or Admin.
 
 ### Database
 
-MongoDB via Mongoose 9 with a global-cached singleton connection (`lib/db/connection.ts`). 8 models in `lib/db/models/`:
+MongoDB via Mongoose 9 with a global-cached singleton connection (`lib/db/connection.ts`). Models in `lib/db/models/`:
 
 | Model | Collection | Notes |
 |-------|-----------|-------|
 | User | `users` | level 1=Owner, 2=Admin, 3=Reseller; status 1=Active, 2=Banned, 3=Expired |
-| Key | `keys` | status 0=Inactive, 1=Active; duration in days or '1h'/'6h'; maxDevices enforcement |
+| Key | `keys` | status 0=Inactive, 1=Active; duration in days or '1h'/'3h'/'lifetime'; maxDevices enforcement |
 | Referral | `referrals` | MD5-hashed codes; links to creator and users |
-| GameSetting | `game_settings` | Per-game config with feature flags (esp, item, silentAim, aim, bulletTrack, memory, floating, setting) |
+| GameSetting | `game_settings` | Per-game config with feature flags |
 | ServerConfig | `server_config` | Singleton doc (fixed ObjectId `000000000000000000000001`) |
 | IpTracker | `ip_tracker` | IP tracking for free key abuse prevention |
 | History | `history` | Action log |
 | AppLink / Lib | `app_links` / `libs` | Download links and .so file metadata |
+| LibraryLog | `library_logs` | .so file download logs |
+| AuditLog | `audit_logs` | Admin action audit trail |
 
 All models use `mongoose.models.X || mongoose.model()` pattern for hot-reload safety.
 
@@ -75,7 +77,7 @@ All input validation uses **Zod v4** (import from `zod/v4`, not `zod`). Schemas 
 
 ### Types
 
-Central type definitions in `types/index.ts` — document interfaces, role/status constants, `JwtPayload`, `Features` flags, and the `STATIC_WORDS` constant used in token generation.
+Central type definitions in `types/index.ts` — document interfaces, role/status constants, `JwtPayload`, and the `STATIC_WORDS` constant used in token generation.
 
 ## Key Conventions
 
@@ -108,12 +110,16 @@ All API routes follow this pattern:
 
 Required (see `.env.local.example`):
 - `MONGODB_URI`, `AUTH_SECRET`, `AUTH_REFRESH_SECRET` — core infrastructure
-- `FTP_*` — file storage for .so libraries
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` — captcha on free-key page
-- `PASSWORD_LEGACY_SALT` — backward-compatible password migration
+- `FTP_HOSTNAME`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_PORT`, `FTP_REMOTE_PATH` — FTP for .so library files
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile captcha on free-key page
 - `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL` — app branding
 - `LICENSE_KEY` — mod client validation
-- `NEXT_PUBLIC_TELEGRAM_BOT_ID`, `TELEGRAM_BOT_TOKEN` — Telegram OAuth
+- `ENCRYPTION_KEY` — patch key encryption in key-service.ts
+
+Optional:
+- `PASSWORD_LEGACY_SALT` — backward-compatible MD5+bcrypt password migration
+- `RESHORTFLY_API_TOKEN` — URL shortener for free key claims
+- `TRUSTED_PROXIES` — comma-separated trusted proxy IPs
 
 ## Important Notes
 
@@ -121,4 +127,4 @@ Required (see `.env.local.example`):
 - Zod is v4 — always import from `zod/v4`, not `zod`.
 - The `ServerConfig` document uses a fixed ObjectId constant `SERVER_CONFIG_ID`.
 - Key token generation uses MD5 hashing with `STATIC_WORDS` from types — this is the mod client validation protocol.
-- FTP operations are for `.so` library files stored on InfinityFree hosting.
+- FTP operations are for `.so` library files. Single FTP config from env vars (no multi-FTP).
