@@ -140,3 +140,47 @@ pnpm dev          # Start dev server
 pnpm build        # Production build
 pnpm lint         # Run ESLint
 ```
+
+## Credits
+
+- **[ProTechPh](https://github.com/ProTechPh)** — Project creator & lead developer
+- **[KenshinPH](https://github.com/KenshinPH)** — Core contributor
+
+### Built With
+
+- [Next.js](https://nextjs.org/) — React framework
+- [MongoDB](https://www.mongodb.com/) + [Mongoose](https://mongoosejs.com/) — Database
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) — UI components
+- [jose](https://github.com/panva/jose) — JWT authentication
+- [basic-ftp](https://github.com/patrickjuchli/basic-ftp) — FTP client
+- [Zod](https://zod.dev/) — Input validation
+- [Lucide](https://lucide.dev/) — Icons
+- [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) — Captcha
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2026 ProTechPh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
