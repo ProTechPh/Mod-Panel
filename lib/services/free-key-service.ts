@@ -5,10 +5,14 @@ import { generateKeyString } from '@/lib/utils/device';
 import GameSetting from '@/lib/db/models/GameSetting';
 import { Logger } from '@/lib/utils';
 
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) {
-    Logger.warn('TURNSTILE_SECRET_KEY is not set. Free key requests will be rejected.');
+    // If turnstile is not configured, we pass the validation
+    return true;
+  }
+
+  if (!token) {
     return false;
   }
 
@@ -44,7 +48,7 @@ async function verifyClaimToken(token: string) {
   }
 }
 
-export async function generateFreeKey(game: string, turnstileToken: string, ip: string, registrator: string, username: string) {
+export async function generateFreeKey(game: string, turnstileToken: string | undefined, ip: string, registrator: string, username: string) {
   await dbConnect();
 
   if (!username) {

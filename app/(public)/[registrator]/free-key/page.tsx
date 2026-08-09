@@ -78,6 +78,7 @@ export default function FreeKeyPage() {
 function FreeKeyContent({ registrator }: { registrator: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const [games, setGames] = useState<GameOption[]>([]);
   const [game, setGame] = useState(searchParams.get('game') || '');
@@ -229,12 +230,12 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       router.push('/register');
       return;
     }
-    if (!turnstileToken) { toast.error('Complete captcha verification'); return; }
+    if (siteKey && !turnstileToken) { toast.error('Complete captcha verification'); return; }
     setGenerating(true);
     try {
       const res = await fetch('/api/free-key', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, turnstileToken, registrator, duration: '3h' }),
+        body: JSON.stringify({ game, turnstileToken: turnstileToken || undefined, registrator, duration: '3h' }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -572,14 +573,17 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       </div>
                     </div>
 
-                    <div className="flex justify-center">
-                      <Turnstile
-                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAC1YlrS074UQWwgz'}
-                        onSuccess={setTurnstileToken}
-                      />
-                    </div>
+                    {siteKey && (
+                      <div className="flex justify-center">
+                        <Turnstile
+                          siteKey={siteKey}
+                          onSuccess={setTurnstileToken}
+                          options={{ theme: 'dark' }}
+                        />
+                      </div>
+                    )}
 
-                    <Button type="submit" className="w-full" disabled={generating || !turnstileToken || !authUser}>
+                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken) || !authUser}>
                       {generating
                         ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
                         : !authUser

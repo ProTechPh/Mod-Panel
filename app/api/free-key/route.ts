@@ -6,7 +6,7 @@ import { z } from 'zod/v4';
 
 const freeKeySchema = z.object({
   game: z.string().min(1, 'Game is required'),
-  turnstileToken: z.string().min(1, 'Captcha verification required'),
+  turnstileToken: z.string().optional(),
   registrator: z.string().min(1, 'Registrator is required'),
 });
 
