@@ -225,11 +225,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authUser) {
-      toast.error('Please register or sign in to generate keys');
-      router.push('/register');
-      return;
-    }
     if (siteKey && !turnstileToken) { toast.error('Complete captcha verification'); return; }
     setGenerating(true);
     try {
@@ -316,34 +311,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       </header>
 
       <main className="relative z-10 max-w-lg mx-auto px-4 py-6 md:py-8 space-y-5">
-        {!authLoading && !authUser && (
-          <div
-            className="rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap"
-            style={{ background: 'rgba(20, 184, 184, 0.06)', border: '1px solid rgba(20, 184, 184, 0.2)' }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(20, 184, 184, 0.12)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>
-                <LogIn className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
-              </div>
-              <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>Sign in to generate keys</p>
-                <p className="text-xs" style={{ color: 'var(--text-mid)' }}>Create an account to claim free keys and track your history.</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/login">
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <LogIn className="h-3.5 w-3.5" /> Sign In
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm" className="gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5" /> Register
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
 
         <div className="text-center space-y-4">
           <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl"
@@ -583,12 +550,10 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       </div>
                     )}
 
-                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken) || !authUser}>
+                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
                       {generating
                         ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
-                        : !authUser
-                          ? <><LogIn className="h-3.5 w-3.5 mr-1.5" /> Sign in to Generate</>
-                          : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
+                        : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
                       }
                     </Button>
 
@@ -620,23 +585,9 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
 
         {tab === 'history' && (
           <div className="space-y-3 fade-up d1">
-            {!authLoading && !authUser ? (
-              <Card>
-                <CardContent className="empty-state">
-                  <div className="empty-icon-ring"><LogIn size={26} /></div>
-                  <div className="empty-title">Sign In Required</div>
-                  <div className="empty-sub">Sign in to view your key history.</div>
-                  <Link href="/login">
-                    <Button className="mt-3 gap-1.5">
-                      <LogIn className="h-3.5 w-3.5" /> Sign In
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ) : (<>
             <div className="flex items-center justify-between">
               <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
-                <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP
+                <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP/device
               </p>
               <Button variant="ghost" size="icon-sm" onClick={fetchHistory} disabled={historyLoading}>
                 {historyLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}

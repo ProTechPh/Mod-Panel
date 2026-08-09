@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resetFreeKeyDevices } from '@/lib/services/free-key-service';
-import { authenticate } from '@/lib/auth/middleware';
+import { extractClientIp } from '@/lib/utils/ip';
 import { z } from 'zod/v4';
 
 const schema = z.object({
@@ -15,18 +15,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    const user = await authenticate(request);
-    if (!user?.username) {
-      return NextResponse.json({ error: 'You must be logged in' }, { status: 401 });
+    let deviceId = request.cookies.get('free_key_device_id')?.value;
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
     }
 
-    const result = await resetFreeKeyDevices(parsed.data.key, user.username);
+    const ip = extractClientIp(request, []);
+    const result = await resetFreeKeyDevices(parsed.data.key, deviceId, ip);
 
     if ('error' in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    response.cookies.set('free_key_device_id', deviceId, {
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    return response;
   } catch (error) {
     console.error('Reset devices error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

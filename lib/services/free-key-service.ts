@@ -48,11 +48,11 @@ async function verifyClaimToken(token: string) {
   }
 }
 
-export async function generateFreeKey(game: string, turnstileToken: string | undefined, ip: string, registrator: string, username: string) {
+export async function generateFreeKey(game: string, turnstileToken: string | undefined, ip: string, registrator: string, deviceId: string) {
   await dbConnect();
 
-  if (!username) {
-    return { error: 'You must be logged in to generate free keys' };
+  if (!deviceId) {
+    return { error: 'Device ID is required to generate free keys' };
   }
 
   const gameSetting = await GameSetting.findOne({
@@ -71,14 +71,32 @@ export async function generateFreeKey(game: string, turnstileToken: string | und
     return { error: 'Captcha verification failed' };
   }
 
-  const bannedTracker = await IpTracker.findOne({ username, isBanned: true }).lean();
+  const deviceIdentifier = `device:${deviceId}`;
+
+  const bannedTracker = await IpTracker.findOne({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ],
+    isBanned: true
+  }).lean();
+  
   if (bannedTracker) {
-    return { error: 'Your account has been banned' };
+    return { error: 'Your device or IP has been banned' };
   }
 
-  const existingTrackers = await IpTracker.find({ username, isBanned: false })
+  const existingTrackers = await IpTracker.find({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ],
+    isBanned: false
+  })
     .sort({ createdAt: -1 })
     .lean();
+
   if (existingTrackers.length) {
     const keyIds = existingTrackers.map(t => t.keyId);
     const existingKey = await Key.findOne({
@@ -96,18 +114,18 @@ export async function generateFreeKey(game: string, turnstileToken: string | und
     }
   }
 
-  const claimToken = await createClaimToken({ game, registrator, username, ip });
+  const claimToken = await createClaimToken({ game, registrator, deviceId, ip });
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const targetUrl = `${baseUrl}/${registrator}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
   const adUrl = await shortenUrl(targetUrl);
   return { adUrl: adUrl || targetUrl };
 }
 
-export async function claimFreeKey(token: string, currentIp: string, currentUsername: string) {
+export async function claimFreeKey(token: string, currentIp: string, currentDeviceId: string) {
   await dbConnect();
 
-  if (!currentUsername) {
-    return { error: 'You must be logged in to claim free keys' };
+  if (!currentDeviceId) {
+    return { error: 'Device ID is required to claim free keys' };
   }
 
   const payload = await verifyClaimToken(token);
@@ -115,10 +133,10 @@ export async function claimFreeKey(token: string, currentIp: string, currentUser
     return { error: 'Invalid or expired claim token' };
   }
 
-  const { game, registrator, username: originalUsername } = payload as any;
+  const { game, registrator, deviceId: originalDeviceId } = payload as any;
 
-  if (originalUsername !== currentUsername) {
-    return { error: 'Account mismatch. You must claim the key from the same account that generated the request.' };
+  if (originalDeviceId !== currentDeviceId) {
+    return { error: 'Device mismatch. You must claim the key on the same browser/device that initiated the request.' };
   }
 
   const gameSetting = await GameSetting.findOne({
@@ -132,7 +150,16 @@ export async function claimFreeKey(token: string, currentIp: string, currentUser
     return { error: 'Free keys are no longer available for this game. The offer may have ended.' };
   }
 
-  const existingTrackers = await IpTracker.find({ username: currentUsername, isBanned: false })
+  const deviceIdentifier = `device:${currentDeviceId}`;
+
+  const existingTrackers = await IpTracker.find({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: currentIp },
+      { generatorIp: currentIp }
+    ],
+    isBanned: false
+  })
     .sort({ createdAt: -1 })
     .lean();
   
@@ -168,7 +195,7 @@ export async function claimFreeKey(token: string, currentIp: string, currentUser
 
   await IpTracker.create({
     userId: '0',
-    username: currentUsername,
+    username: deviceIdentifier,
     ipAddress: currentIp,
     generatorIp: currentIp,
     keyId: key._id,
@@ -180,12 +207,21 @@ export async function claimFreeKey(token: string, currentIp: string, currentUser
   return { key: keyString, game };
 }
 
-export async function getMyFreeKey(username: string, registrator: string, game: string) {
+export async function getMyFreeKey(deviceId: string, ip: string, registrator: string, game: string) {
   await dbConnect();
 
-  if (!username) return { error: 'You must be logged in' };
+  if (!deviceId) return { error: 'Device ID is required' };
 
-  const trackers = await IpTracker.find({ username, isBanned: false })
+  const deviceIdentifier = `device:${deviceId}`;
+
+  const trackers = await IpTracker.find({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ],
+    isBanned: false
+  })
     .sort({ createdAt: -1 })
     .lean();
 
@@ -220,12 +256,21 @@ export async function getMyFreeKey(username: string, registrator: string, game: 
   };
 }
 
-export async function getMyFreeKeyHistory(username: string, registrator: string) {
+export async function getMyFreeKeyHistory(deviceId: string, ip: string, registrator: string) {
   await dbConnect();
 
-  if (!username) return [];
+  if (!deviceId) return [];
 
-  const trackers = await IpTracker.find({ username, isBanned: false })
+  const deviceIdentifier = `device:${deviceId}`;
+
+  const trackers = await IpTracker.find({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ],
+    isBanned: false
+  })
     .populate({
       path: 'keyId',
       match: { isFreeKey: true, registrator }
@@ -260,17 +305,26 @@ export async function getMyFreeKeyHistory(username: string, registrator: string)
   return results;
 }
 
-export async function resetFreeKeyDevices(userKey: string, username: string) {
+export async function resetFreeKeyDevices(userKey: string, deviceId: string, ip: string) {
   await dbConnect();
 
-  if (!username) {
-    return { error: 'You must be logged in' };
+  if (!deviceId) {
+    return { error: 'Device ID is required' };
   }
 
   const key = await Key.findOne({ userKey, isFreeKey: true }).lean() as import('@/types').KeyDoc | null;
   if (!key) return { error: 'Key not found' };
 
-  const tracker = await IpTracker.findOne({ keyId: key._id, username }).lean();
+  const deviceIdentifier = `device:${deviceId}`;
+  const tracker = await IpTracker.findOne({
+    keyId: key._id,
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ]
+  }).lean();
+  
   if (!tracker) {
     return { error: 'You can only reset devices for your own key' };
   }
@@ -309,5 +363,15 @@ export async function getTopAdClaimers(limit: number = 10) {
     }
   ]);
 
-  return results;
+  return results.map(r => {
+    if (r.username && r.username.startsWith('device:')) {
+      const uuidPart = r.username.slice(7);
+      const guestId = uuidPart.replace(/-/g, '').slice(0, 6).toUpperCase();
+      return {
+        ...r,
+        username: `Guest_${guestId}`,
+      };
+    }
+    return r;
+  });
 }

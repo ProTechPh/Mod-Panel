@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { claimFreeKey } from '@/lib/services/free-key-service';
 import { extractClientIp } from '@/lib/utils/ip';
-import { authenticate } from '@/lib/auth/middleware';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,19 +9,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
-    const user = await authenticate(request);
-    if (!user?.username) {
-      return NextResponse.json({ error: 'You must be logged in' }, { status: 401 });
+    let deviceId = request.cookies.get('free_key_device_id')?.value;
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
     }
 
     const ip = extractClientIp(request, []);
-    const result = await claimFreeKey(token, ip, user.username);
+    const result = await claimFreeKey(token, ip, deviceId);
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, key: result.key, game: result.game });
+    const response = NextResponse.json({ success: true, key: result.key, game: result.game });
+    response.cookies.set('free_key_device_id', deviceId, {
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    return response;
   } catch (error) {
     console.error('Claim key error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateFreeKey } from '@/lib/services/free-key-service';
 import { extractClientIp } from '@/lib/utils/ip';
-import { authenticate } from '@/lib/auth/middleware';
 import { z } from 'zod/v4';
 
 const freeKeySchema = z.object({
@@ -18,9 +17,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 });
     }
 
-    const user = await authenticate(request);
-    if (!user?.username) {
-      return NextResponse.json({ error: 'You must be logged in to generate free keys' }, { status: 401 });
+    let deviceId = request.cookies.get('free_key_device_id')?.value;
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
     }
 
     const ip = extractClientIp(request, []);
@@ -30,13 +29,21 @@ export async function POST(request: NextRequest) {
       parsed.data.turnstileToken,
       ip,
       parsed.data.registrator,
-      user.username,
+      deviceId,
     );
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, adUrl: result.adUrl });
+    const response = NextResponse.json({ success: true, adUrl: result.adUrl });
+    response.cookies.set('free_key_device_id', deviceId, {
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    return response;
   } catch (error) {
     console.error('Free key error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
