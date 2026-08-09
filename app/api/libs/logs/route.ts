@@ -1,11 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
 import { getLib, getLibLogs, getRecentLibLogs } from '@/lib/services/lib-service';
 
-export async function GET(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+export const GET = withApi(async (request, user) => {
   const libId = request.nextUrl.searchParams.get('libId');
 
   if (libId) {
@@ -21,4 +18,4 @@ export async function GET(request: NextRequest) {
   // No libId → return recent logs across all libs for this user
   const logs = await getRecentLibLogs(user.level === 1 ? undefined : user.username);
   return NextResponse.json(logs);
-}
+});

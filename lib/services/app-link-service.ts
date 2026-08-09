@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db/connection';
 import AppLink from '@/lib/db/models/AppLink';
+import { toIsoString } from '@/lib/utils/dates';
 
 
 export async function listAppLinks() {
@@ -8,14 +9,18 @@ export async function listAppLinks() {
   return links.map(l => ({
     ...l,
     _id: l._id.toString(),
-    createdAt: l.createdAt?.toISOString(),
+    createdAt: toIsoString(l.createdAt),
   }));
 }
 
 export async function addAppLink(appName: string, downloadUrl: string) {
   await dbConnect();
   const link = await AppLink.create({ appName, downloadUrl });
-  return { ...link.toObject(), _id: link._id.toString() };
+  return {
+    ...link.toObject(),
+    _id: link._id.toString(),
+    createdAt: toIsoString(link.createdAt),
+  };
 }
 
 export async function deleteAppLink(id: string) {

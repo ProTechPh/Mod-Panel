@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Upload, Trash2, Download, Link as LinkIcon, Code, X, Copy, Check, Pencil, Save, History, Library, FileCode } from 'lucide-react';
@@ -369,7 +368,7 @@ export default function LibPage() {
                     <FileCode size={28} className="text-slate-400 group-hover:text-orange-500 transition-colors" />
                     <div className="flex flex-col gap-0.5">
                       <span className="font-bold text-white uppercase tracking-wider text-[11px]">Choose DLL Payload (.so)</span>
-                      <span className="text-[9px] text-[var(--text-lo)] font-mono uppercase tracking-widest">// Maximum Size: 50MB</span>
+                      <span className="text-[9px] text-[var(--text-lo)] font-mono uppercase tracking-widest">{'// Maximum Size: 50MB'}</span>
                     </div>
                   </label>
                 </div>

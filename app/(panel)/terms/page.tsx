@@ -3,7 +3,7 @@
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, Shield, Users, Sparkles } from 'lucide-react';
+import { Shield, Users, Sparkles } from 'lucide-react';
 
 const EFFECTIVE_DATE = 'May 1, 2026';
 

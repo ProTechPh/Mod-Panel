@@ -1,5 +1,7 @@
+import { createHash } from 'crypto';
 import dbConnect from '@/lib/db/connection';
 import Referral from '@/lib/db/models/Referral';
+import { toIsoString } from '@/lib/utils/dates';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -22,7 +24,7 @@ function generateReferralCode(): string {
 export async function createReferral(createdBy: string, level: number, setSaldo: number, accExpirationDays: number) {
   await dbConnect();
   const plainCode = generateReferralCode();
-  const codeHash = require('crypto').createHash('md5').update(plainCode).digest('hex');
+  const codeHash = createHash('md5').update(plainCode).digest('hex');
 
   const now = new Date();
   const accExpiration = new Date(now.getTime() + accExpirationDays * 24 * 60 * 60 * 1000);
@@ -43,7 +45,7 @@ export async function createReferral(createdBy: string, level: number, setSaldo:
     level: referral.level,
     setSaldo: referral.setSaldo,
     createdBy: referral.createdBy,
-    accExpiration: referral.accExpiration.toISOString(),
+    accExpiration: toIsoString(referral.accExpiration),
   };
 }
 
@@ -57,8 +59,8 @@ export async function listReferrals(createdBy?: string) {
     ...r,
     _id: r._id.toString(),
     code: r.referralPlain,
-    accExpiration: r.accExpiration?.toISOString(),
-    createdAt: r.createdAt?.toISOString(),
+    accExpiration: toIsoString(r.accExpiration),
+    createdAt: toIsoString(r.createdAt),
   }));
 }
 
@@ -81,7 +83,12 @@ export async function updateReferral(id: string, data: {
   }
 
   const updated = await Referral.findByIdAndUpdate(id, update, { returnDocument: 'after' }).lean();
-  return updated ? { ...updated, _id: updated._id.toString() } : null;
+  return updated ? {
+    ...updated,
+    _id: updated._id.toString(),
+    accExpiration: toIsoString(updated.accExpiration),
+    createdAt: toIsoString(updated.createdAt),
+  } : null;
 }
 
 export async function deleteReferral(id: string) {

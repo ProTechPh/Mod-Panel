@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/connection';
 import Announcement from '@/lib/db/models/Announcement';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET() {
+// Falls back to an empty list on DB errors so the landing page never breaks.
+export const GET = withPublicApi(async () => {
   try {
     await dbConnect();
     const announcements = await Announcement.find({ isActive: true })
@@ -18,4 +20,4 @@ export async function GET() {
   } catch {
     return NextResponse.json([]);
   }
-}
+});

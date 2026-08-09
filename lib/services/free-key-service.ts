@@ -1,9 +1,11 @@
 import dbConnect from '@/lib/db/connection';
 import Key from '@/lib/db/models/Key';
 import IpTracker from '@/lib/db/models/IpTracker';
-import { generateKeyString } from '@/lib/utils/device';
 import GameSetting from '@/lib/db/models/GameSetting';
-import { Logger } from '@/lib/utils';
+import { generateKeyString } from '@/lib/utils/device';
+import { SignJWT, jwtVerify } from 'jose';
+import { shortenUrl } from './reshortfly-service';
+import type { KeyDoc } from '@/types';
 
 async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -26,13 +28,9 @@ async function verifyTurnstile(token: string | undefined, ip: string): Promise<b
   return data.success === true;
 }
 
-import { shortenUrl } from './reshortfly-service';
-
-import { SignJWT, jwtVerify } from 'jose';
-
 const JWT_SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 
-async function createClaimToken(payload: any) {
+async function createClaimToken(payload: Record<string, unknown>) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('10m')
@@ -46,6 +44,39 @@ async function verifyClaimToken(token: string) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Returns the user's currently-active free key for the given game, if any.
+ * Shared by the generation and claim flows.
+ */
+async function findActiveFreeKey(deviceId: string, ip: string, game: string): Promise<KeyDoc | null> {
+  const deviceIdentifier = `device:${deviceId}`;
+  const trackers = await IpTracker.find({
+    $or: [
+      { username: deviceIdentifier },
+      { ipAddress: ip },
+      { generatorIp: ip }
+    ],
+    isBanned: false
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (!trackers.length) return null;
+
+  const keyIds = trackers.map(t => t.keyId);
+  const existingKey = await Key.findOne({
+    _id: { $in: keyIds },
+    isFreeKey: true,
+    game: game.toUpperCase(),
+    status: 1,
+  }).lean() as KeyDoc | null;
+
+  const now = new Date();
+  return existingKey && existingKey.expiredDate && new Date(existingKey.expiredDate) > now
+    ? existingKey
+    : null;
 }
 
 export async function generateFreeKey(game: string, turnstileToken: string | undefined, ip: string, registrator: string, deviceId: string) {
@@ -86,32 +117,9 @@ export async function generateFreeKey(game: string, turnstileToken: string | und
     return { error: 'Your device or IP has been banned' };
   }
 
-  const existingTrackers = await IpTracker.find({
-    $or: [
-      { username: deviceIdentifier },
-      { ipAddress: ip },
-      { generatorIp: ip }
-    ],
-    isBanned: false
-  })
-    .sort({ createdAt: -1 })
-    .lean();
-
-  if (existingTrackers.length) {
-    const keyIds = existingTrackers.map(t => t.keyId);
-    const existingKey = await Key.findOne({
-      _id: { $in: keyIds },
-      isFreeKey: true,
-      game: game.toUpperCase(),
-      status: 1,
-    }).lean() as import('@/types').KeyDoc | null;
-    const now = new Date();
-    const isStillActive = existingKey &&
-      existingKey.expiredDate &&
-      new Date(existingKey.expiredDate) > now;
-    if (isStillActive) {
-      return { error: 'You still have an active free key for this game. Wait for it to expire before generating a new one.' };
-    }
+  const existingKey = await findActiveFreeKey(deviceId, ip, game);
+  if (existingKey) {
+    return { error: 'You still have an active free key for this game. Wait for it to expire before generating a new one.' };
   }
 
   const claimToken = await createClaimToken({ game, registrator, deviceId, ip });
@@ -133,7 +141,7 @@ export async function claimFreeKey(token: string, currentIp: string, currentDevi
     return { error: 'Invalid or expired claim token' };
   }
 
-  const { game, registrator, deviceId: originalDeviceId } = payload as any;
+  const { game, registrator, deviceId: originalDeviceId } = payload as unknown as { game: string; registrator: string; deviceId: string };
 
   if (originalDeviceId !== currentDeviceId) {
     return { error: 'Device mismatch. You must claim the key on the same browser/device that initiated the request.' };
@@ -150,34 +158,12 @@ export async function claimFreeKey(token: string, currentIp: string, currentDevi
     return { error: 'Free keys are no longer available for this game. The offer may have ended.' };
   }
 
-  const deviceIdentifier = `device:${currentDeviceId}`;
-
-  const existingTrackers = await IpTracker.find({
-    $or: [
-      { username: deviceIdentifier },
-      { ipAddress: currentIp },
-      { generatorIp: currentIp }
-    ],
-    isBanned: false
-  })
-    .sort({ createdAt: -1 })
-    .lean();
-  
-  if (existingTrackers.length) {
-    const keyIds = existingTrackers.map(t => t.keyId);
-    const existingKey = await Key.findOne({
-      _id: { $in: keyIds },
-      isFreeKey: true,
-      game: game.toUpperCase(),
-      status: 1,
-    }).lean() as import('@/types').KeyDoc | null;
-    
-    const now = new Date();
-    if (existingKey && existingKey.expiredDate && new Date(existingKey.expiredDate) > now) {
-      return { key: existingKey.userKey, game: existingKey.game };
-    }
+  const existingKey = await findActiveFreeKey(currentDeviceId, currentIp, game);
+  if (existingKey) {
+    return { key: existingKey.userKey, game: existingKey.game };
   }
 
+  const deviceIdentifier = `device:${currentDeviceId}`;
   const keyString = generateKeyString(16);
   const expiryHours = 3;
   const expiredDate = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
@@ -285,7 +271,7 @@ export async function getMyFreeKeyHistory(deviceId: string, ip: string, registra
   const results = trackers
     .filter(t => t.keyId && typeof t.keyId === 'object')
     .map((tracker) => {
-      const key = tracker.keyId as any;
+      const key = tracker.keyId as unknown as import('@/types').KeyDoc;
       
       const isExpired = key.expiredDate ? new Date(key.expiredDate) < now : false;
       const isActivated = (key.devices?.length ?? 0) > 0;

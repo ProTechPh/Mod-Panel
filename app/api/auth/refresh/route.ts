@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyRefreshToken, signAccessToken } from '@/lib/auth/jwt';
 import User from '@/lib/db/models/User';
 import dbConnect from '@/lib/db/connection';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function POST(request: NextRequest) {
+export const POST = withPublicApi(async (request) => {
   const authHeader = request.headers.get('authorization');
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
   const cookieToken = request.cookies.get('wp_refresh')?.value;
@@ -13,6 +14,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
 
+  // Kept as an inner try/catch: an invalid/expired token must return 401 and
+  // clear the auth cookies, not bubble up to the wrapper's 500.
   try {
     const { userId } = await verifyRefreshToken(refreshToken);
 
@@ -41,4 +44,4 @@ export async function POST(request: NextRequest) {
     response.cookies.set('wp_refresh', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 0 });
     return response;
   }
-}
+});

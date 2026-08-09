@@ -1,34 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
 import { listKeys } from '@/lib/services/key-service';
-import { z } from 'zod/v4';
+import { dataTablesQuerySchema } from '@/lib/utils/data-tables';
 
-const dataTablesQuery = z.object({
-  draw: z.coerce.number().default(1),
-  start: z.coerce.number().default(0),
-  length: z.coerce.number().default(10),
-  search: z.object({ value: z.string().default('') }).default({ value: '' }),
-  order: z.array(z.object({ column: z.coerce.number(), dir: z.enum(['asc', 'desc']) })).default([{ column: 0, dir: 'desc' }]),
+export const GET = withApi(async (request, user) => {
+  const params = Object.fromEntries(request.nextUrl.searchParams.entries());
+  const parsed = dataTablesQuerySchema.parse(params);
+  const result = await listKeys({
+    draw: parsed.draw,
+    start: parsed.start,
+    length: parsed.length,
+    search: parsed['search[value]'] || undefined,
+    order: [{ column: parsed['order[0][column]'], dir: parsed['order[0][dir]'] }],
+    registrator: user.level === 1 ? undefined : user.username,
+  });
+  return NextResponse.json(result);
 });
-
-export async function GET(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  try {
-    const params = Object.fromEntries(request.nextUrl.searchParams.entries());
-    const parsed = dataTablesQuery.parse(params);
-    const result = await listKeys({
-      draw: parsed.draw,
-      start: parsed.start,
-      length: parsed.length,
-      search: parsed.search.value,
-      order: parsed.order,
-      registrator: user.level === 1 ? undefined : user.username,
-    });
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Keys list error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}

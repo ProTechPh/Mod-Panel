@@ -8,10 +8,20 @@ import { checkDeviceSlot } from '@/lib/utils/device';
 import User from '@/lib/db/models/User';
 import GameSetting from '@/lib/db/models/GameSetting';
 import ServerConfig, { SingletonId } from '@/lib/db/models/ServerConfig';
-import crypto from 'crypto';
-import { createCipheriv, createDecipheriv } from 'crypto';
 import type { Duration, KeyDoc, ServerConfigDoc, GameSettingDoc } from '@/types';
-import { Logger } from '@/lib/utils';
+import type { UpdateQuery } from 'mongoose';
+import { paginate } from '@/lib/utils/data-tables';
+import { toIsoString } from '@/lib/utils/dates';
+
+function serializeKey(k: KeyDoc) {
+  return {
+    ...k,
+    _id: k._id.toString(),
+    expiredDate: toIsoString(k.expiredDate),
+    createdAt: toIsoString(k.createdAt),
+    updatedAt: toIsoString(k.updatedAt),
+  };
+}
 
 let configCache: ServerConfigDoc | null = null;
 let configCacheExpiry = 0;
@@ -130,7 +140,7 @@ export async function validateKey(game: string, userKey: string, serial: string)
 
 
   const now = new Date();
-  const update: Record<string, any> = {};
+  const update: UpdateQuery<KeyDoc> = {};
   let finalExpiredDate = key.expiredDate;
 
   if (key.isFreeKey) {
@@ -214,39 +224,23 @@ export async function listKeys(params: {
   await dbConnect();
 
   const filter: Record<string, unknown> = {};
-  if (params.search) {
-    const escaped = params.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    filter.$or = [
-      { userKey: { $regex: escaped, $options: 'i' } },
-      { game: { $regex: escaped, $options: 'i' } },
-      { registrator: { $regex: escaped, $options: 'i' } },
-    ];
-  }
   if (params.registrator) filter.registrator = params.registrator;
   if (params.game) filter.game = params.game;
 
-  const recordsTotal = await Key.countDocuments({});
-  const recordsFiltered = await Key.countDocuments(filter);
-
-  const sortColumn = ['createdAt', 'game', 'userKey', 'duration', 'maxDevices', 'status', 'expiredDate'][params.order?.[0]?.column ?? 0] || 'createdAt';
-  const sortDir = params.order?.[0]?.dir === 'asc' ? 1 : -1;
-
-  const data = await Key.find(filter)
-    .sort({ [sortColumn]: sortDir })
-    .skip(params.start)
-    .limit(params.length)
-    .lean();
+  const result = await paginate<KeyDoc>(Key, {
+    draw: params.draw,
+    start: params.start,
+    length: params.length,
+    search: params.search,
+    order: params.order,
+    filter,
+    searchFields: ['userKey', 'game', 'registrator'],
+    sortColumns: ['createdAt', 'game', 'userKey', 'duration', 'maxDevices', 'status', 'expiredDate'],
+  });
 
   return {
-    draw: params.draw,
-    recordsTotal,
-    recordsFiltered,
-    data: data.map(k => ({
-      ...k,
-      _id: k._id.toString(),
-      expiredDate: k.expiredDate?.toISOString() || null,
-      createdAt: k.createdAt?.toISOString(),
-    })),
+    ...result,
+    data: result.data.map(serializeKey),
   };
 }
 
@@ -254,7 +248,7 @@ export async function getKey(id: string) {
   await dbConnect();
   const key = await Key.findById(id).lean();
   if (!key) return null;
-  return { ...key, _id: key._id.toString() };
+  return serializeKey(key);
 }
 
 export async function updateKey(id: string, data: Partial<KeyDoc>) {
@@ -267,7 +261,7 @@ export async function updateKey(id: string, data: Partial<KeyDoc>) {
   if (data.status !== undefined) update.status = data.status;
 
   const key = await Key.findByIdAndUpdate(id, update, { returnDocument: 'after' }).lean();
-  return key ? { ...key, _id: key._id.toString() } : null;
+  return key ? serializeKey(key) : null;
 }
 
 export async function deleteKey(id: string) {
@@ -279,7 +273,7 @@ export async function deleteKey(id: string) {
 export async function resetDevices(id: string) {
   await dbConnect();
   const key = await Key.findByIdAndUpdate(id, { devices: [] }, { returnDocument: 'after' }).lean();
-  return key ? { ...key, _id: key._id.toString() } : null;
+  return key ? serializeKey(key) : null;
 }
 
 export async function bulkDelete(filter: string, game?: string) {
@@ -351,7 +345,7 @@ export async function extendKeyDuration(keyId: string, additionalDays: number, u
     info: `Extended key ${key.userKey} by ${additionalDays} days`,
   });
 
-  return { ...result, _id: result._id.toString(), expiredDate: result.expiredDate?.toISOString() || null };
+  return serializeKey(result);
 }
 
 export async function deleteKeysByGame(game: string, registrator?: string) {

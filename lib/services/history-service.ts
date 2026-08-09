@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/db/connection';
 import History from '@/lib/db/models/History';
+import { toIsoString } from '@/lib/utils/dates';
 
 export async function logAction(keyId: string, userDo: string, info: string) {
   await dbConnect();
@@ -19,7 +20,7 @@ export async function getHistory(userDo?: string, limit: number = 100) {
   return history.map(h => ({
     ...h,
     _id: h._id.toString(),
-    createdAt: h.createdAt?.toISOString(),
+    createdAt: toIsoString(h.createdAt),
   }));
 }
 

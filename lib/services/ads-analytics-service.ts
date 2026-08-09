@@ -38,6 +38,23 @@ export interface DailyRevenue {
   uniqueIps: number;
 }
 
+interface TopSupporterRaw {
+  _id: string;
+  totalClaims: number;
+  threeHourClaims: number;
+  extensions: number;
+  lastClaim: Date | string;
+}
+
+interface TopPerformerRaw {
+  _id: string;
+  totalKeys: number;
+  activeKeys: number;
+  adClaims: number;
+  extensions: number;
+  lastActivity: Date | string;
+}
+
 export interface AdsAnalytics {
   totalAdClaims: number;
   total3hClaims: number;
@@ -57,14 +74,7 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   // Total counts
-  const [totalAdClaims, total3hClaims, totalExtensions] = await Promise.all([
-    IpTracker.countDocuments({ isAdClaim: true }),
-    IpTracker.countDocuments({ isAdClaim: true }),
-    IpTracker.countDocuments({ isAdClaim: true }).then(async () => {
-      const extKeys = await Key.find({ isFreeKey: true, duration: '3h' }).lean();
-      return extKeys.length;
-    }),
-  ]);
+  const totalAdClaims = await IpTracker.countDocuments({ isAdClaim: true });
 
   // Active 3h free keys
   const total3hActive = await Key.countDocuments({
@@ -199,7 +209,7 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   }
 
   // Top ad supporters (by IP)
-  const topSupportersRaw = await IpTracker.aggregate<TopAdSupporter>([
+  const topSupportersRaw = await IpTracker.aggregate<TopSupporterRaw>([
     { $match: { isAdClaim: true, isBanned: false } },
     {
       $lookup: {
@@ -232,15 +242,15 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   ]);
 
   const topSupporters: TopAdSupporter[] = topSupportersRaw.map(s => ({
-    maskedIp: (s as any)._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
+    maskedIp: s._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
     totalClaims: s.totalClaims,
     threeHourClaims: s.threeHourClaims,
     extensions: s.extensions,
-    lastClaim: (s as any).lastClaim instanceof Date ? (s as any).lastClaim.toISOString() : String((s as any).lastClaim),
+    lastClaim: s.lastClaim instanceof Date ? s.lastClaim.toISOString() : String(s.lastClaim),
   }));
 
   // Top performers by IP (end users who claim the most free keys via ads)
-  const topPerformersRaw = await IpTracker.aggregate<TopAdPerformer>([
+  const topPerformersRaw = await IpTracker.aggregate<TopPerformerRaw>([
     { $match: { isAdClaim: true, isBanned: false } },
     {
       $lookup: {
@@ -282,12 +292,12 @@ export async function getAdsAnalytics(): Promise<AdsAnalytics> {
   ]);
 
   const topPerformers: TopAdPerformer[] = topPerformersRaw.map(p => ({
-    registrator: (p as any)._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
+    registrator: p._id.replace(/(\d+)\.\d+$/, '$1.xxx'),
     totalKeys: p.totalKeys,
     activeKeys: p.activeKeys,
     adClaims: p.adClaims,
     extensions: p.extensions,
-    lastActivity: (p as any).lastActivity instanceof Date ? (p as any).lastActivity.toISOString() : String((p as any).lastActivity),
+    lastActivity: p.lastActivity instanceof Date ? p.lastActivity.toISOString() : String(p.lastActivity),
   }));
 
   // Daily ad stats (revenue proxy: ad impressions = ad claims)

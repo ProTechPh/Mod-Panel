@@ -5,13 +5,12 @@ import { APP_NAME } from '@/lib/constants/app';
 import { ArrowUpRight, ShieldCheck, Terminal, Cpu, Clock, Key } from 'lucide-react';
 
 interface HeroProps {
-  activeUsers: string;
   totalKeys: string;
   uptime: string;
   countries: string;
 }
 
-export function Hero({ activeUsers, totalKeys, uptime }: HeroProps) {
+export function Hero({ totalKeys, uptime }: HeroProps) {
   return (
     <section className="cmd-banner fade-up" style={{ maxWidth: '1200px', margin: '1.5rem auto' }}>
       <div className="cmd-grid" />

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getMyFreeKey } from '@/lib/services/free-key-service';
-import { extractClientIp } from '@/lib/utils/ip';
+import { getClientIp } from '@/lib/utils/ip';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET(request: NextRequest) {
+export const GET = withPublicApi(async (request) => {
   let deviceId = request.cookies.get('free_key_device_id')?.value;
   if (!deviceId) {
     deviceId = crypto.randomUUID();
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing registrator or game' }, { status: 400 });
   }
 
-  const ip = extractClientIp(request, []);
+  const ip = getClientIp(request);
   const result = await getMyFreeKey(deviceId, ip, registrator, game);
   if ('error' in result) {
     return NextResponse.json(null);
@@ -30,4 +31,4 @@ export async function GET(request: NextRequest) {
     sameSite: 'lax',
   });
   return response;
-}
+});

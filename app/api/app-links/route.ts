@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
 import { listAppLinks, addAppLink, deleteAppLink } from '@/lib/services/app-link-service';
 import { listGameSettings } from '@/lib/services/game-settings-service';
-import { Logger } from '@/lib/utils';
 
-export async function GET(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+export const GET = withApi(async (request, user) => {
   const [appLinks, games] = await Promise.all([
     listAppLinks(),
     listGameSettings(user.level === 1 ? undefined : user.username),
@@ -24,26 +20,15 @@ export async function GET(request: NextRequest) {
     }));
 
   return NextResponse.json([...appLinks, ...gameLinks]);
-}
+});
 
-export async function POST(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user || user.level !== 1) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = withApi(async (request) => {
+  const body = await request.json();
+  const link = await addAppLink(body.appName, body.downloadUrl);
+  return NextResponse.json(link, { status: 201 });
+}, { level: 1 });
 
-  try {
-    const body = await request.json();
-    const link = await addAppLink(body.appName, body.downloadUrl);
-    return NextResponse.json(link, { status: 201 });
-  } catch (error) {
-    Logger.error('App link error', { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user || user.level !== 1) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+export const DELETE = withApi(async (request) => {
   const id = request.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Link ID required' }, { status: 400 });
 
@@ -51,4 +36,4 @@ export async function DELETE(request: NextRequest) {
   if (!deleted) return NextResponse.json({ error: 'Link not found' }, { status: 404 });
 
   return NextResponse.json({ success: true });
-}
+}, { level: 1 });

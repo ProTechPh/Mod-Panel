@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
 import { getUser } from '@/lib/services/user-service';
 
-export async function GET(request: NextRequest) {
-  const authUser = await authenticate(request);
-  if (!authUser) return NextResponse.json({ user: null }, { status: 401 });
-
+// Returns `{ user: null }` (not `{ error }`) on 401 so the AuthProvider
+// client can detect the logged-out state from the response body.
+export const GET = withApi(async (request, authUser) => {
   const user = await getUser(authUser.userId);
   if (!user) return NextResponse.json({ user: null }, { status: 401 });
 
@@ -18,4 +17,4 @@ export async function GET(request: NextRequest) {
       saldo: user.saldo ?? 0,
     },
   });
-}
+}, { unauthorizedBody: { user: null } });

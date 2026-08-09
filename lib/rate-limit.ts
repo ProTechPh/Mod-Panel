@@ -37,7 +37,6 @@ export const RATE_LIMIT_TIERS = {
 } as const;
 
 const store = new Map<string, RateLimitEntry>();
-const MAX_STORE_SIZE = 10_000;
 const CLEANUP_THRESHOLD = 8_000;
 
 function cleanup(now: number) {

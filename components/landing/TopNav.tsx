@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants/app';
-import { Terminal, Shield } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 
 export function TopNav() {
   return (

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { listAppLinks } from '@/lib/services/app-link-service';
 import { listGameSettings } from '@/lib/services/game-settings-service';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET() {
+export const GET = withPublicApi(async () => {
   const [appLinks, games] = await Promise.all([
     listAppLinks(),
     listGameSettings(),
@@ -19,4 +20,4 @@ export async function GET() {
     }));
 
   return NextResponse.json([...appLinks, ...gameLinks]);
-}
+});

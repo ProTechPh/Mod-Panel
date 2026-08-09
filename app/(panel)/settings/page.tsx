@@ -93,7 +93,7 @@ export default function SettingsPage() {
                 {user.fullname || user.username}
               </h3>
               <span className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-0.5">
-                // {user.username}
+                {'// '}{user.username}
               </span>
 
               {/* Security Clearance level badge */}

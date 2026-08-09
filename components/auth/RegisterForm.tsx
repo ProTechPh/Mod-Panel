@@ -8,7 +8,6 @@ import { registerSchema, type RegisterInput } from '@/lib/validators/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/components/shared/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, Eye, EyeOff, User, Mail, UserCircle, KeyRound, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';

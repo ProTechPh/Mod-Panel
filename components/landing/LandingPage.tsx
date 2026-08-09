@@ -41,9 +41,6 @@ export default function LandingPage() {
       .catch(() => {});
   }, []);
 
-  const activeUsers = status.activePlayers > 0
-    ? status.activePlayers.toLocaleString()
-    : '15K+';
   const totalKeys = '120K+';
   const uptime = '99.97%';
 
@@ -59,7 +56,6 @@ export default function LandingPage() {
         </div>
 
         <Hero
-          activeUsers={activeUsers}
           totalKeys={totalKeys}
           uptime={uptime}
           countries=""

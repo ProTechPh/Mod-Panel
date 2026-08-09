@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import GameSetting from '@/lib/db/models/GameSetting';
 import dbConnect from '@/lib/db/connection';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET(request: NextRequest) {
+export const GET = withPublicApi(async (request) => {
   const registrator = request.nextUrl.searchParams.get('registrator');
   if (!registrator) {
     return NextResponse.json({ error: 'Missing registrator' }, { status: 400 });
@@ -20,4 +21,4 @@ export async function GET(request: NextRequest) {
     name: g.gameName,
     downloadLink: g.downloadLink 
   })));
-}
+});

@@ -100,7 +100,12 @@ export default function AuditPage() {
     }
   }, [search, action, startDate, endDate]);
 
-  useEffect(() => { void fetchLogs(); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => void fetchLogs(), 0);
+    return () => clearTimeout(t);
+    // fetchLogs is intentionally omitted: initial load only, filters trigger their own fetches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = () => { setPage(1); fetchLogs(1); };
 

@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getFtpStats } from '@/lib/ftp/client';
+import { withPublicApi } from '@/lib/api/with-api';
 
 const DISK_LIMIT = 5 * 1024 * 1024 * 1024;
 const INODE_LIMIT = 80000;
 const CACHE_TTL = 5 * 60 * 1000;
 
-let cached: { data: any; timestamp: number } | null = null;
+interface FtpStatsResponse {
+  disk: { used: number; total: number; used_human: string; total_human: string; percent: number };
+  inodes: { used: number; total: number; percent: number };
+  bandwidth: { used_human: string; total_human: string };
+  hits: { used_human: string; total_human: string };
+}
 
-export async function GET() {
+let cached: { data: FtpStatsResponse; timestamp: number } | null = null;
+
+export const GET = withPublicApi(async () => {
   const now = Date.now();
   if (cached && now - cached.timestamp < CACHE_TTL) {
     return NextResponse.json(cached.data);
@@ -34,10 +42,10 @@ export async function GET() {
     };
   } catch { /* scan failed */ }
 
-  const result = { disk, inodes, bandwidth, hits };
+  const result: FtpStatsResponse = { disk, inodes, bandwidth, hits };
   cached = { data: result, timestamp: now };
   return NextResponse.json(result);
-}
+});
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';

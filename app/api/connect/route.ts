@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { validateKey } from '@/lib/services/key-service';
 import { connectSchema } from '@/lib/validators/key';
 import { getServerConfig } from '@/lib/services/server-config-service';
-import { Logger } from '@/lib/utils';
+import { withPublicApi } from '@/lib/api/with-api';
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Mod Panel';
 const LICENSE_KEY = process.env.LICENSE_KEY || '5G7B3F8J2H';
 
-export async function GET() {
+export const GET = withPublicApi(async () => {
   const config = await getServerConfig();
 
   return NextResponse.json({
@@ -21,45 +21,37 @@ export async function GET() {
       author: 'ProTech Dev',
     },
   });
-}
+});
 
-export async function POST(request: NextRequest) {
-  try {
-    let body: any;
-    const contentType = request.headers.get('content-type') || '';
+export const POST = withPublicApi(async (request) => {
+  let body: { game: string; user_key: string; serial: string };
+  const contentType = request.headers.get('content-type') || '';
 
-    if (contentType.includes('application/json')) {
-      const json = await request.json();
-      body = {
-        game: (json.game || '').trim(),
-        user_key: (json.user_key || '').trim(),
-        serial: (json.serial || '').trim(),
-      };
-    } else {
-      const formData = await request.formData();
-      body = {
-        game: (formData.get('game') as string || '').trim(),
-        user_key: (formData.get('user_key') as string || '').trim(),
-        serial: (formData.get('serial') as string || '').trim(),
-      };
-    }
+  if (contentType.includes('application/json')) {
+    const json = await request.json();
+    body = {
+      game: (json.game || '').trim(),
+      user_key: (json.user_key || '').trim(),
+      serial: (json.serial || '').trim(),
+    };
+  } else {
+    const formData = await request.formData();
+    body = {
+      game: (formData.get('game') as string || '').trim(),
+      user_key: (formData.get('user_key') as string || '').trim(),
+      serial: (formData.get('serial') as string || '').trim(),
+    };
+  }
 
-    const parsed = connectSchema.safeParse(body);
-    if (!parsed.success) {
-      const errorMsg = parsed.error.issues.map(i => `${i.path}: ${i.message}`).join(', ');
-      return NextResponse.json({
-        status: false,
-        reason: `Invalid Parameters: ${errorMsg}`,
-      });
-    }
-
-    const result = await validateKey(body.game, body.user_key, body.serial);
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Connect error:', error);
+  const parsed = connectSchema.safeParse(body);
+  if (!parsed.success) {
+    const errorMsg = parsed.error.issues.map(i => `${i.path}: ${i.message}`).join(', ');
     return NextResponse.json({
       status: false,
-      reason: 'Server error, try again later.',
+      reason: `Invalid Parameters: ${errorMsg}`,
     });
   }
-}
+
+  const result = await validateKey(body.game, body.user_key, body.serial);
+  return NextResponse.json(result);
+});

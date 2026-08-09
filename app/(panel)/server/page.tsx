@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
-import { Clock, Wrench, AlertTriangle, Power, MessageSquare, Save, Terminal, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Power, MessageSquare, Save, Terminal } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
@@ -24,7 +24,7 @@ function useElapsed(startedAt: string | null, isOn: boolean) {
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    if (!isOn || !startedAt) { setElapsed(''); return; }
+    if (!isOn || !startedAt) return;
 
     const tick = () => {
       const ms = Date.now() - new Date(startedAt).getTime();
@@ -128,7 +128,7 @@ export default function ServerPage() {
                 <Label className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-slate-300">
                   <Power className="h-3 w-3" /> System Bypass Link
                 </Label>
-                <span className="text-[10px] text-slate-500">// Pauses reseller key expirations</span>
+                <span className="text-[10px] text-slate-500">{'// Pauses reseller key expirations'}</span>
               </div>
               <Switch
                 checked={isOn}
@@ -179,7 +179,7 @@ export default function ServerPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest block">// broadcast message buffer</span>
+              <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest block">{'// broadcast message buffer'}</span>
               <Textarea
                 placeholder="No maintenance message set."
                 value={config.maintenanceMessage}

@@ -49,7 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    refreshUser();
+    const t = setTimeout(() => void refreshUser(), 0);
+    return () => clearTimeout(t);
+    // refreshUser is intentionally omitted: restore the session exactly once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

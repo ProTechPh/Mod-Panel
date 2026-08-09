@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 interface ThemeContextType {
   theme: 'dark';
@@ -17,11 +17,8 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    setMounted(true);
   }, []);
 
   return (

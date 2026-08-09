@@ -1,18 +1,25 @@
 import dbConnect from '@/lib/db/connection';
 import GameSetting from '@/lib/db/models/GameSetting';
 import Key from '@/lib/db/models/Key';
+import { toIsoString } from '@/lib/utils/dates';
+import type { GameSettingDoc } from '@/types';
 import { clearConfigCache } from './key-service';
+
+function serializeGameSetting(g: GameSettingDoc) {
+  return {
+    ...g,
+    _id: g._id.toString(),
+    createdAt: toIsoString(g.createdAt),
+    updatedAt: toIsoString(g.updatedAt),
+    maintenanceStartedAt: toIsoString(g.maintenanceStartedAt),
+  };
+}
 
 export async function listGameSettings(registrator?: string) {
   await dbConnect();
   const filter = registrator ? { registrator } : {};
   const games = await GameSetting.find(filter).sort({ gameCode: 1 }).lean();
-  return games.map(g => ({
-    ...g,
-    _id: g._id.toString(),
-    createdAt: g.createdAt?.toISOString(),
-    updatedAt: g.updatedAt?.toISOString(),
-  }));
+  return games.map(serializeGameSetting);
 }
 
 export async function getGameSetting(gameCode: string, registrator?: string) {
@@ -21,7 +28,7 @@ export async function getGameSetting(gameCode: string, registrator?: string) {
   if (registrator) filter.registrator = registrator;
   const game = await GameSetting.findOne(filter).lean();
   if (!game) return null;
-  return { ...game, _id: game._id.toString(), createdAt: game.createdAt?.toISOString(), updatedAt: game.updatedAt?.toISOString() };
+  return serializeGameSetting(game);
 }
 
 export async function addGameSetting(data: {
@@ -47,7 +54,7 @@ export async function addGameSetting(data: {
     announcementStatus: 'off',
   });
   clearConfigCache();
-  return { ...game.toObject(), _id: game._id.toString() };
+  return serializeGameSetting(game.toObject());
 }
 
 export async function updateGameSetting(gameCode: string, data: {
@@ -64,7 +71,15 @@ export async function updateGameSetting(gameCode: string, data: {
   if (registrator) filter.registrator = registrator;
 
   // Strip non-schema fields before update
-  const { gameCode: _gc, registrator: _reg, _method: _m, ...updateData } = data as Record<string, unknown>;
+  const updateData: Record<string, unknown> = {
+    ...(data.gameName !== undefined && { gameName: data.gameName }),
+    ...(data.isEnabled !== undefined && { isEnabled: data.isEnabled }),
+    ...(data.connectEnabled !== undefined && { connectEnabled: data.connectEnabled }),
+    ...(data.freeKeyEnabled !== undefined && { freeKeyEnabled: data.freeKeyEnabled }),
+    ...(data.maintenanceMessage !== undefined && { maintenanceMessage: data.maintenanceMessage }),
+    ...(data.downloadLink !== undefined && { downloadLink: data.downloadLink }),
+    ...(data.modName !== undefined && { modName: data.modName }),
+  };
 
   // ── Per-game maintenance timer pause / resume ─────────────────────────────
   if (data.connectEnabled !== undefined) {
@@ -92,7 +107,7 @@ export async function updateGameSetting(gameCode: string, data: {
           await Key.updateMany(
             keyFilter,
             [{ $set: { expiredDate: { $add: ['$expiredDate', elapsedMs] } } }],
-            { updatePipeline: true } as any
+            { updatePipeline: true }
           );
         }
       }
@@ -111,7 +126,7 @@ export async function updateGameSetting(gameCode: string, data: {
     { returnDocument: 'after', strict: false }
   ).lean();
   clearConfigCache();
-  return game ? { ...game, _id: game._id.toString() } : null;
+  return game ? serializeGameSetting(game) : null;
 }
 
 export async function deleteGameSetting(gameCode: string, registrator?: string) {

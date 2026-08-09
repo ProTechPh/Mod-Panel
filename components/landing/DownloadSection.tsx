@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Smartphone, Shield, Radio } from 'lucide-react';
+import { Download, Smartphone, Shield } from 'lucide-react';
 
 interface DownloadLink {
   _id: string;

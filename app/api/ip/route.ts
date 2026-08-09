@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { extractClientIp } from '@/lib/utils/ip';
+import { NextResponse } from 'next/server';
+import { getClientIp } from '@/lib/utils/ip';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET(request: NextRequest) {
-  const ip = extractClientIp(request, []);
+export const GET = withPublicApi(async (request) => {
+  const ip = getClientIp(request);
   return NextResponse.json({ ip });
-}
+});

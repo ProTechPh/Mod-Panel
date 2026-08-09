@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
-import { listGameSettings, addGameSetting, updateGameSetting } from '@/lib/services/game-settings-service';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
+import { listGameSettings, addGameSetting, updateGameSetting, deleteGameSetting } from '@/lib/services/game-settings-service';
 import User from '@/lib/db/models/User';
-import { Logger } from '@/lib/utils';
 
-export async function GET(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+export const GET = withApi(async (request, user) => {
   const mine = request.nextUrl.searchParams.get('mine') === 'true';
 
   let registrator: string | undefined;
@@ -25,38 +21,29 @@ export async function GET(request: NextRequest) {
 
   const games = await listGameSettings(registrator);
   return NextResponse.json(games);
-}
+});
 
-export async function POST(request: NextRequest) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = withApi(async (request, user) => {
+  const body = await request.json();
 
-  try {
-    const body = await request.json();
-
-    if (body._method === 'DELETE') {
-      const { deleteGameSetting } = await import('@/lib/services/game-settings-service');
-      const registrator = user.level === 1 ? (body.registrator || undefined) : user.username;
-      const deleted = await deleteGameSetting(body.gameCode, registrator);
-      if (!deleted) return NextResponse.json({ error: 'Game not found' }, { status: 404 });
-      return NextResponse.json({ success: true });
-    }
-
-    if (body.gameCode && body.gameName) {
-      const game = await addGameSetting({ ...body, registrator: user.username });
-      return NextResponse.json(game, { status: 201 });
-    }
-
-    if (body.gameCode) {
-      const registrator = user.level === 1 ? (body.registrator || undefined) : user.username;
-      const game = await updateGameSetting(body.gameCode, body, registrator);
-      if (!game) return NextResponse.json({ error: 'Game not found' }, { status: 404 });
-      return NextResponse.json(game);
-    }
-
-    return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
-  } catch (error) {
-    Logger.error('Game settings error', { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  if (body._method === 'DELETE') {
+    const registrator = user.level === 1 ? (body.registrator || undefined) : user.username;
+    const deleted = await deleteGameSetting(body.gameCode, registrator);
+    if (!deleted) return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+    return NextResponse.json({ success: true });
   }
-}
+
+  if (body.gameCode && body.gameName) {
+    const game = await addGameSetting({ ...body, registrator: user.username });
+    return NextResponse.json(game, { status: 201 });
+  }
+
+  if (body.gameCode) {
+    const registrator = user.level === 1 ? (body.registrator || undefined) : user.username;
+    const game = await updateGameSetting(body.gameCode, body, registrator);
+    if (!game) return NextResponse.json({ error: 'Game not found' }, { status: 404 });
+    return NextResponse.json(game);
+  }
+
+  return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+});

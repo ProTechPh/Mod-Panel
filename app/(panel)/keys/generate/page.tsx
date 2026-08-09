@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -51,7 +50,10 @@ export default function KeyGeneratePage() {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<KeyGenForm>({
     defaultValues: { game: '', duration: '1', maxDevices: 1, count: 1 }
   });
+  // React Compiler can't memoize RHF's `watch()` without risking stale UI; acceptable for this small form
+  // eslint-disable-next-line react-hooks/incompatible-library
   const duration = watch('duration');
+  // eslint-disable-next-line react-hooks/incompatible-library
   const gameValue = watch('game');
 
   useEffect(() => {
@@ -147,7 +149,15 @@ export default function KeyGeneratePage() {
         sub="Issue fresh licence keys with custom duration, device caps, and batch size."
       />
 
-      <div className="panel fade-up d1">\n        <div className="panel-head">\n          <h2 className="panel-title flex items-center gap-2">\n            <Cpu className="h-4 w-4 text-orange-500 animate-pulse" />\n            Licence Forge Parameters\n          </h2>\n          <span className="panel-badge">FORGE</span>\n        </div>\n        <div className="p-5">
+      <div className="panel fade-up d1">
+        <div className="panel-head">
+          <h2 className="panel-title flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-orange-500 animate-pulse" />
+            Licence Forge Parameters
+          </h2>
+          <span className="panel-badge">FORGE</span>
+        </div>
+        <div className="p-5">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Batch Mode Toggle */}
             <div
@@ -335,11 +345,20 @@ export default function KeyGeneratePage() {
               {loading ? 'Generating…' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
             </Button>
           </form>
-        </div>\n      </div>
+        </div>
+      </div>
 
       {/* Batch Results Summary */}
       {batchResults.length > 0 && (
-        <div className="panel fade-up d1" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>\n          <div className="panel-head">\n            <h2 className="panel-title flex items-center gap-2">\n              <Layers className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />\n              Batch Results\n            </h2>\n            <span className="panel-badge">BATCH</span>\n          </div>\n          <div className="p-5">
+        <div className="panel fade-up d1" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>
+          <div className="panel-head">
+            <h2 className="panel-title flex items-center gap-2">
+              <Layers className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />
+              Batch Results
+            </h2>
+            <span className="panel-badge">BATCH</span>
+          </div>
+          <div className="p-5">
             <div className="space-y-1.5 font-mono text-sm">
               {batchResults.map((result, i) => {
                 const gameOption = games.find(g => g.gameCode === result.game);
@@ -362,11 +381,20 @@ export default function KeyGeneratePage() {
                 );
               })}
             </div>
-          </div>\n      </div>
+          </div>
+      </div>
       )}
 
       {generatedKeys.length > 0 && (
-        <div className="panel fade-up d2" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>\n          <div className="panel-head">\n            <h2 className="panel-title flex items-center gap-2">\n              <Check className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />\n              Generated Keys\n            </h2>\n            <span className="panel-badge">{generatedKeys.length} KEYS</span>\n          </div>\n          <div className="p-5">
+        <div className="panel fade-up d2" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>
+          <div className="panel-head">
+            <h2 className="panel-title flex items-center gap-2">
+              <Check className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />
+              Generated Keys
+            </h2>
+            <span className="panel-badge">{generatedKeys.length} KEYS</span>
+          </div>
+          <div className="p-5">
             <div
               className="space-y-1 font-mono text-sm p-4 rounded-lg max-h-64 overflow-y-auto"
               style={{
@@ -396,7 +424,8 @@ export default function KeyGeneratePage() {
                 {copied ? 'Copied!' : 'Copy All'}
               </Button>
             </div>
-          </div>\n      </div>
+          </div>
+      </div>
       )}
     </div>
   );

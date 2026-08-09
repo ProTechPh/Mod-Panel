@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trash2, RotateCcw, Search, AlertTriangle, KeyRound, Terminal, ShieldCheck, ChevronLeft, ChevronRight, Clock, X, Check, Eye } from 'lucide-react';
+import { Trash2, RotateCcw, Search, AlertTriangle, KeyRound, Terminal, ShieldCheck, Clock, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { DataTablePagination } from '@/components/shared/DataTablePagination';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { useDebouncedCallback } from '@/lib/hooks';
 
 interface Key {
   _id: string; game: string; userKey: string; duration: number | string;
@@ -21,11 +21,11 @@ interface Key {
 }
 
 const DURATION_OPTIONS = [
-  { label: '1 Hour', value: 1 },
-  { label: '3 Hours', value: 3 },
   { label: '1 Day', value: 1 },
+  { label: '3 Days', value: 3 },
   { label: '7 Days', value: 7 },
   { label: '30 Days', value: 30 },
+  { label: '90 Days', value: 90 },
   { label: 'Lifetime', value: 36500 },
 ];
 
@@ -61,9 +61,12 @@ export default function KeysPage() {
     }
   };
 
-  const debouncedFetch = useDebouncedCallback((val: string) => { setPage(1); fetchKeys(val, 1); }, 400);
-
-  useEffect(() => { void fetchKeys(); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => void fetchKeys(), 0);
+    return () => clearTimeout(t);
+    // fetchKeys is intentionally omitted: initial load only, searches/pagination trigger their own fetches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!user) return <p className="text-muted-foreground">Loading…</p>;
 
@@ -448,21 +451,12 @@ export default function KeysPage() {
               }
             </TableBody>
           </Table>
-          {totalFiltered > PAGE_SIZE && (
-            <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
-              <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
-                Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, totalFiltered)} of {totalFiltered}
-              </span>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { const p = page - 1; setPage(p); fetchKeys(search, p); }}>
-                  <ChevronLeft className="h-3.5 w-3.5" /> Prev
-                </Button>
-                <Button variant="outline" size="sm" disabled={page * PAGE_SIZE >= totalFiltered} onClick={() => { const p = page + 1; setPage(p); fetchKeys(search, p); }}>
-                  Next <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <DataTablePagination
+            page={page}
+            total={totalFiltered}
+            pageSize={PAGE_SIZE}
+            onPageChange={(p) => { setPage(p); fetchKeys(search, p); }}
+          />
         </CardContent>
       </Card>
       </div>

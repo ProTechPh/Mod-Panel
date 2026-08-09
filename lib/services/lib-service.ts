@@ -3,10 +3,27 @@ import Lib from '@/lib/db/models/Lib';
 import LibraryLog from '@/lib/db/models/LibraryLog';
 import { uploadToFtp, deleteFromFtp } from '@/lib/ftp/client';
 import { Readable } from 'stream';
+import { toIsoString } from '@/lib/utils/dates';
+import type { LibDoc } from '@/types';
 
-function sanitize(lib: any) {
-  const { ftpUrl, ...rest } = lib.toObject ? lib.toObject() : lib;
-  return { ...rest, _id: rest._id.toString(), uploadedAt: rest.uploadedAt?.toISOString() };
+type SanitizedLib = Omit<LibDoc, '_id' | 'ftpUrl' | 'uploadedAt'> & {
+  _id: string;
+  uploadedAt: string | Date;
+};
+
+function sanitize(lib: LibDoc): SanitizedLib {
+  // Explicitly whitelist fields; ftpUrl is intentionally never exposed to API clients.
+  const { fileName, displayName, type, fileSize, fileSizeBytes, uploadedBy, uploadedAt } = lib;
+  return {
+    fileName,
+    displayName,
+    type,
+    fileSize,
+    fileSizeBytes,
+    uploadedBy,
+    _id: String(lib._id),
+    uploadedAt: toIsoString(uploadedAt),
+  };
 }
 
 export async function listLibs(registrator?: string) {
@@ -30,7 +47,7 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
 
   if (existing) {
     if (existing.uploadedBy !== uploadedBy && uploaderLevel !== 1) {
-      const error: any = new Error(`This file was uploaded by @${existing.uploadedBy}. You cannot replace it.`);
+      const error = new Error(`This file was uploaded by @${existing.uploadedBy}. You cannot replace it.`) as Error & { code?: string };
       error.code = 'FORBIDDEN_REPLACE';
       throw error;
     }
@@ -65,7 +82,7 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
 
 export async function updateLib(id: string, updates: { displayName?: string; type?: string }) {
   await dbConnect();
-  const setData: Record<string, any> = {};
+  const setData: { displayName?: string; type?: 'free' | 'paid' } = {};
   if (updates.displayName !== undefined) setData.displayName = updates.displayName;
   if (updates.type !== undefined) setData.type = updates.type === 'paid' ? 'paid' : 'free';
   if (Object.keys(setData).length === 0) return getLib(id);
@@ -94,7 +111,7 @@ function parseDevice(ua: string): string {
 
 export async function getLibLogs(libId: string, username?: string) {
   await dbConnect();
-  const filter: Record<string, any> = { libId };
+  const filter: Record<string, unknown> = { libId };
   if (username) filter.uploadedBy = username;
   const logs = await LibraryLog.find(filter).sort({ downloadedAt: -1 }).limit(100).lean();
   return logs.map(l => ({ ...l, _id: l._id.toString(), libId: l.libId.toString(), downloadedAt: l.downloadedAt?.toISOString() }));
@@ -102,7 +119,7 @@ export async function getLibLogs(libId: string, username?: string) {
 
 export async function getRecentLibLogs(username?: string, limit: number = 15) {
   await dbConnect();
-  const filter: Record<string, any> = {};
+  const filter: Record<string, unknown> = {};
   if (username) filter.uploadedBy = username;
   const logs = await LibraryLog.find(filter).sort({ downloadedAt: -1 }).limit(limit).lean();
   return logs.map(l => ({ ...l, _id: l._id.toString(), libId: l.libId.toString(), downloadedAt: l.downloadedAt?.toISOString() }));

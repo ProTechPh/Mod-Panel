@@ -1,5 +1,7 @@
 import dbConnect from '@/lib/db/connection';
 import AuditLog from '@/lib/db/models/AuditLog';
+import { escapeRegex } from '@/lib/utils/data-tables';
+import { toIsoString } from '@/lib/utils/dates';
 
 export async function logAudit(entry: {
   action: string;
@@ -34,7 +36,7 @@ export async function listAuditLogs(params: {
   const filter: Record<string, unknown> = {};
 
   if (params.search) {
-    const escaped = params.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escaped = escapeRegex(params.search);
     filter.$or = [
       { actor: { $regex: escaped, $options: 'i' } },
       { target: { $regex: escaped, $options: 'i' } },
@@ -71,7 +73,7 @@ export async function listAuditLogs(params: {
     data: data.map(log => ({
       ...log,
       _id: log._id.toString(),
-      createdAt: log.createdAt?.toISOString(),
+      createdAt: toIsoString(log.createdAt),
     })),
   };
 }

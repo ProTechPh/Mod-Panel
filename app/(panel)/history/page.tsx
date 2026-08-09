@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { Trash2, History as HistoryIcon, User as UserIcon, FileText, Clock, Terminal, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 
 interface HistoryEntry { _id: string; keyId: string; userDo: string; info: string; createdAt: string; }
 
@@ -110,7 +108,7 @@ export default function HistoryPage() {
               <Terminal size={14} className="text-orange-500" />
               <span>Decrypted Event Log Feed</span>
             </h2>
-            <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest">// status: live feed</span>
+            <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest">{'// status: live feed'}</span>
           </div>
 
           <div className="p-0 overflow-x-auto">

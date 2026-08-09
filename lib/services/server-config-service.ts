@@ -2,6 +2,7 @@ import dbConnect from '@/lib/db/connection';
 import ServerConfig, { SingletonId } from '@/lib/db/models/ServerConfig';
 import Key from '@/lib/db/models/Key';
 import { clearConfigCache } from './key-service';
+import { toIsoString } from '@/lib/utils/dates';
 import type { MaintenanceStatus } from '@/types';
 
 export async function getServerConfig() {
@@ -22,7 +23,7 @@ export async function getServerConfig() {
     modName: config.modName || '',
     maintenanceStatus: config.maintenanceStatus || 'off',
     maintenanceMessage: config.maintenanceMessage || '',
-    maintenanceStartedAt: config.maintenanceStartedAt || null,
+    maintenanceStartedAt: toIsoString(config.maintenanceStartedAt),
     announcement: config.announcement || '',
     announcementStatus: config.announcementStatus || 'off',
     _id: config._id.toString(),
@@ -90,6 +91,10 @@ export async function updateServerConfig(data: {
 
   const config = await ServerConfig.findByIdAndUpdate(SingletonId, update, { returnDocument: 'after' }).lean();
   clearConfigCache();
-  return config ? { ...config, _id: config._id.toString() } : null;
+  return config ? {
+    ...config,
+    _id: config._id.toString(),
+    maintenanceStartedAt: toIsoString(config.maintenanceStartedAt),
+  } : null;
 }
 

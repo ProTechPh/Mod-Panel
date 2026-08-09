@@ -1,31 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@/lib/auth/middleware';
+import { NextResponse } from 'next/server';
+import { withApi } from '@/lib/api/with-api';
 import { getKey, updateKey, deleteKey } from '@/lib/services/key-service';
 import { editKeySchema } from '@/lib/validators/key';
 import { logAudit } from '@/lib/services/audit-service';
+import { getClientIp } from '@/lib/utils/ip';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { id } = await params;
-  const key = await getKey(id);
-  if (!key) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
-  if (user.level !== 1 && key.registrator !== user.username) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  return NextResponse.json(key);
+function canAccess(user: { level: number; username: string }, key: { registrator: string }) {
+  return user.level === 1 || key.registrator === user.username;
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { id } = await params;
+export const GET = withApi(async (request, user, { id }: { id: string }) => {
   const key = await getKey(id);
   if (!key) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
-  if (user.level !== 1 && key.registrator !== user.username) {
+  if (!canAccess(user, key)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  return NextResponse.json(key);
+});
+
+export const PUT = withApi(async (request, user, { id }: { id: string }) => {
+  const key = await getKey(id);
+  if (!key) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+  if (!canAccess(user, key)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -38,28 +34,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const updated = await updateKey(id, parsed.data as Parameters<typeof updateKey>[1]);
   if (!updated) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const ip = getClientIp(request);
   logAudit({ action: 'key.update', actor: user.username, actorLevel: user.level, target: id, details: body, ip });
 
   return NextResponse.json(updated);
-}
+});
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await authenticate(request);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { id } = await params;
+export const DELETE = withApi(async (request, user, { id }: { id: string }) => {
   const key = await getKey(id);
   if (!key) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
-  if (user.level !== 1 && key.registrator !== user.username) {
+  if (!canAccess(user, key)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const deleted = await deleteKey(id);
   if (!deleted) return NextResponse.json({ error: 'Key not found' }, { status: 404 });
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const ip = getClientIp(request);
   logAudit({ action: 'key.delete', actor: user.username, actorLevel: user.level, target: id, ip });
 
   return NextResponse.json({ success: true });
-}
+});

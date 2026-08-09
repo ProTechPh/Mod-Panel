@@ -8,5 +8,6 @@ interface StatsBarProps {
 }
 
 export function StatsBar(_props: StatsBarProps) {
+  void _props; // placeholder — reserved for the live stats bar
   return null;
 }

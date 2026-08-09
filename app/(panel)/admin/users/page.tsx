@@ -6,10 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/components/shared/AuthProvider';
-import { Search, Trash2, Edit, Users, Gift, Mail, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Trash2, Edit, Users, Gift, Mail, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { DataTablePagination } from '@/components/shared/DataTablePagination';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import ReferralsTable from '@/components/shared/ReferralsTable';
 
@@ -44,14 +45,13 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    void fetchUsers('');
-    void (async () => {
-      try {
-        const res = await fetch('/api/referrals');
-        const data = await res.json();
-        setReferrals(Array.isArray(data) ? data : []);
-      } catch {}
-    })();
+    const t = setTimeout(() => {
+      void fetchUsers('');
+      void fetchReferrals();
+    }, 0);
+    return () => clearTimeout(t);
+    // fetchUsers/fetchReferrals are intentionally omitted: initial load only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;
@@ -187,31 +187,12 @@ export default function UsersPage() {
                   ))}
                 </TableBody>
               </Table>
-              {totalFiltered > PAGE_SIZE && (
-                <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                  <span className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
-                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalFiltered)} of {totalFiltered}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={page <= 1}
-                      onClick={() => { setPage(p => p - 1); void fetchUsers(search, page - 1); }}
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" style={{ color: page <= 1 ? 'var(--text-lo)' : 'var(--teal-2)' }} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={page * PAGE_SIZE >= totalFiltered}
-                      onClick={() => { setPage(p => p + 1); void fetchUsers(search, page + 1); }}
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" style={{ color: page * PAGE_SIZE >= totalFiltered ? 'var(--text-lo)' : 'var(--teal-2)' }} />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <DataTablePagination
+                page={page}
+                total={totalFiltered}
+                pageSize={PAGE_SIZE}
+                onPageChange={(p) => { setPage(p); void fetchUsers(search, p); }}
+              />
             </CardContent>
           </Card>
         </>

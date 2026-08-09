@@ -1,10 +1,18 @@
 import dbConnect from '@/lib/db/connection';
 import User from '@/lib/db/models/User';
 import { verifyPassword, hashPassword, needsRehash } from '@/lib/auth/password';
-import type { UserLevel, UserStatus } from '@/types';
+import { paginate } from '@/lib/utils/data-tables';
+import { toIsoString } from '@/lib/utils/dates';
+import type { UserDoc, UserLevel, UserStatus } from '@/types';
 
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function serializeUser(u: UserDoc) {
+  return {
+    ...u,
+    _id: u._id.toString(),
+    expirationDate: toIsoString(u.expirationDate),
+    createdAt: toIsoString(u.createdAt),
+    updatedAt: toIsoString(u.updatedAt),
+  };
 }
 
 export async function loginUser(identifier: string, password: string) {
@@ -105,48 +113,28 @@ export async function listUsers(params: {
 }) {
   await dbConnect();
 
-  const filter: Record<string, unknown> = {};
-  if (params.search) {
-    const safeSearch = escapeRegex(params.search);
-    filter.$or = [
-      { username: { $regex: safeSearch, $options: 'i' } },
-      { email: { $regex: safeSearch, $options: 'i' } },
-      { fullname: { $regex: safeSearch, $options: 'i' } },
-    ];
-  }
-
-  const recordsTotal = await User.countDocuments({});
-  const recordsFiltered = await User.countDocuments(filter);
-
-  const sortColumn = ['createdAt', 'username', 'email', 'level', 'saldo', 'status', 'expirationDate'][params.order?.[0]?.column ?? 0] || 'createdAt';
-  const sortDir = params.order?.[0]?.dir === 'asc' ? 1 : -1;
-
-  const data = await User.find(filter)
-    .select('-password -resetLinkToken -resetTokenExpiry')
-    .sort({ [sortColumn]: sortDir })
-    .skip(params.start)
-    .limit(params.length)
-    .lean();
+  const result = await paginate<UserDoc>(User, {
+    draw: params.draw,
+    start: params.start,
+    length: params.length,
+    search: params.search,
+    order: params.order,
+    searchFields: ['username', 'email', 'fullname'],
+    sortColumns: ['createdAt', 'username', 'email', 'level', 'saldo', 'status', 'expirationDate'],
+    select: '-password -resetLinkToken -resetTokenExpiry',
+  });
 
   return {
-    draw: params.draw,
-    recordsTotal,
-    recordsFiltered,
-    data: data.map(u => ({
-      ...u,
-      _id: u._id.toString(),
-      expirationDate: u.expirationDate instanceof Date ? u.expirationDate.toISOString() : u.expirationDate,
-      createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : u.createdAt,
-      updatedAt: u.updatedAt instanceof Date ? u.updatedAt.toISOString() : u.updatedAt,
-    })),
+    ...result,
+    data: result.data.map(serializeUser),
   };
 }
 
 export async function getUser(id: string) {
   await dbConnect();
-  const user = await User.findById(id).select('-password').lean();
+  const user = await User.findById(id).select('-password -resetLinkToken -resetTokenExpiry').lean();
   if (!user) return null;
-  return { ...user, _id: user._id.toString() };
+  return serializeUser(user);
 }
 
 export async function updateUser(id: string, data: {
@@ -166,7 +154,7 @@ export async function updateUser(id: string, data: {
   if (data.status !== undefined) update.status = data.status;
   if (data.expirationDate !== undefined) update.expirationDate = new Date(data.expirationDate);
   const user = await User.findByIdAndUpdate(id, update, { returnDocument: 'after' }).select('-password').lean();
-  return user ? { ...user, _id: user._id.toString() } : null;
+  return user ? serializeUser(user) : null;
 }
 
 export async function deleteUser(id: string) {
@@ -233,6 +221,3 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
 
   return { username: user.username };
 }
-
-// Export escapeRegex for other modules to use
-export { escapeRegex };

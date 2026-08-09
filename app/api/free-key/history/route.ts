@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getMyFreeKeyHistory } from '@/lib/services/free-key-service';
-import { extractClientIp } from '@/lib/utils/ip';
+import { getClientIp } from '@/lib/utils/ip';
+import { withPublicApi } from '@/lib/api/with-api';
 
-export async function GET(request: NextRequest) {
+export const GET = withPublicApi(async (request) => {
   const registrator = request.nextUrl.searchParams.get('registrator');
   if (!registrator) {
     return NextResponse.json({ error: 'Missing registrator' }, { status: 400 });
@@ -13,9 +14,9 @@ export async function GET(request: NextRequest) {
     deviceId = crypto.randomUUID();
   }
 
-  const ip = extractClientIp(request, []);
+  const ip = getClientIp(request);
   const history = await getMyFreeKeyHistory(deviceId, ip, registrator);
-  
+
   const response = NextResponse.json(history);
   response.cookies.set('free_key_device_id', deviceId, {
     maxAge: 365 * 24 * 60 * 60, // 1 year
@@ -25,4 +26,4 @@ export async function GET(request: NextRequest) {
     sameSite: 'lax',
   });
   return response;
-}
+});

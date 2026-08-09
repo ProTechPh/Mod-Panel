@@ -19,7 +19,7 @@ const failedAttempts = new Map<string, FailedAttempt>();
 
 export function recordFailedAttempt(ip: string): { locked: boolean; delayMs: number } {
   const now = Date.now();
-  let entry = failedAttempts.get(ip);
+  const entry = failedAttempts.get(ip);
 
   if (!entry) {
     failedAttempts.set(ip, { count: 1, firstAttemptAt: now, lockedUntil: 0 });

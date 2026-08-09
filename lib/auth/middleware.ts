@@ -23,9 +23,3 @@ export async function authenticate(request: NextRequest): Promise<JwtPayload | n
     return null;
   }
 }
-
-export async function authenticateAdmin(request: NextRequest): Promise<JwtPayload | null> {
-  const payload = await authenticate(request);
-  if (!payload || payload.level !== 1) return null;
-  return payload;
-}

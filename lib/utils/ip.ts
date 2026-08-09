@@ -36,3 +36,15 @@ export function extractClientIp(request: NextRequest, trustedProxies: string[]):
   // share the same bucket rather than each getting a unique bypass ID
   return 'unknown';
 }
+
+/**
+ * Read the client IP as validated and injected by the proxy layer.
+ *
+ * proxy.ts strips spoofable IP headers (x-forwarded-for, x-real-ip) and sets
+ * `x-client-ip` from the validated client IP on every request, so route
+ * handlers should prefer that header. Falls back to extractClientIp() to
+ * cover direct invocations that bypass the proxy.
+ */
+export function getClientIp(request: NextRequest): string {
+  return request.headers.get('x-client-ip') || extractClientIp(request, []);
+}
