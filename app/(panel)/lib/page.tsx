@@ -63,7 +63,7 @@ function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
     >
       <div
         className="relative w-full max-w-2xl rounded-2xl overflow-hidden"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(20, 184, 184, 0.1)' }}
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(234, 88, 12, 0.1)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -77,7 +77,7 @@ function SnippetModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
 
         <div className="px-5 pt-4 pb-2 space-y-3">
           <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
-            Dynamic na kino-fetch ng <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>MainActivity</code> ang libs mula sa <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>/api/libs/list?uploadedBy=WINTER</code>.
+            Dynamic na kino-fetch ng <code style={{ background: 'rgba(234, 88, 12, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>MainActivity</code> ang libs mula sa <code style={{ background: 'rgba(234, 88, 12, 0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, color: 'var(--teal-3)' }}>/api/libs/list?uploadedBy=WINTER</code>.
           </p>
           <div
             className="rounded-lg px-3 py-2.5 space-y-1"
@@ -151,7 +151,7 @@ function LogsModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
     >
       <div
         className="relative w-full max-w-3xl max-h-[80vh] rounded-2xl overflow-hidden flex flex-col"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(20, 184, 184, 0.1)' }}
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hi)', boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 40px rgba(234, 88, 12, 0.1)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -180,7 +180,7 @@ function LogsModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
                 <div
                   key={log._id}
                   className="rounded-lg px-4 py-3 text-xs space-y-1.5"
-                  style={{ border: '1px solid var(--border)', background: 'rgba(20, 184, 184, 0.04)' }}
+                  style={{ border: '1px solid var(--border)', background: 'rgba(234, 88, 12, 0.04)' }}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{log.ipAddress}</span>
@@ -189,7 +189,7 @@ function LogsModal({ lib, onClose }: { lib: Lib; onClose: () => void }) {
                   <div className="flex items-center gap-2">
                     <span
                       className="rounded font-medium"
-                      style={{ background: 'rgba(20, 184, 184, 0.1)', color: 'var(--teal-3)', padding: '0.1rem 0.5rem', fontSize: '0.65rem' }}
+                      style={{ background: 'rgba(234, 88, 12, 0.1)', color: 'var(--teal-3)', padding: '0.1rem 0.5rem', fontSize: '0.65rem' }}
                     >
                       {log.device || 'Unknown'}
                     </span>
@@ -326,151 +326,181 @@ export default function LibPage() {
           title="LIB"
           highlight="ARCHIVE"
           sub="Upload, version, and distribute game binaries and mod libraries."
-          actions={
-            <div className="flex items-center gap-2">
-              <select
-                value={uploadType}
-                onChange={e => setUploadType(e.target.value as 'free' | 'paid')}
-                className="h-8 rounded-md border bg-transparent px-3 text-xs outline-none font-mono uppercase tracking-wider"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
-              >
-                <option value="free">FREE</option>
-                <option value="paid">PAID</option>
-              </select>
-              <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload" />
-              <label
-                htmlFor="lib-upload"
-                className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer", uploading && "pointer-events-none opacity-50")}
-              >
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                {uploading ? 'Uploading…' : 'Upload .so'}
-              </label>
-            </div>
-          }
         />
 
-        {uploading && (
-          <div
-            className="space-y-2 rounded-xl p-4 fade-up"
-            style={{ border: '1px solid var(--border)', background: 'rgba(20, 184, 184, 0.04)' }}
-          >
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-mono truncate max-w-[260px]" style={{ color: 'var(--text-mid)' }}>{uploadFileName}</span>
-              <span className="font-display font-bold tabular-nums" style={{ color: 'var(--teal-2)' }}>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} />
-            <p className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
-              {uploadProgress < 95 ? '// uploading chunks…' : uploadProgress < 100 ? '// finalizing upload…' : '// done'}
-            </p>
-          </div>
-        )}
+        <div className="grid gap-5 lg:grid-cols-[1fr_1.6fr] items-start">
+          {/* Left Column: Upload Payload Console */}
+          <div className="space-y-4 fade-up d1">
+            <div className="panel">
+              <div className="panel-head">
+                <h2 className="panel-title">
+                  <Upload size={14} className="text-orange-500" />
+                  <span>Payload Uploader</span>
+                </h2>
+                <span className="panel-badge">CDN LINK</span>
+              </div>
 
-        <Card className="fade-up d1 overflow-hidden">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>File Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Uploaded By</TableHead>
-                  <TableHead>Uploaded</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {libs.length === 0 ? (
+              <div className="p-5 space-y-4 font-sans text-xs">
+                {/* Type Selection Tiles */}
+                <div className="space-y-1.5">
+                  <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest block">Clearance Access Type</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUploadType('free')}
+                      className={`tab-btn ${uploadType === 'free' ? 'active' : ''}`}
+                    >
+                      FREE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUploadType('paid')}
+                      className={`tab-btn ${uploadType === 'paid' ? 'active' : ''}`}
+                    >
+                      PAID
+                    </button>
+                  </div>
+                </div>
+
+                {/* Drag Drop zone styled file selector */}
+                <div className="rounded-lg border-2 border-dashed border-white/10 bg-black/20 hover:bg-black/35 hover:border-orange-500/30 p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer">
+                  <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload-grid" />
+                  <label htmlFor="lib-upload-grid" className="w-full cursor-pointer flex flex-col items-center gap-2">
+                    <FileCode size={28} className="text-slate-400 group-hover:text-orange-500 transition-colors" />
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-bold text-white uppercase tracking-wider text-[11px]">Choose DLL Payload (.so)</span>
+                      <span className="text-[9px] text-[var(--text-lo)] font-mono uppercase tracking-widest">// Maximum Size: 50MB</span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Dynamic Upload Progress */}
+                {uploading && (
+                  <div
+                    className="space-y-2 rounded-lg p-4 border border-orange-500/20 bg-orange-500/5 animate-pulse"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono truncate max-w-[180px] text-slate-300">{uploadFileName}</span>
+                      <span className="font-bold text-orange-500 tabular-nums">{uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} />
+                    <p className="font-mono text-[9px] text-[var(--text-lo)] uppercase tracking-wider">
+                      {uploadProgress < 95 ? '// uploading chunks…' : uploadProgress < 100 ? '// finalizing upload…' : '// done'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Binary CDN Log */}
+          <Card className="fade-up d2 overflow-hidden">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                      <Library className="h-6 w-6 mx-auto mb-2 opacity-40" />
-                      <div className="font-mono text-xs uppercase tracking-widest">No libraries in archive</div>
-                    </TableCell>
+                    <TableHead>File Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Uploaded By</TableHead>
+                    <TableHead>Uploaded</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : libs.map(lib => (
-                  <TableRow key={lib._id}>
-                    <TableCell>
-                      {editingId === lib._id ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="text"
-                            value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
-                            className="h-7 w-40 rounded border bg-transparent px-2 text-xs font-mono outline-none"
-                            style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
-                            autoFocus
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') void handleUpdate(lib._id, editValue, editType);
-                              if (e.key === 'Escape') setEditingId(null);
-                            }}
-                          />
-                          <select
-                            value={editType}
-                            onChange={e => setEditType(e.target.value as 'free' | 'paid')}
-                            className="h-7 rounded border bg-transparent px-1 text-xs outline-none font-mono"
-                            style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
+                </TableHeader>
+                <TableBody>
+                  {libs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <Library className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                        <div className="font-mono text-xs uppercase tracking-widest">No libraries in archive</div>
+                      </TableCell>
+                    </TableRow>
+                  ) : libs.map(lib => (
+                    <TableRow key={lib._id}>
+                      <TableCell>
+                        {editingId === lib._id ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={e => setEditValue(e.target.value)}
+                              className="h-7 w-40 rounded border bg-transparent px-2 text-xs font-mono outline-none"
+                              style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
+                              autoFocus
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') void handleUpdate(lib._id, editValue, editType);
+                                if (e.key === 'Escape') setEditingId(null);
+                              }}
+                            />
+                            <select
+                              value={editType}
+                              onChange={e => setEditType(e.target.value as 'free' | 'paid')}
+                              className="h-7 rounded border bg-transparent px-1 text-xs outline-none font-mono"
+                              style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
+                            >
+                              <option value="free">FREE</option>
+                              <option value="paid">PAID</option>
+                            </select>
+                            <Button variant="ghost" size="icon-sm" onClick={() => void handleUpdate(lib._id, editValue, editType)}>
+                              <Save className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <FileCode className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
+                            <span className="font-mono">{lib.displayName || lib.fileName}</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {lib.type === 'paid'
+                          ? <StatusBadge status="warning">Paid</StatusBadge>
+                          : <StatusBadge status="success">Free</StatusBadge>}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.fileSize}</TableCell>
+                      <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.uploadedBy}</TableCell>
+                      <TableCell className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
+                        {lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : '—'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button variant="ghost" size="icon-sm" onClick={() => setLogsLib(lib)} title="Download Logs">
+                            <History className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon-sm"
+                            onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); setEditType((lib.type || 'free') as 'free' | 'paid'); }}
+                            title="Edit"
                           >
-                            <option value="free">FREE</option>
-                            <option value="paid">PAID</option>
-                          </select>
-                          <Button variant="ghost" size="icon-sm" onClick={() => void handleUpdate(lib._id, editValue, editType)}>
-                            <Save className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} />
+                            <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
+                          </Button>
+                          <Button variant="ghost" size="icon-sm" onClick={() => setSnippetLib(lib)} title="Get Java Snippet">
+                            <Code className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon-sm"
+                            onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}
+                            title="Copy link"
+                          >
+                            <LinkIcon className="h-3.5 w-3.5" />
+                          </Button>
+                          <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
+                            <Button variant="ghost" size="icon-sm" title="Download">
+                              <Download className="h-3.5 w-3.5" />
+                            </Button>
+                          </a>
+                          <Button variant="ghost" size="icon-sm" onClick={() => void handleDelete(lib._id)} title="Delete">
+                            <Trash2 className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} />
                           </Button>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <FileCode className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
-                          <span className="font-mono">{lib.displayName || lib.fileName}</span>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {lib.type === 'paid'
-                        ? <StatusBadge status="warning">Paid</StatusBadge>
-                        : <StatusBadge status="success">Free</StatusBadge>}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.fileSize}</TableCell>
-                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.uploadedBy}</TableCell>
-                    <TableCell className="font-mono text-xs" style={{ color: 'var(--text-lo)' }}>
-                      {lib.uploadedAt ? new Date(lib.uploadedAt).toLocaleString() : '—'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon-sm" onClick={() => setLogsLib(lib)} title="Download Logs">
-                          <History className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
-                        </Button>
-                        <Button
-                          variant="ghost" size="icon-sm"
-                          onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); setEditType((lib.type || 'free') as 'free' | 'paid'); }}
-                          title="Edit"
-                        >
-                          <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => setSnippetLib(lib)} title="Get Java Snippet">
-                          <Code className="h-3.5 w-3.5" style={{ color: 'var(--teal-2)' }} />
-                        </Button>
-                        <Button
-                          variant="ghost" size="icon-sm"
-                          onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}
-                          title="Copy link"
-                        >
-                          <LinkIcon className="h-3.5 w-3.5" />
-                        </Button>
-                        <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
-                          <Button variant="ghost" size="icon-sm" title="Download">
-                            <Download className="h-3.5 w-3.5" />
-                          </Button>
-                        </a>
-                        <Button variant="ghost" size="icon-sm" onClick={() => void handleDelete(lib._id)} title="Delete">
-                          <Trash2 className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   );

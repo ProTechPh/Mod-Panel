@@ -228,7 +228,7 @@ export default function GameSettingsPage() {
                 </div>
                 <p className="font-mono text-[10px]" style={{ color: 'var(--text-lo)' }}>
                   {'// shown after login. fetched from '}
-                  <code style={{ background: 'rgba(20, 184, 184, 0.1)', padding: '0.05rem 0.3rem', borderRadius: 3, color: 'var(--teal-3)' }}>/{editGame.registrator}/announcement</code>
+                  <code style={{ background: 'rgba(234, 88, 12, 0.1)', padding: '0.05rem 0.3rem', borderRadius: 3, color: 'var(--teal-3)' }}>/{editGame.registrator}/announcement</code>
                 </p>
                 <div className="flex items-center gap-3">
                   <Switch checked={editGame.announcementStatus === 'on'} onCheckedChange={v => setEditGame({ ...editGame, announcementStatus: v ? 'on' : 'off' })} />

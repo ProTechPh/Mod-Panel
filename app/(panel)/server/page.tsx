@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { toast } from 'sonner';
-import { Clock, Wrench, AlertTriangle, Power, MessageSquare, Save } from 'lucide-react';
+import { Clock, Wrench, AlertTriangle, Power, MessageSquare, Save, Terminal, ShieldAlert } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
@@ -108,86 +108,92 @@ export default function ServerPage() {
         sub="Toggle global maintenance and broadcast a downtime message to all users."
       />
 
-      <Card
-        className="fade-up d1"
-        style={{
-          borderColor: isOn ? 'rgba(240, 192, 64, 0.5)' : undefined,
-          background: isOn ? 'linear-gradient(180deg, rgba(240, 192, 64, 0.05), rgba(9, 19, 24, 0.85))' : undefined,
-        }}
-      >
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {isOn
-              ? <AlertTriangle className="h-4 w-4" style={{ color: 'var(--gold)' }} />
-              : <Wrench className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />}
-            Maintenance Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <Switch
-              checked={isOn}
-              onCheckedChange={v => void handleMaintenanceToggle(v)}
-              disabled={toggling}
-            />
-            <Label className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
-              <Power className="h-3 w-3" /> Maintenance Mode
-            </Label>
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr] items-start">
+        {/* Left Column: Power Core Controller */}
+        <div className="panel fade-up d1">
+          <div className="panel-head" style={{ borderBottomColor: isOn ? 'rgba(234, 88, 12, 0.25)' : 'var(--border)' }}>
+            <h2 className="panel-title">
+              <Terminal size={14} className="text-orange-500" />
+              <span>Power Core</span>
+            </h2>
             <StatusBadge status={isOn ? 'warning' : 'success'} withDot>
-              {isOn ? 'Active' : 'Offline'}
+              {isOn ? 'Maintenance Active' : 'System Operational'}
             </StatusBadge>
-            {isOn && elapsed && (
-              <span
-                className="flex items-center gap-1.5 text-[10px] ml-auto"
-                style={{
-                  background: 'rgba(240, 192, 64, 0.1)',
-                  color: 'var(--gold)',
-                  padding: '0.2rem 0.7rem',
-                  borderRadius: '50px',
-                  border: '1px solid rgba(240, 192, 64, 0.3)',
-                  fontFamily: 'var(--ff-mono)',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                <Clock className="h-3 w-3" />
-                {elapsed} · timers paused
-              </span>
-            )}
           </div>
 
-          {isOn && (
-            <div
-              className="font-mono text-xs"
-              style={{
-                background: 'rgba(240, 192, 64, 0.05)',
-                color: 'var(--gold)',
-                border: '1px solid rgba(240, 192, 64, 0.2)',
-                borderRadius: '8px',
-                padding: '0.65rem 0.9rem',
-              }}
-            >
-              <span style={{ color: 'var(--gold)', fontWeight: 700 }}>{'// '}</span>
-              {'all active key timers are paused. when maintenance ends, timers auto-extend by the full downtime duration.'}
+          <div className="p-5 space-y-5">
+            {/* Core Power Switch */}
+            <div className="rounded-lg border border-white/5 bg-black/20 p-4 flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <Label className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-slate-300">
+                  <Power className="h-3 w-3" /> System Bypass Link
+                </Label>
+                <span className="text-[10px] text-slate-500">// Pauses reseller key expirations</span>
+              </div>
+              <Switch
+                checked={isOn}
+                onCheckedChange={v => void handleMaintenanceToggle(v)}
+                disabled={toggling}
+              />
             </div>
-          )}
 
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest" style={{ color: 'var(--text-mid)' }}>
-              <MessageSquare className="h-3 w-3" style={{ color: 'var(--teal-2)' }} /> Maintenance Message
-            </Label>
-            <Textarea
-              value={config.maintenanceMessage}
-              onChange={e => setConfig({ ...config, maintenanceMessage: e.target.value })}
-              placeholder="// Message shown to users during maintenance…"
-              className="text-xs min-h-[80px]"
-            />
-            <Button onClick={handleSaveMessage} disabled={saving} size="sm" variant="secondary">
-              <Save className="h-3.5 w-3.5 mr-1.5" /> {saving ? 'Saving…' : 'Update Message'}
-            </Button>
+            {/* Downtime Ticker details */}
+            {isOn && (
+              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-yellow-500">
+                  <AlertTriangle size={14} />
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider">Pauses Active</span>
+                </div>
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-slate-500">Elapsed Ticks:</span>
+                  <span className="text-white font-bold">{elapsed || 'Initializing…'}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Telemetry info */}
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] p-4 space-y-3 font-mono text-xs text-slate-400">
+              <div className="flex justify-between">
+                <span>Kernel Node:</span>
+                <span className="text-white">NODE-01</span>
+              </div>
+              <div className="flex justify-between">
+                <span>API Gateway:</span>
+                <span className="text-emerald-400">ONLINE</span>
+              </div>
+              <div className="flex justify-between">
+                <span>DB Bypass:</span>
+                <span className="text-emerald-400">READY</span>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Right Column: Broadcast Console */}
+        <Card className="fade-up d2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
+              Broadcast Terminal
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest block">// broadcast message buffer</span>
+              <Textarea
+                placeholder="No maintenance message set."
+                value={config.maintenanceMessage}
+                onChange={e => setConfig({ ...config, maintenanceMessage: e.target.value })}
+                rows={5}
+                className="font-mono text-xs bg-black/30 border-white/10"
+              />
+            </div>
+            <Button onClick={handleSaveMessage} disabled={saving} className="w-full">
+              <Save className="h-3.5 w-3.5 mr-1.5" /> Save Broadcast Payload
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

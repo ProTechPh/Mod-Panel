@@ -86,10 +86,10 @@ export default function UsersPage() {
                 fontSize: '0.7rem',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                background: tab === 'users' ? 'rgba(20, 184, 184, 0.12)' : 'transparent',
+                background: tab === 'users' ? 'rgba(234, 88, 12, 0.12)' : 'transparent',
                 color: tab === 'users' ? 'var(--teal-3)' : 'var(--text-mid)',
                 borderRight: '1px solid var(--border)',
-                boxShadow: tab === 'users' ? 'inset 0 0 0 1px rgba(20, 184, 184, 0.35)' : 'none',
+                boxShadow: tab === 'users' ? 'inset 0 0 0 1px rgba(234, 88, 12, 0.35)' : 'none',
               }}
             >
               <Users className="h-3.5 w-3.5" /> Users
@@ -102,9 +102,9 @@ export default function UsersPage() {
                 fontSize: '0.7rem',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                background: tab === 'referrals' ? 'rgba(20, 184, 184, 0.12)' : 'transparent',
+                background: tab === 'referrals' ? 'rgba(234, 88, 12, 0.12)' : 'transparent',
                 color: tab === 'referrals' ? 'var(--teal-3)' : 'var(--text-mid)',
-                boxShadow: tab === 'referrals' ? 'inset 0 0 0 1px rgba(20, 184, 184, 0.35)' : 'none',
+                boxShadow: tab === 'referrals' ? 'inset 0 0 0 1px rgba(234, 88, 12, 0.35)' : 'none',
               }}
             >
               <Gift className="h-3.5 w-3.5" /> Referrals

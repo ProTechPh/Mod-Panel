@@ -11,11 +11,10 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
   return (
     <AuthProvider>
       <div className="min-h-screen relative" style={{ background: 'var(--bg-void)' }}>
-        {/* Morphing background blobs */}
-        <div className="morphbg">
-          <div className="blob blob-1" />
-          <div className="blob blob-2" />
-          <div className="blob blob-3" />
+        {/* Animated ambient space mesh background */}
+        <div className="ambient-mesh">
+          <div className="ambient-orb-1" />
+          <div className="ambient-orb-2" />
         </div>
 
         <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

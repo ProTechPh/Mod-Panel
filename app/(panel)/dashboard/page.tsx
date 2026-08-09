@@ -29,21 +29,21 @@ interface DashboardAnalytics {
 }
 
 const tooltipStyle: React.CSSProperties = {
-  backgroundColor: 'rgba(9, 19, 24, 0.98)',
-  border: '1px solid rgba(20, 184, 184, 0.4)',
-  borderRadius: '10px',
+  backgroundColor: 'var(--bg-card)',
+  border: '1px solid rgba(234, 88, 12, 0.25)',
+  borderRadius: '8px',
   fontSize: 12,
-  color: '#e8f8f8',
-  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+  color: '#f1f5f9',
+  boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
 };
 
-const BAR_COLORS = ['#14b8b8', '#5eead4', '#39ff14', '#00fff7', '#a78bfa', '#f0c040', '#60a5fa', '#f87171'];
+const BAR_COLORS = ['#ea580c', '#f97316', '#22c55e', '#facc15', '#ef4444', '#a78bfa', '#3b82f6', '#4b5563'];
 
 const PIE_COLORS: Record<string, string> = {
-  active: '#39ff14',
-  expired: '#f0c040',
+  active: '#22c55e',
+  expired: '#eab308',
   blocked: '#ef4444',
-  unused: '#6b7280',
+  unused: '#4b5563',
 };
 
 function useLiveClock() {
@@ -228,6 +228,64 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+      {/* Game Library Grid */}
+      <div className="fade-up d2">
+        <h2 className="game-library-title">
+          <Gamepad2 className="h-5 w-5" style={{ color: 'var(--teal-3)' }} />
+          <span>Game Systems Portal</span>
+        </h2>
+        <div className="game-grid">
+          <Link
+            href="/admin/game-settings"
+            className="game-card"
+            style={{
+              '--card-glow-color': '#ea580c',
+              '--card-glow-shadow': 'rgba(234, 88, 12, 0.25)',
+              '--game-bg-gradient': 'linear-gradient(135deg, #ea580c, #c2410c)'
+            } as React.CSSProperties}
+          >
+            <div className="game-card-bg" />
+            <div className="game-card-action-btn">
+              <ArrowUpRight size={16} />
+            </div>
+            <div className="game-card-content">
+              <span className="game-card-tag">FPS / Battle Royale</span>
+              <h3 className="game-card-title">Call of Duty Mobile</h3>
+              <div className="game-card-stats">
+                <div className="game-card-stat">
+                  <Pulse className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
+                  <span>ESP, Aimbot, Memory Enabled</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/game-settings"
+            className="game-card"
+            style={{
+              '--card-glow-color': '#facc15',
+              '--card-glow-shadow': 'rgba(250, 204, 21, 0.25)',
+              '--game-bg-gradient': 'linear-gradient(135deg, #ea580c, #facc15)'
+            } as React.CSSProperties}
+          >
+            <div className="game-card-bg" />
+            <div className="game-card-action-btn">
+              <ArrowUpRight size={16} />
+            </div>
+            <div className="game-card-content">
+              <span className="game-card-tag">MOBA / Tactics</span>
+              <h3 className="game-card-title">Mobile Legends</h3>
+              <div className="game-card-stats">
+                <div className="game-card-stat">
+                  <Pulse className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
+                  <span>Map Hack, Radar Overlay Active</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
 
       {/* Stat row */}
       <div className="stat-row fade-up d1" style={{ marginBottom: 0 }}>
@@ -245,15 +303,15 @@ export default function DashboardPage() {
               <LineChart data={analytics.keyTrends} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#14b8b8" />
-                    <stop offset="100%" stopColor="#5eead4" />
+                    <stop offset="0%" stopColor="#ea580c" />
+                    <stop offset="100%" stopColor="#facc15" />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickFormatter={(v: string) => v.substring(5)} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ stroke: 'var(--teal-2)', strokeWidth: 1, strokeDasharray: '3 3' }} contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#e8f8f8' }} />
-                <Line type="monotone" dataKey="count" stroke="url(#lineGrad)" strokeWidth={2.5} dot={{ fill: '#14b8b8', strokeWidth: 0, r: 3 }} activeDot={{ fill: '#5eead4', strokeWidth: 0, r: 5, style: { filter: 'drop-shadow(0 0 6px #5eead4)' } }} name="Keys Created" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickFormatter={(v: string) => v.substring(5)} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickLine={false} axisLine={false} />
+                <Tooltip cursor={{ stroke: '#ea580c', strokeWidth: 1, strokeDasharray: '3 3' }} contentStyle={tooltipStyle} labelStyle={{ color: '#94a3b8', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#f1f5f9' }} />
+                <Line type="monotone" dataKey="count" stroke="url(#lineGrad)" strokeWidth={2.5} dot={{ fill: '#ea580c', strokeWidth: 0, r: 3 }} activeDot={{ fill: '#facc15', strokeWidth: 0, r: 5, style: { filter: 'drop-shadow(0 0 6px #facc15)' } }} name="Keys Created" />
               </LineChart>
             </ResponsiveContainer>
           ) : <EmptyChart />}
@@ -299,20 +357,20 @@ export default function DashboardPage() {
               <AreaChart data={analytics.recentActivity} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="createdGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#5eead4" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#5eead4" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="#ea580c" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="expiredGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f0c040" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#f0c040" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#eab308" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#eab308" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickFormatter={(v: string) => v.substring(5)} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ stroke: 'var(--teal-2)', strokeWidth: 1, strokeDasharray: '3 3' }} contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#e8f8f8' }} />
-                <Area type="monotone" dataKey="created" stroke="#5eead4" fill="url(#createdGrad)" strokeWidth={2} name="Created" />
-                <Area type="monotone" dataKey="expired" stroke="#f0c040" fill="url(#expiredGrad)" strokeWidth={2} name="Expired" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickFormatter={(v: string) => v.substring(5)} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickLine={false} axisLine={false} />
+                <Tooltip cursor={{ stroke: '#ea580c', strokeWidth: 1, strokeDasharray: '3 3' }} contentStyle={tooltipStyle} labelStyle={{ color: '#94a3b8', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#f1f5f9' }} />
+                <Area type="monotone" dataKey="created" stroke="#ea580c" fill="url(#createdGrad)" strokeWidth={2} name="Created" />
+                <Area type="monotone" dataKey="expired" stroke="#eab308" fill="url(#expiredGrad)" strokeWidth={2} name="Expired" />
               </AreaChart>
             </ResponsiveContainer>
           ) : <EmptyChart />}
@@ -322,10 +380,10 @@ export default function DashboardPage() {
           {analytics?.gameDistribution?.length ? (
             <ResponsiveContainer width="100%" height={Math.max(280, analytics.gameDistribution.length * 38)}>
               <BarChart data={analytics.gameDistribution} layout="vertical" margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="game" tick={{ fontSize: 11, fill: '#8ab8be' }} stroke="rgba(20, 184, 184, 0.15)" width={90} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(20, 184, 184, 0.06)' }} contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }} itemStyle={{ color: '#e8f8f8' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="game" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="rgba(255, 255, 255, 0.08)" width={90} tickLine={false} axisLine={false} />
+                <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.015)' }} contentStyle={tooltipStyle} labelStyle={{ color: '#94a3b8', fontFamily: 'var(--ff-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }} itemStyle={{ color: '#f1f5f9' }} />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]} name="Keys">
                   {analytics.gameDistribution.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} fillOpacity={0.85} />)}
                 </Bar>
@@ -371,10 +429,10 @@ export default function DashboardPage() {
             {durationDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={durationDistribution} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(20, 184, 184, 0.08)" vertical={false} />
-                  <XAxis dataKey="duration" tick={{ fontSize: 11, fill: '#8ab8be' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#3a6168' }} stroke="rgba(20, 184, 184, 0.15)" tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{ fill: 'rgba(20, 184, 184, 0.06)' }} contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#e8f8f8' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+                <XAxis dataKey="duration" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="rgba(255, 255, 255, 0.08)" tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} stroke="rgba(255, 255, 255, 0.08)" tickLine={false} axisLine={false} />
+                <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.015)' }} contentStyle={tooltipStyle} labelStyle={{ color: '#94a3b8', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#f1f5f9' }} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]} name="Keys">
                     {durationDistribution.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} fillOpacity={0.85} />)}
                   </Bar>
@@ -443,8 +501,8 @@ function StatCard({
       style={
         {
           '--card-accent': accent,
-          '--icon-bg': 'rgba(20, 184, 184, 0.05)',
-          '--icon-border': 'rgba(20, 184, 184, 0.15)',
+          '--icon-bg': 'rgba(234, 88, 12, 0.05)',
+          '--icon-border': 'rgba(234, 88, 12, 0.15)',
           '--icon-glow': `${accent}55`,
         } as React.CSSProperties
       }
@@ -571,13 +629,13 @@ function TopPerformers({ data }: { data: { username: string; fullname: string; k
                   <p className="truncate text-xs mt-1" style={{ color: 'var(--text-lo)', fontFamily: 'var(--ff-mono)' }}>
                     @{p.username}
                   </p>
-                  <div className="mt-1.5 h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(20, 184, 184, 0.08)' }}>
+                  <div className="mt-1.5 h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(234, 88, 12, 0.08)' }}>
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${usage}%`,
                         background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2))',
-                        boxShadow: '0 0 6px rgba(20, 184, 184, 0.4)',
+                        boxShadow: '0 0 6px rgba(234, 88, 12, 0.4)',
                       }}
                     />
                   </div>
@@ -601,10 +659,10 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
   const level = user?.level ?? 3;
   const levelColor =
     level === 1
-      ? { bg: 'rgba(240, 192, 64, 0.12)', color: 'var(--gold)', border: 'rgba(240, 192, 64, 0.3)' }
+      ? { bg: 'rgba(234, 179, 8, 0.1)', color: 'var(--gold)', border: 'rgba(234, 179, 8, 0.25)' }
       : level === 2
-      ? { bg: 'rgba(96, 165, 250, 0.12)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.3)' }
-      : { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' };
+      ? { bg: 'rgba(96, 165, 250, 0.1)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.25)' }
+      : { bg: 'rgba(234, 88, 12, 0.1)', color: 'var(--teal-3)', border: 'rgba(234, 88, 12, 0.25)' };
 
   return (
     <div className="panel panel-corner fade-up d4">
@@ -663,7 +721,7 @@ function InfoRow({ icon, iconColor, label, value }: { icon: React.ReactNode; ico
   return (
     <div
       className="flex justify-between items-center px-3 py-2.5 rounded-lg"
-      style={{ background: 'rgba(20, 184, 184, 0.05)', border: '1px solid var(--border)' }}
+      style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border)' }}
     >
       <span className="text-sm flex items-center gap-2" style={{ color: 'var(--text-mid)' }}>
         <span style={{ color: iconColor }}>{icon}</span>

@@ -52,6 +52,12 @@ export default function LandingPage() {
       <TopNav />
 
       <main className="landing-main">
+        {/* Animated ambient space mesh background */}
+        <div className="ambient-mesh">
+          <div className="ambient-orb-1" />
+          <div className="ambient-orb-2" />
+        </div>
+
         <Hero
           activeUsers={activeUsers}
           totalKeys={totalKeys}

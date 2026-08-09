@@ -70,10 +70,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           open ? 'translate-x-0' : '-translate-x-full'
         )}
         style={{
-          background: 'rgba(2, 6, 8, 0.92)',
-          backdropFilter: 'blur(20px) saturate(1.3)',
-          borderRight: '1px solid var(--border)',
-          boxShadow: '8px 0 32px rgba(0, 0, 0, 0.4), inset -1px 0 0 rgba(20, 184, 184, 0.08)',
+          background: 'rgba(10, 11, 17, 0.6)',
+          backdropFilter: 'blur(24px) saturate(1.4)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.06)',
+          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.25), inset -1px 0 0 rgba(124, 58, 237, 0.04)',
         }}
       >
         <nav
@@ -103,10 +103,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'linear-gradient(90deg, rgba(20, 184, 184, 0.18), rgba(20, 184, 184, 0.04))',
-                      border: '1px solid rgba(20, 184, 184, 0.3)',
+                      background: 'linear-gradient(90deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.01))',
+                      border: '1px solid rgba(234, 88, 12, 0.2)',
                       borderRadius: '8px',
-                      boxShadow: '0 0 14px rgba(20, 184, 184, 0.2), inset 0 1px 0 rgba(20, 184, 184, 0.15)',
+                      boxShadow: 'inset 0 1px 0 rgba(234, 88, 12, 0.08)',
                     }}
                   />
                 )}
@@ -115,7 +115,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     'relative h-4 w-4 transition-transform duration-200',
                     !isActive && 'group-hover:scale-110'
                   )}
-                  style={{ color: isActive ? 'var(--teal-2)' : 'currentColor' }}
+                  style={{ color: isActive ? 'var(--teal-3)' : 'currentColor' }}
                 />
                 <span className="relative">{item.label}</span>
                 {isActive && (
@@ -123,11 +123,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     style={{
                       position: 'absolute',
                       right: '0.6rem',
-                      width: '4px',
-                      height: '16px',
+                      width: '3px',
+                      height: '14px',
                       borderRadius: '2px',
                       background: 'var(--teal-neon)',
-                      boxShadow: '0 0 8px var(--teal-neon)',
                     }}
                   />
                 )}
@@ -157,10 +156,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'linear-gradient(90deg, rgba(20, 184, 184, 0.18), rgba(20, 184, 184, 0.04))',
-                      border: '1px solid rgba(20, 184, 184, 0.3)',
+                      background: 'linear-gradient(90deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.01))',
+                      border: '1px solid rgba(234, 88, 12, 0.2)',
                       borderRadius: '8px',
-                      boxShadow: '0 0 14px rgba(20, 184, 184, 0.2), inset 0 1px 0 rgba(20, 184, 184, 0.15)',
+                      boxShadow: 'inset 0 1px 0 rgba(234, 88, 12, 0.08)',
                     }}
                   />
                 )}
@@ -169,7 +168,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     'relative h-4 w-4 transition-transform duration-200',
                     !isActive && 'group-hover:scale-110'
                   )}
-                  style={{ color: isActive ? 'var(--teal-2)' : 'currentColor' }}
+                  style={{ color: isActive ? 'var(--teal-3)' : 'currentColor' }}
                 />
                 <span className="relative">{item.label}</span>
                 {isActive && (
@@ -177,11 +176,10 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     style={{
                       position: 'absolute',
                       right: '0.6rem',
-                      width: '4px',
-                      height: '16px',
+                      width: '3px',
+                      height: '14px',
                       borderRadius: '2px',
                       background: 'var(--teal-neon)',
-                      boxShadow: '0 0 8px var(--teal-neon)',
                     }}
                   />
                 )}

@@ -54,22 +54,25 @@ export function ServerStatus() {
   }));
 
   return (
-    <div className="status-section" id="status">
-      <div className="section-header">
-        <span className="section-label">STATUS</span>
-        <h2 className="section-title">System Status</h2>
+    <div className="panel fade-up d4" id="status">
+      <div className="panel-head">
+        <h2 className="panel-title">
+          <Signal size={14} className="text-orange-500" />
+          <span>System Diagnostics</span>
+        </h2>
+        <span className="panel-badge">API OK</span>
       </div>
 
-      <div className="status-grid">
+      <div className="status-list">
         {services.map((service) => (
-          <div key={service.name} className="status-item">
-            <div className="status-icon">{service.icon}</div>
-            <div className="status-info">
-              <span className="status-name">{service.name}</span>
-              <span className={`status-badge status-badge-${service.badge}`}>
-                {service.label}
-              </span>
+          <div key={service.name} className="status-row">
+            <div className="status-name">
+              <span className="ico">{service.icon}</span>
+              <span>{service.name}</span>
             </div>
+            <span className={`status-badge ${service.badge}`}>
+              {service.label}
+            </span>
           </div>
         ))}
       </div>

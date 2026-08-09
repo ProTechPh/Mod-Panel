@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Smartphone, Shield } from 'lucide-react';
+import { Download, Smartphone, Shield, Radio } from 'lucide-react';
 
 interface DownloadLink {
   _id: string;
@@ -38,41 +38,50 @@ export function DownloadSection() {
 
   return (
     <section className="downloads-section" id="downloads">
-      <div className="section-header">
-        <span className="section-label">DOWNLOADS</span>
-        <h2 className="section-title">Client Downloads</h2>
+      <div className="section-header" style={{ marginBottom: '1.5rem' }}>
+        <span className="section-label" style={{ fontFamily: 'var(--ff-mono)' }}>
+          [ LAUNCHER CLIENTS ]
+        </span>
+        <h2 className="section-title" style={{ fontFamily: 'var(--ff-display)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Platform Download Center
+        </h2>
         <p className="section-description">
-          Get the latest builds and tools.
+          Deploy client loaders to launch mods directly on your device.
         </p>
       </div>
 
       <div className="downloads-grid">
         {/* Client Builds */}
         {loading ? (
-          <div className="downloads-loading">
-            <div className="downloads-spinner" />
-            <p>Loading releases...</p>
+          <div className="downloads-loading panel">
+            <div className="loading-spinner" style={{ marginBottom: '1rem' }} />
+            <p className="font-mono text-xs text-slate-500">Querying platform releases...</p>
           </div>
         ) : links.length > 0 ? (
-          <div className="downloads-category">
-            <h3 className="downloads-category-title">
-              <Smartphone size={16} />
-              Client Builds
-            </h3>
+          <div className="panel">
+            <div className="panel-head">
+              <h3 className="panel-title">
+                <Smartphone size={14} className="text-orange-500" />
+                <span>Mod App Builders</span>
+              </h3>
+              <span className="panel-badge">RELEASE</span>
+            </div>
+            
             <div className="downloads-list">
               {links.map((link) => (
                 <div key={link._id} className="download-item">
                   <div className="download-info">
                     <span className="download-name">{link.appName}</span>
-                    <span className="download-meta">v{link.version || '—'} · {link.fileSize || '—'}</span>
+                    <span className="download-meta font-mono">v{link.version || '—'} · {link.fileSize || '—'}</span>
                   </div>
                   <a
                     href={link.downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="download-btn"
+                    className="btn-primary"
+                    style={{ padding: '0.4rem 0.85rem', fontSize: '0.7rem' }}
                   >
-                    <Download size={14} />
+                    <Download size={12} />
                     Download
                   </a>
                 </div>
@@ -82,27 +91,34 @@ export function DownloadSection() {
         ) : null}
 
         {/* Virtual Apps */}
-        <div className="downloads-category">
-          <h3 className="downloads-category-title">
-            <Shield size={16} />
-            Virtual Apps
-          </h3>
+        <div className="panel">
+          <div className="panel-head">
+            <h3 className="panel-title">
+              <Shield size={14} className="text-orange-500" />
+              <span>Recommended Virtual Apps</span>
+            </h3>
+            <span className="panel-badge">SANDBOX</span>
+          </div>
+
           <div className="downloads-list">
             {VIRTUAL_APPS.map((app) => (
               <div key={app.name} className="download-item">
                 <div className="download-info">
                   <span className="download-name">{app.name}</span>
                   {app.recommended && (
-                    <span className="download-badge">Recommended</span>
+                    <span className="status-pill-gold" style={{ fontSize: '0.55rem', padding: '0.1rem 0.35rem', marginTop: '0.2rem' }}>
+                      Recommended
+                    </span>
                   )}
                 </div>
                 <a
                   href={app.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`download-btn ${app.recommended ? 'download-btn-primary' : ''}`}
+                  className={app.recommended ? 'btn-primary' : 'btn-outline'}
+                  style={{ padding: '0.4rem 0.85rem', fontSize: '0.7rem' }}
                 >
-                  <Download size={14} />
+                  <Download size={12} />
                   Download
                 </a>
               </div>

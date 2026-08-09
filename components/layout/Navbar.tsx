@@ -21,20 +21,20 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   const levelLabel = level === 1 ? 'Owner' : level === 2 ? 'Admin' : 'Reseller';
   const levelColor =
     level === 1
-      ? { bg: 'rgba(240, 192, 64, 0.12)', color: 'var(--gold)', border: 'rgba(240, 192, 64, 0.3)' }
+      ? { bg: 'rgba(234, 179, 8, 0.1)', color: 'var(--gold)', border: 'rgba(234, 179, 8, 0.25)' }
       : level === 2
-      ? { bg: 'rgba(96, 165, 250, 0.12)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.3)' }
-      : { bg: 'rgba(57, 255, 20, 0.1)', color: 'var(--ecto-green)', border: 'rgba(57, 255, 20, 0.28)' };
+      ? { bg: 'rgba(96, 165, 250, 0.1)', color: '#60a5fa', border: 'rgba(96, 165, 250, 0.25)' }
+      : { bg: 'rgba(234, 88, 12, 0.1)', color: 'var(--teal-3)', border: 'rgba(234, 88, 12, 0.25)' };
 
   return (
     <header
       className="sticky top-0 z-40"
       style={{
         height: 'var(--nav-h)',
-        background: 'rgba(2, 6, 8, 0.85)',
+        background: 'var(--bg-deep)',
         backdropFilter: 'blur(24px) saturate(1.4)',
         borderBottom: '1px solid var(--border)',
-        boxShadow: '0 4px 32px rgba(0, 0, 0, 0.4)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
       }}
     >
       <div className="flex h-full items-center px-4 gap-4">
@@ -49,18 +49,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
         </Button>
 
         <div className="flex-1 flex items-center gap-2.5 min-w-0">
-          <div className="relative shrink-0">
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))',
-                borderRadius: '50%',
-                filter: 'blur(6px)',
-                opacity: 0.6,
-                animation: 'statusPulse 3s infinite',
-              }}
-            />
+          <div className="relative shrink-0 flex items-center justify-center">
             <Image
               src="/logo.jpg"
               alt="Mod Panel Logo"
@@ -69,7 +58,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
               unoptimized
               loading="eager"
               className="relative w-7 h-7 object-contain rounded-full"
-              style={{ border: '1.5px solid var(--teal-2)', boxShadow: '0 0 12px rgba(20, 184, 184, 0.3)' }}
+              style={{ border: '1.5px solid var(--teal-2)', boxShadow: '0 2px 8px rgba(234, 88, 12, 0.25)' }}
             />
           </div>
           <h1
@@ -79,7 +68,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
               background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.1em',
+              letterSpacing: '0.05em',
             }}
           >
             {APP_NAME}
@@ -89,11 +78,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           <div
             className="hidden lg:flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-md"
             style={{
-              background: 'rgba(20, 184, 184, 0.05)',
+              background: 'rgba(255, 255, 255, 0.02)',
               border: '1px solid var(--border)',
               fontFamily: 'var(--ff-mono)',
-              fontSize: '0.58rem',
-              letterSpacing: '0.15em',
+              fontSize: '0.6rem',
+              letterSpacing: '0.08em',
               textTransform: 'uppercase',
               color: 'var(--teal-3)',
             }}
@@ -104,8 +93,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
                 height: 5,
                 borderRadius: '50%',
                 background: 'var(--ecto-green)',
-                boxShadow: '0 0 6px var(--ecto-green)',
-                animation: 'statusPulse 2s infinite',
               }}
             />
             System Online
@@ -116,7 +103,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           <div
             className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full"
             style={{
-              background: 'rgba(20, 184, 184, 0.05)',
+              background: 'rgba(255, 255, 255, 0.02)',
               border: '1px solid var(--border)',
             }}
           >

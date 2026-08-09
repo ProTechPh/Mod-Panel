@@ -32,8 +32,8 @@ export default function ErrorBoundary({
           padding: '2.5rem',
           borderRadius: '16px',
           background: '#091318',
-          border: '1px solid rgba(20, 184, 184, 0.18)',
-          boxShadow: '0 0 30px rgba(20, 184, 184, 0.4), 0 0 80px rgba(13, 122, 122, 0.2)',
+          border: '1px solid rgba(234, 88, 12, 0.18)',
+          boxShadow: '0 0 30px rgba(234, 88, 12, 0.4), 0 0 80px rgba(194, 65, 12, 0.2)',
           textAlign: 'center',
         }}
       >
@@ -121,7 +121,7 @@ export default function ErrorBoundary({
                 padding: '1rem',
                 borderRadius: '8px',
                 background: '#020608',
-                border: '1px solid rgba(20, 184, 184, 0.1)',
+                border: '1px solid rgba(234, 88, 12, 0.1)',
                 overflowX: 'auto',
                 fontFamily: "var(--font-fira-code), 'Fira Code', monospace",
                 fontSize: '0.65rem',
@@ -145,18 +145,18 @@ export default function ErrorBoundary({
             letterSpacing: '0.06em',
             padding: '0.7rem 2rem',
             borderRadius: '10px',
-            border: '1px solid rgba(20, 184, 184, 0.45)',
-            background: 'rgba(20, 184, 184, 0.1)',
+            border: '1px solid rgba(234, 88, 12, 0.45)',
+            background: 'rgba(234, 88, 12, 0.1)',
             color: '#5eead4',
             cursor: 'pointer',
             transition: 'all 0.25s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(20, 184, 184, 0.2)';
-            e.currentTarget.style.boxShadow = '0 0 14px rgba(20, 184, 184, 0.35)';
+            e.currentTarget.style.background = 'rgba(234, 88, 12, 0.2)';
+            e.currentTarget.style.boxShadow = '0 0 14px rgba(234, 88, 12, 0.35)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(20, 184, 184, 0.1)';
+            e.currentTarget.style.background = 'rgba(234, 88, 12, 0.1)';
             e.currentTarget.style.boxShadow = 'none';
           }}
         >

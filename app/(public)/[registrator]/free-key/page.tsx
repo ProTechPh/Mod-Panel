@@ -16,9 +16,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { GradientOrbs } from '@/components/landing/GradientOrbs';
-import { SparkleCanvas } from '@/components/landing/SparkleCanvas';
-import { GrainOverlay } from '@/components/landing/GrainOverlay';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
 interface GameOption { code: string; name: string; downloadLink?: string; }
@@ -63,8 +60,7 @@ export default function FreeKeyPage() {
   const { registrator } = useParams<{ registrator: string }>();
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <GradientOrbs />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-void)' }}>
         <div className="relative z-10">
           <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--teal-2)' }} />
         </div>
@@ -277,10 +273,13 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   ];
 
   return (
-    <div className="min-h-screen relative">
-      <GradientOrbs />
-      <SparkleCanvas />
-      <GrainOverlay />
+    <div className="min-h-screen relative" style={{ background: 'var(--bg-void)' }}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[120px]" 
+          style={{ background: 'radial-gradient(circle, rgba(234,88,12,0.03) 0%, transparent 70%)' }} 
+        />
+      </div>
 
       {claiming && (
         <div
@@ -314,7 +313,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
 
         <div className="text-center space-y-4">
           <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl"
-               style={{ background: 'rgba(20, 184, 184, 0.1)', border: '1px solid rgba(20, 184, 184, 0.3)' }}>
+               style={{ background: 'rgba(234, 88, 12, 0.1)', border: '1px solid rgba(234, 88, 12, 0.3)' }}>
             <KeyRound className="h-10 w-10" style={{ color: 'var(--teal-2)' }} />
             <span className="absolute -top-1 -right-1 size-3">
               <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: 'var(--ecto-green)' }} />
@@ -344,7 +343,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             <div className="flex justify-center">
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-                style={{ background: 'rgba(20, 184, 184, 0.04)', border: '1px solid var(--border)' }}
+                style={{ background: 'rgba(234, 88, 12, 0.04)', border: '1px solid var(--border)' }}
               >
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: 'var(--ecto-green)' }} />
@@ -379,245 +378,26 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         {tab === 'key' && (
           <div className="space-y-4 fade-up d1">
             {games.length === 0 ? (
-              <Card>
-                <CardContent className="empty-state">
+              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><Gamepad2 size={26} /></div>
                   <div className="empty-title">No Free Keys Available</div>
                   <div className="empty-sub">No free keys available from this reseller.</div>
-                </CardContent>
-              </Card>
+                </div>\n              </div>
             ) : (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <span className="panel-icon">
-                      <Gamepad2 className="h-3.5 w-3.5" />
-                    </span>
-                    Select Game
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="// Choose a game" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {games.map(g => (
-                        <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </Card>
-            )}
-
-            {!game && games.length > 0 && (
-              <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
-                Select a game to see your key or generate a new one.
-              </p>
-            )}
-
-            {game && keyLoading && (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
-              </div>
-            )}
-
-            {game && !keyLoading && keyStatus && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <span className="panel-icon"><KeyRound className="h-3.5 w-3.5" /></span>
-                      Your Free Key
-                    </CardTitle>
-                    <span className="key-chip">{keyStatus.game}</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="key-display flex-1 min-w-0">{keyStatus.key}</div>
-                    <Button variant="default" size="icon-sm" onClick={() => handleCopy(keyStatus.key)} title="Copy key">
-                      {copied === keyStatus.key ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
-                    </Button>
-                  </div>
-
-                  {(() => {
-                    const dl = games.find(g => g.code === game)?.downloadLink;
-                    return dl ? (
-                      <a href={dl} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" className="w-full">
-                          <Download className="h-3.5 w-3.5 mr-1.5" /> Download Mod File
-                        </Button>
-                      </a>
-                    ) : null;
-                  })()}
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--teal-2)' }}>
-                      <div className="flex items-center justify-between">
-                        <span className="metric-tile-label">Status</span>
-                        <button onClick={() => void fetchMyKey(game)} disabled={statusLoading} className="opacity-60 hover:opacity-100 transition-opacity">
-                          {statusLoading
-                            ? <Loader2 className="h-3 w-3 animate-spin" style={{ color: 'var(--teal-2)' }} />
-                            : <RefreshCw className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />}
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {keyStatus.isExpired || keyStatus.status === 0 ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} /> : keyStatus.isActivated ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <AlertTriangle className="h-3.5 w-3.5" style={{ color: 'var(--gold)' }} />}
-                        <span className="metric-tile-value" style={{ color: keyStatus.isExpired || keyStatus.status === 0 ? 'var(--red)' : keyStatus.isActivated ? 'var(--ecto-green)' : 'var(--gold)' }}>
-                          {keyStatus.isExpired ? 'Expired' : keyStatus.isActivated ? 'Active' : 'Unused'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
-                      <span className="metric-tile-label">Devices</span>
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="h-4 w-4" style={{ color: 'var(--text-lo)' }} />
-                        <span className="metric-tile-value">{keyStatus.deviceCount} / 1</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="metric-tile" style={{ ['--accent-color' as string]: keyStatus.isExpired ? 'var(--red)' : 'var(--teal-2)' }}>
-                    <div className="flex items-center justify-between">
-                      <span className="metric-tile-label">
-                        {keyStatus.isActivated ? 'Time Remaining' : 'Grace Period Ends'}
-                      </span>
-                    </div>
-                    <p className="font-mono text-2xl font-black tracking-wider" style={{ color: keyStatus.isExpired ? 'var(--red)' : 'var(--text-hi)' }}>
-                      {keyStatus.isExpired ? 'Expired' : countdown}
-                    </p>
-                    {keyStatus.expiredDate && (
-                      <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>
-                        <Calendar className="inline h-2.5 w-2.5 mr-0.5" /> {formatDate(keyStatus.expiredDate)}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert className="h-4 w-4" style={{ color: 'var(--gold)' }} />
-                        <div>
-                          <p className="text-xs font-bold" style={{ color: 'var(--text-hi)' }}>Device Resets</p>
-                          <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>{keyStatus.resetsRemaining} / 2 remaining</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" disabled={resetLoading || keyStatus.resetsRemaining === 0 || keyStatus.isExpired} onClick={handleResetDevices}>
-                        {resetLoading
-                          ? <Loader2 className="h-3 w-3 animate-spin" />
-                          : <RefreshCw className="h-3 w-3" />}
-                        Reset
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {game && !keyLoading && !hasActiveKey && games.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <span className="panel-icon"><Zap className="h-3.5 w-3.5" /></span>
-                    Generate New Key
-                  </CardTitle>
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-mid)' }}>
-                    {keyStatus?.isExpired ? 'Your key has expired. Generate a new one below.' : 'No active key found. Generate one below.'}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="duration-tile active">
-                        <div className="flex flex-col items-center gap-0.5 w-full py-1">
-                          <Timer className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
-                          <span className="text-sm font-extrabold" style={{ color: 'var(--teal-3)' }}>3 Hours</span>
-                          <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>With Ads</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {siteKey && (
-                      <div className="flex justify-center">
-                        <Turnstile
-                          siteKey={siteKey}
-                          onSuccess={setTurnstileToken}
-                          options={{ theme: 'dark' }}
-                        />
-                      </div>
-                    )}
-
-                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
-                      {generating
-                        ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
-                        : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
-                      }
-                    </Button>
-
-                    <div className="text-center pt-2 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
-                      <p className="text-[11px]" style={{ color: 'var(--text-mid)' }}>
-                        {'Support our servers by visiting our '}
-                        <a
-                          href="https://www.effectivecpmnetwork.com/af3m3ncy4?key=d3dfc16b1bccb6cf90bb7c5871ecb083"
-                          target="_blank" rel="noopener noreferrer"
-                          className="font-bold hover:underline" style={{ color: 'var(--teal-2)' }}
-                        >
-                          Sponsor Link
-                        </a>
-                      </p>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            )}
-
-            {game && !keyLoading && hasActiveKey && (
-              <p className="text-xs text-center font-mono" style={{ color: 'var(--text-lo)' }}>
-                {'// come back after your key expires to generate a new one'}
-              </p>
-            )}
-
-          </div>
-        )}
-
-        {tab === 'history' && (
-          <div className="space-y-3 fade-up d1">
-            <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
-                <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP/device
-              </p>
-              <Button variant="ghost" size="icon-sm" onClick={fetchHistory} disabled={historyLoading}>
-                {historyLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              </Button>
-            </div>
-
-            {historyLoading && (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
-              </div>
-            )}
-
-            {!historyLoading && history.length === 0 && (
-              <Card>
-                <CardContent className="empty-state">
+              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><History size={26} /></div>
                   <div className="empty-title">No Key History</div>
                   <div className="empty-sub">No key history found.</div>
-                </CardContent>
-              </Card>
+                </div>\n              </div>
             )}
 
             {!historyLoading && history.length > 0 && (
               <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                 {history.map((entry, i) => (
-                  <Card key={entry.key} className="p-0">
-                    <CardContent className="p-4 space-y-3">
+                  <div key={entry.key} className="panel">\n                    <div className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(20, 184, 184, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>
+                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(234, 88, 12, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>
                             #{history.length - i}
                           </span>
                           <span className="font-display font-bold text-sm truncate" style={{ color: 'var(--text-hi)' }}>{entry.game}</span>
@@ -625,7 +405,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                         <div className="flex items-center gap-1.5 shrink-0">
                           <HistoryStatusBadge entry={entry} />
                           {entry.isAdClaim
-                            ? <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest" style={{ background: 'rgba(20, 184, 184, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(20, 184, 184, 0.25)' }}>With Ads</span>
+                            ? <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest" style={{ background: 'rgba(234, 88, 12, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>With Ads</span>
                             : <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest" style={{ background: 'rgba(2, 6, 8, 0.5)', color: 'var(--text-lo)', border: '1px solid var(--border)' }}>No Ads</span>
                           }
                         </div>
@@ -648,8 +428,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                           <span className="font-bold" style={{ color: 'var(--text-hi)' }}>{formatDate(entry.expiredDate)}</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>\n              </div>
                 ))}
               </div>
             )}
@@ -672,18 +451,15 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             </p>
 
             {games.filter(g => g.downloadLink).length === 0 ? (
-              <Card>
-                <CardContent className="empty-state">
+              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><Download size={26} /></div>
                   <div className="empty-title">No Downloads</div>
                   <div className="empty-sub">No download links available.</div>
-                </CardContent>
-              </Card>
+                </div>\n              </div>
             ) : (
               <div className="space-y-2">
                 {games.filter(g => g.downloadLink).map(g => (
-                  <Card key={g.code}>
-                    <CardContent className="p-4 flex items-center justify-between gap-3">
+                  <div key={g.code} className="panel">\n                    <div className="p-4 flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-display font-bold text-sm truncate" style={{ color: 'var(--text-hi)' }}>{g.name}</p>
                         <p className="font-mono text-[10px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-lo)' }}>{g.code}</p>
@@ -694,8 +470,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                           <ExternalLink className="h-3 w-3 ml-1.5" />
                         </Button>
                       </a>
-                    </CardContent>
-                  </Card>
+                    </div>\n              </div>
                 ))}
               </div>
             )}
@@ -730,13 +505,11 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             )}
 
             {!topUsersLoading && topUsers.length === 0 && (
-              <Card>
-                <CardContent className="empty-state">
+              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><Zap size={26} /></div>
                   <div className="empty-title">No Ad Claims</div>
                   <div className="empty-sub">No ad claims recorded yet.</div>
-                </CardContent>
-              </Card>
+                </div>\n              </div>
             )}
 
             {!topUsersLoading && topUsers.length > 0 && (

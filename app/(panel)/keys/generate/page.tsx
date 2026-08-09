@@ -147,14 +147,7 @@ export default function KeyGeneratePage() {
         sub="Issue fresh licence keys with custom duration, device caps, and batch size."
       />
 
-      <Card className="fade-up d1">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Cpu className="h-4 w-4" style={{ color: 'var(--teal-2)' }} />
-            Key Configuration
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="panel fade-up d1">\n        <div className="panel-head">\n          <h2 className="panel-title flex items-center gap-2">\n            <Cpu className="h-4 w-4 text-orange-500 animate-pulse" />\n            Licence Forge Parameters\n          </h2>\n          <span className="panel-badge">FORGE</span>\n        </div>\n        <div className="p-5">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Batch Mode Toggle */}
             <div
@@ -342,19 +335,11 @@ export default function KeyGeneratePage() {
               {loading ? 'Generating…' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </div>\n      </div>
 
       {/* Batch Results Summary */}
       {batchResults.length > 0 && (
-        <Card className="fade-up d1" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Layers className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />
-              Batch Results
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="panel fade-up d1" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>\n          <div className="panel-head">\n            <h2 className="panel-title flex items-center gap-2">\n              <Layers className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />\n              Batch Results\n            </h2>\n            <span className="panel-badge">BATCH</span>\n          </div>\n          <div className="p-5">
             <div className="space-y-1.5 font-mono text-sm">
               {batchResults.map((result, i) => {
                 const gameOption = games.find(g => g.gameCode === result.game);
@@ -377,32 +362,11 @@ export default function KeyGeneratePage() {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>\n      </div>
       )}
 
       {generatedKeys.length > 0 && (
-        <Card className="fade-up d2" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Check className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />
-              Generated Keys
-              <span
-                className="ml-auto font-mono text-xs"
-                style={{
-                  background: 'rgba(57, 255, 20, 0.1)',
-                  border: '1px solid rgba(57, 255, 20, 0.3)',
-                  color: '#86efac',
-                  padding: '0.2rem 0.6rem',
-                  borderRadius: '50px',
-                  letterSpacing: '0.1em',
-                }}
-              >
-                {generatedKeys.length} KEYS
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="panel fade-up d2" style={{ borderColor: 'rgba(57, 255, 20, 0.3)' }}>\n          <div className="panel-head">\n            <h2 className="panel-title flex items-center gap-2">\n              <Check className="h-4 w-4" style={{ color: 'var(--ecto-green)' }} />\n              Generated Keys\n            </h2>\n            <span className="panel-badge">{generatedKeys.length} KEYS</span>\n          </div>\n          <div className="p-5">
             <div
               className="space-y-1 font-mono text-sm p-4 rounded-lg max-h-64 overflow-y-auto"
               style={{
@@ -432,8 +396,7 @@ export default function KeyGeneratePage() {
                 {copied ? 'Copied!' : 'Copy All'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>\n      </div>
       )}
     </div>
   );
