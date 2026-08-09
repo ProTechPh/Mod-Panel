@@ -1,7 +1,7 @@
 /**
  * In-memory brute-force protection for auth endpoints.
  * Progressive delay: 500ms base, doubles per attempt.
- * Lockout after 5 failed attempts for 15 minutes.
+ * Lockout after 5 failed attempts for 15 minutes..
  */
 
 interface FailedAttempt {
