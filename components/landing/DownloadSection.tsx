@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Smartphone, Zap, Shield, Package } from 'lucide-react';
-import '@/components/landing/landing.css';
+import { Download, Smartphone, Shield } from 'lucide-react';
 
 interface DownloadLink {
   _id: string;
@@ -38,150 +37,79 @@ export function DownloadSection() {
   }, []);
 
   return (
-    <div className="panel fade-up d3 panel-corner" id="downloads">
-      <div className="panel-head">
-        <div className="panel-title">
-          <Package className="ico" size={16} />
-          Client Downloads
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span className="panel-badge">{links.length + VIRTUAL_APPS.length} files</span>
-        </div>
+    <section className="downloads-section" id="downloads">
+      <div className="section-header">
+        <span className="section-label">DOWNLOADS</span>
+        <h2 className="section-title">Client Downloads</h2>
+        <p className="section-description">
+          Get the latest builds and tools.
+        </p>
       </div>
 
-      {loading ? (
-        <div style={{ padding: '2.5rem 1.4rem', textAlign: 'center' }}>
-          <div
-            className="inline-block size-8 rounded-full border-2 animate-spin"
-            style={{ borderColor: 'rgba(20, 184, 184, 0.2)', borderTopColor: 'var(--teal-2)' }}
-          />
-          <p className="mt-3 text-sm font-mono" style={{ color: 'var(--text-lo)' }}>Loading releases…</p>
-        </div>
-      ) : links.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon-ring">
-            <Smartphone size={26} />
+      <div className="downloads-grid">
+        {/* Client Builds */}
+        {loading ? (
+          <div className="downloads-loading">
+            <div className="downloads-spinner" />
+            <p>Loading releases...</p>
           </div>
-          <div className="empty-title">No Builds Available</div>
-          <div className="empty-sub">Check back soon for the latest client release.</div>
-        </div>
-      ) : (
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>Build</th>
-              <th>Version</th>
-              <th>Size</th>
-              <th style={{ textAlign: 'right' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {links.map((link) => (
-              <tr key={link._id}>
-                <td>
-                  <div className="order-product">
-                    <div className="order-img-placeholder">
-                      <Smartphone size={14} />
-                    </div>
-                    <div>
-                      <div className="order-name">{link.appName}</div>
-                      <div className="order-name sub">CLIENT BUILD</div>
-                    </div>
+        ) : links.length > 0 ? (
+          <div className="downloads-category">
+            <h3 className="downloads-category-title">
+              <Smartphone size={16} />
+              Client Builds
+            </h3>
+            <div className="downloads-list">
+              {links.map((link) => (
+                <div key={link._id} className="download-item">
+                  <div className="download-info">
+                    <span className="download-name">{link.appName}</span>
+                    <span className="download-meta">v{link.version || '—'} · {link.fileSize || '—'}</span>
                   </div>
-                </td>
-                <td>
-                  <span className="key-chip">
-                    <Zap size={9} style={{ marginRight: 4 }} />
-                    v{link.version || '—'}
-                  </span>
-                </td>
-                <td className="order-date">{link.fileSize || '—'}</td>
-                <td style={{ textAlign: 'right' }}>
                   <a
                     href={link.downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="product-card-cta"
-                    style={{ padding: '0.4rem 0.85rem' }}
+                    className="download-btn"
                   >
-                    <Download size={11} />
-                    Get
+                    <Download size={14} />
+                    Download
                   </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {/* Virtual Apps subsection */}
-      <div className="panel-head" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="panel-title">
-          <Shield className="ico" size={16} />
-          Virtual Apps
-        </div>
-        <span className="panel-badge">{VIRTUAL_APPS.length} tools</span>
-      </div>
-
-      <table className="orders-table">
-        <thead>
-          <tr>
-            <th>Tool</th>
-            <th>Type</th>
-            <th style={{ textAlign: 'right' }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {VIRTUAL_APPS.map((app) => (
-            <tr key={app.name}>
-              <td>
-                <div className="order-product">
-                  <div className="order-img-placeholder" style={{ background: 'rgba(57, 255, 20, 0.06)', color: 'var(--ecto-green)' }}>
-                    <Shield size={14} />
-                  </div>
-                  <div>
-                    <div className="order-name">{app.name}</div>
-                    <div className="order-name sub">VIRTUAL</div>
-                  </div>
                 </div>
-              </td>
-              <td>
-                {app.recommended ? (
-                  <span
-                    className="key-chip"
-                    style={{
-                      background: 'rgba(240, 192, 64, 0.07)',
-                      borderColor: 'rgba(240, 192, 64, 0.18)',
-                      color: 'var(--gold)',
-                    }}
-                  >
-                    ★ Recommended
-                  </span>
-                ) : (
-                  <span className="order-date">Standard</span>
-                )}
-              </td>
-              <td style={{ textAlign: 'right' }}>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Virtual Apps */}
+        <div className="downloads-category">
+          <h3 className="downloads-category-title">
+            <Shield size={16} />
+            Virtual Apps
+          </h3>
+          <div className="downloads-list">
+            {VIRTUAL_APPS.map((app) => (
+              <div key={app.name} className="download-item">
+                <div className="download-info">
+                  <span className="download-name">{app.name}</span>
+                  {app.recommended && (
+                    <span className="download-badge">Recommended</span>
+                  )}
+                </div>
                 <a
                   href={app.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="product-card-cta"
-                  style={{
-                    padding: '0.4rem 0.85rem',
-                    background: app.recommended
-                      ? 'linear-gradient(135deg, var(--gold), #d4a02a)'
-                      : undefined,
-                  }}
+                  className={`download-btn ${app.recommended ? 'download-btn-primary' : ''}`}
                 >
-                  <Download size={11} />
-                  Get
+                  <Download size={14} />
+                  Download
                 </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

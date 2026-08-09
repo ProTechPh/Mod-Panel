@@ -3,55 +3,36 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/lib/constants/app';
-import '@/components/landing/landing.css';
 
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="gs-footer">
-      <div className="footer-grid">
-        <div>
-          <div className="footer-brand">
-            <Image
-              src="/logo.jpg"
-              alt={APP_NAME}
-              width={32}
-              height={32}
-              unoptimized
-              className="nav-brand-logo"
-            />
-            <span className="footer-brand-text">{APP_NAME}</span>
-          </div>
-          <p className="footer-tag">
-            Undetectable game mods. Instant key delivery. 24/7 uptime. Dominate every match with our elite mod suite.
-          </p>
+    <footer className="footer">
+      <div className="footer-content">
+        <div className="footer-brand">
+          <Image
+            src="/logo.jpg"
+            alt={APP_NAME}
+            width={24}
+            height={24}
+            unoptimized
+            className="footer-logo"
+          />
+          <span className="footer-brand-name">{APP_NAME}</span>
         </div>
 
-        <div>
-          <div className="footer-col-title">Quick Links</div>
+        <div className="footer-links">
           <Link href="/register" className="footer-link">Get Started</Link>
           <Link href="/login" className="footer-link">Sign In</Link>
           <a href="#downloads" className="footer-link">Downloads</a>
-          <a href="#features" className="footer-link">Modules</a>
+          <a href="#features" className="footer-link">Features</a>
+          <Link href="/terms" className="footer-link">Terms</Link>
         </div>
 
-        <div>
-          <div className="footer-col-title">Resources</div>
-          <a href="#how-it-works" className="footer-link">Quick Start</a>
-          <a href="#status" className="footer-link">System Status</a>
+        <div className="footer-copyright">
+          © {year} {APP_NAME}. All rights reserved.
         </div>
-
-        <div>
-          <div className="footer-col-title">Legal</div>
-          <Link href="/terms" className="footer-link">Terms of Service</Link>
-          <a href="#privacy" className="footer-link">Privacy Policy</a>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <span>© {year} {APP_NAME} · All rights reserved</span>
-        <span>Build <span className="version">v3.2</span> · Operational</span>
       </div>
     </footer>
   );

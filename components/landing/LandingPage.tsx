@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import './landing.css';
 import { Hero } from './Hero';
 import { Features } from './Features';
 import { ServerStatus } from './ServerStatus';
@@ -11,10 +12,6 @@ import { Footer } from './Footer';
 import { TopNav } from './TopNav';
 import { QuickActions } from './QuickActions';
 import { ActivityFeed } from './ActivityFeed';
-import { GrainOverlay } from './GrainOverlay';
-import { GradientOrbs } from './GradientOrbs';
-import { SparkleCanvas } from './SparkleCanvas';
-import '@/components/landing/landing.css';
 
 interface StatusData {
   status: string;
@@ -49,22 +46,17 @@ export default function LandingPage() {
     : '15K+';
   const totalKeys = '120K+';
   const uptime = '99.97%';
-  const countries = '50+';
 
   return (
     <>
       <TopNav />
 
-      <GradientOrbs />
-      <SparkleCanvas />
-      <GrainOverlay />
-
-      <main className="gs-main">
+      <main className="landing-main">
         <Hero
           activeUsers={activeUsers}
           totalKeys={totalKeys}
           uptime={uptime}
-          countries={countries}
+          countries=""
         />
 
         <StatsBar
@@ -74,14 +66,14 @@ export default function LandingPage() {
           maintenanceOn={status.maintenance === 'on'}
         />
 
-        <div className="content-grid">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="landing-content">
+          <div className="landing-primary">
             <Features />
             <HowItWorks />
             <DownloadSection />
           </div>
 
-          <div className="right-col">
+          <div className="landing-sidebar">
             <QuickActions />
             <ServerStatus />
             <ActivityFeed version={status.version} />
