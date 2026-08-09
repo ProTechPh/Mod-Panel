@@ -662,7 +662,6 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                 </div>
               </div>
             )}
-            </>)}
           </div>
         )}
 
