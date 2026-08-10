@@ -378,23 +378,238 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         {tab === 'key' && (
           <div className="space-y-4 fade-up d1">
             {games.length === 0 ? (
-              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
+              <div className="panel">
+                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><Gamepad2 size={26} /></div>
                   <div className="empty-title">No Free Keys Available</div>
                   <div className="empty-sub">No free keys available from this reseller.</div>
-                </div>\n              </div>
+                </div>
+              </div>
             ) : (
-              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
+              <div className="panel">
+                <div className="panel-head">
+                  <div className="panel-title">
+                    <Gamepad2 className="h-3.5 w-3.5 ico" />
+                    Select Game
+                  </div>
+                </div>
+                <div className="p-4">
+                  <Select value={game} onValueChange={v => setGame(v ?? '')}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="// Choose a game" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {games.map(g => (
+                        <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {!game && games.length > 0 && (
+              <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
+                Select a game to see your key or generate a new one.
+              </p>
+            )}
+
+            {game && keyLoading && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
+              </div>
+            )}
+
+            {game && !keyLoading && keyStatus && (
+              <div className="panel">
+                <div className="panel-head">
+                  <div className="panel-title">
+                    <KeyRound className="h-3.5 w-3.5 ico" />
+                    Your Free Key
+                  </div>
+                  <span className="panel-badge">{keyStatus.game}</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="key-display flex-1 min-w-0 text-xs">{keyStatus.key}</div>
+                    <Button variant="outline" size="icon-sm" onClick={() => handleCopy(keyStatus.key)} title="Copy key">
+                      {copied === keyStatus.key ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+
+                  {(() => {
+                    const dl = games.find(g => g.code === game)?.downloadLink;
+                    return dl ? (
+                      <a href={dl} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="w-full">
+                          <Download className="h-3.5 w-3.5 mr-1.5" /> Download Mod File
+                        </Button>
+                      </a>
+                    ) : null;
+                  })()}
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--teal-2)' }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="metric-tile-label">Status</span>
+                        <button onClick={() => void fetchMyKey(game)} disabled={statusLoading} className="opacity-60 hover:opacity-100 transition-opacity">
+                          {statusLoading
+                            ? <Loader2 className="h-3 w-3 animate-spin" style={{ color: 'var(--teal-2)' }} />
+                            : <RefreshCw className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {keyStatus.isExpired || keyStatus.status === 0 ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} /> : keyStatus.isActivated ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <AlertTriangle className="h-3.5 w-3.5" style={{ color: 'var(--gold)' }} />}
+                        <span className="metric-tile-value font-bold" style={{ color: keyStatus.isExpired || keyStatus.status === 0 ? 'var(--red)' : keyStatus.isActivated ? 'var(--ecto-green)' : 'var(--gold)' }}>
+                          {keyStatus.isExpired ? 'Expired' : keyStatus.isActivated ? 'Active' : 'Unused'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
+                      <span className="metric-tile-label block mb-1">Devices</span>
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="h-4 w-4" style={{ color: 'var(--text-lo)' }} />
+                        <span className="metric-tile-value font-bold" style={{ color: 'var(--text-hi)' }}>{keyStatus.deviceCount} / 1</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="metric-tile" style={{ ['--accent-color' as string]: keyStatus.isExpired ? 'var(--red)' : 'var(--teal-2)' }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="metric-tile-label">
+                        {keyStatus.isActivated ? 'Time Remaining' : 'Grace Period Ends'}
+                      </span>
+                    </div>
+                    <p className="font-mono text-2xl font-black tracking-wider" style={{ color: keyStatus.isExpired ? 'var(--red)' : 'var(--text-hi)' }}>
+                      {keyStatus.isExpired ? 'Expired' : countdown}
+                    </p>
+                    {keyStatus.expiredDate && (
+                      <p className="text-[10px] font-mono mt-1" style={{ color: 'var(--text-lo)' }}>
+                        <Calendar className="inline h-2.5 w-2.5 mr-0.5" /> {formatDate(keyStatus.expiredDate)}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="h-4 w-4" style={{ color: 'var(--gold)' }} />
+                        <div>
+                          <p className="text-xs font-bold" style={{ color: 'var(--text-hi)' }}>Device Resets</p>
+                          <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>{keyStatus.resetsRemaining} / 2 remaining</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" disabled={resetLoading || keyStatus.resetsRemaining === 0 || keyStatus.isExpired} onClick={handleResetDevices}>
+                        {resetLoading
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : <RefreshCw className="h-3 w-3" />}
+                        Reset
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {game && !keyLoading && !hasActiveKey && games.length > 0 && (
+              <div className="panel">
+                <div className="panel-head">
+                  <div className="panel-title">
+                    <Zap className="h-3.5 w-3.5 ico" />
+                    Generate New Key
+                  </div>
+                </div>
+                <div className="p-4 space-y-4">
+                  <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+                    {keyStatus?.isExpired ? 'Your key has expired. Generate a new one below.' : 'No active key found. Generate one below.'}
+                  </p>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="duration-tile active">
+                        <div className="flex flex-col items-center gap-0.5 w-full py-1">
+                          <Timer className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
+                          <span className="text-sm font-extrabold" style={{ color: 'var(--teal-3)' }}>3 Hours</span>
+                          <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>With Ads</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {siteKey && (
+                      <div className="flex justify-center">
+                        <Turnstile
+                          siteKey={siteKey}
+                          onSuccess={setTurnstileToken}
+                          options={{ theme: 'dark' }}
+                        />
+                      </div>
+                    )}
+
+                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
+                      {generating
+                        ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
+                        : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
+                      }
+                    </Button>
+
+                    <div className="text-center pt-2 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                      <p className="text-[11px]" style={{ color: 'var(--text-mid)' }}>
+                        {'Support our servers by visiting our '}
+                        <a
+                          href="https://www.effectivecpmnetwork.com/af3m3ncy4?key=d3dfc16b1bccb6cf90bb7c5871ecb083"
+                          target="_blank" rel="noopener noreferrer"
+                          className="font-bold hover:underline" style={{ color: 'var(--teal-2)' }}
+                        >
+                          Sponsor Link
+                        </a>
+                      </p>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {game && !keyLoading && hasActiveKey && (
+              <p className="text-xs text-center font-mono" style={{ color: 'var(--text-lo)' }}>
+                {'// come back after your key expires to generate a new one'}
+              </p>
+            )}
+          </div>
+        )}
+
+        {tab === 'history' && (
+          <div className="space-y-4 fade-up d1">
+            <div className="flex items-center justify-between">
+              <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
+                <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP/device
+              </p>
+              <Button variant="ghost" size="icon-sm" onClick={fetchHistory} disabled={historyLoading}>
+                {historyLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
+
+            {historyLoading && (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
+              </div>
+            )}
+
+            {!historyLoading && history.length === 0 && (
+              <div className="panel">
+                <div className="empty-state p-6 flex flex-col items-center justify-center">
                   <div className="empty-icon-ring"><History size={26} /></div>
                   <div className="empty-title">No Key History</div>
                   <div className="empty-sub">No key history found.</div>
-                </div>\n              </div>
+                </div>
+              </div>
             )}
 
             {!historyLoading && history.length > 0 && (
               <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                 {history.map((entry, i) => (
-                  <div key={entry.key} className="panel">\n                    <div className="p-4 space-y-3">
+                  <div key={entry.key} className="panel">
+                    <div className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(234, 88, 12, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>
@@ -428,7 +643,8 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                           <span className="font-bold" style={{ color: 'var(--text-hi)' }}>{formatDate(entry.expiredDate)}</span>
                         </div>
                       </div>
-                    </div>\n              </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
