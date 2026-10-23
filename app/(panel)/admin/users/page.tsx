@@ -35,7 +35,14 @@ export default function UsersPage() {
     const params = new URLSearchParams({ draw: '1', start: String((pageVal - 1) * PAGE_SIZE), length: String(PAGE_SIZE), 'search[value]': searchVal });
     const res = await fetch(`/api/users?${params}`);
     const data = await res.json();
-    setUsers(data.data || []);
+    const fetchedAt = Date.now();
+    const fetchedUsers: User[] = data.data || [];
+    setUsers(fetchedUsers.map(account => ({
+      ...account,
+      status: account.status !== 2 && account.expirationDate && new Date(account.expirationDate).getTime() <= fetchedAt
+        ? 3
+        : account.status,
+    })));
     setTotalFiltered(data.recordsFiltered ?? 0);
   };
   const fetchReferrals = async () => {
@@ -51,7 +58,6 @@ export default function UsersPage() {
     }, 0);
     return () => clearTimeout(t);
     // fetchUsers/fetchReferrals are intentionally omitted: initial load only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (user?.level !== 1) return <p className="text-muted-foreground">Access denied</p>;

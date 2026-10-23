@@ -113,6 +113,12 @@ export async function listUsers(params: {
 }) {
   await dbConnect();
 
+  // Keep persisted account status in sync before returning the users table.
+  await User.updateMany(
+    { status: 1, expirationDate: { $lte: new Date() } },
+    { $set: { status: 3 } }
+  );
+
   const result = await paginate<UserDoc>(User, {
     draw: params.draw,
     start: params.start,
