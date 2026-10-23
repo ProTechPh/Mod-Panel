@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/shared/AuthProvider';
 import {
-  Key, CheckCircle, Clock, XCircle, User, Shield, DollarSign,
+  Key, CheckCircle, Clock, XCircle, User, Shield, PhilippinePeso,
   TrendingUp, KeyRound, History, Activity, Gamepad2, Sparkles,
   ArrowUpRight, Zap, Terminal, Activity as Pulse, AlertTriangle, Timer,
 } from 'lucide-react';
@@ -214,11 +214,11 @@ export default function DashboardPage() {
 
               <div className="cmd-tele-block gold">
                 <div className="cmd-tele-icon">
-                  <DollarSign size={14} />
+                  <PhilippinePeso size={14} />
                 </div>
                 <div className="cmd-tele-meta">
-                  <div className="cmd-tele-lbl">Saldo</div>
-                  <div className="cmd-tele-val">${user?.saldo?.toFixed(2) ?? '0.00'}</div>
+                  <div className="cmd-tele-lbl">Budget</div>
+                  <div className="cmd-tele-val">₱{user?.saldo?.toFixed(2) ?? '0.00'}</div>
                 </div>
                 <div className="cmd-tele-bar">
                   <div className="cmd-tele-bar-fill" style={{ width: '100%' }} />
@@ -695,9 +695,9 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
           }
         />
         <InfoRow
-          icon={<DollarSign size={14} />}
+          icon={<PhilippinePeso size={14} />}
           iconColor="var(--ecto-green)"
-          label="Saldo"
+          label="Budget"
           value={
             <span
               className="text-sm font-bold"
@@ -708,7 +708,7 @@ function AccountInfo({ user }: { user: { username?: string; fullname?: string; l
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              ${user?.saldo?.toFixed(2) ?? '0.00'}
+              ₱{user?.saldo?.toFixed(2) ?? '0.00'}
             </span>
           }
         />
