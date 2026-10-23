@@ -5,9 +5,9 @@ import { withPublicApi } from '@/lib/api/with-api';
 import { z } from 'zod/v4';
 
 const freeKeySchema = z.object({
-  game: z.string().min(1, 'Game is required'),
-  turnstileToken: z.string().optional(),
-  registrator: z.string().min(1, 'Registrator is required'),
+  game: z.string().trim().min(1, 'Game is required').max(50),
+  turnstileToken: z.string().max(4096).optional(),
+  registrator: z.string().trim().min(1, 'Registrator is required').max(100),
 });
 
 export const POST = withPublicApi(async (request) => {

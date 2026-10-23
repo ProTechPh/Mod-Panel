@@ -1,51 +1,92 @@
 'use client';
 
-import { Suspense, useEffect, useState, useCallback } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Turnstile } from '@marsidev/react-turnstile';
 import {
-  Copy, Check, RefreshCw, Loader2,
-  Smartphone, ShieldAlert, KeyRound, Zap, History,
-  Download, Gamepad2, Timer, Trophy, ArrowRight, Sparkles,
-  ShieldCheck, Cpu, AlertTriangle, Activity, Globe, ExternalLink, Hash, Calendar,
-  LogIn, UserPlus,
+  Activity,
+  AlertTriangle,
+  Calendar,
+  Check,
+  Copy,
+  Cpu,
+  Gamepad2,
+  Hash,
+  History,
+  KeyRound,
+  Loader2,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Timer,
+  Trophy,
+  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
-interface GameOption { code: string; name: string; downloadLink?: string; }
+interface GameOption {
+  code: string;
+  name: string;
+}
+
 interface KeyStatus {
-  key: string; game: string; status: number; isActivated: boolean; isExpired: boolean;
-  expiredDate: string | null; deviceCount: number; resetsRemaining: number; duration: string;
+  key: string;
+  game: string;
+  status: number;
+  isActivated: boolean;
+  isExpired: boolean;
+  expiredDate: string | null;
+  deviceCount: number;
+  resetsRemaining: number;
+  duration: string;
 }
+
 interface KeyHistoryEntry {
-  key: string; game: string; generatedAt: string | null; expiredDate: string | null;
-  status: number; isActivated: boolean; isExpired: boolean; isAdClaim?: boolean;
+  key: string;
+  game: string;
+  generatedAt: string | null;
+  expiredDate: string | null;
+  status: number;
+  isActivated: boolean;
+  isExpired: boolean;
+  isAdClaim?: boolean;
 }
-interface TopUser { username: string; count: number; lastClaim: string; }
-interface AuthUser { username: string; fullname: string; level: number; }
-type Tab = 'key' | 'history' | 'downloads' | 'top-users';
+
+interface TopUser {
+  username: string;
+  count: number;
+  lastClaim: string;
+}
+
+type Tab = 'key' | 'history' | 'top-users';
+
+const TABS: { id: Tab; label: string; shortLabel: string; Icon: typeof KeyRound }[] = [
+  { id: 'key', label: 'My Key', shortLabel: 'Key', Icon: KeyRound },
+  { id: 'history', label: 'History', shortLabel: 'History', Icon: History },
+  { id: 'top-users', label: 'Top Users', shortLabel: 'Top', Icon: Trophy },
+];
 
 function formatCountdown(targetIso: string | null): string {
-  if (!targetIso) return '—';
+  if (!targetIso) return 'Not started';
   const diff = new Date(targetIso).getTime() - Date.now();
   if (diff <= 0) return 'Expired';
   const totalSecs = Math.floor(diff / 1000);
-  const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60);
-  const s = totalSecs % 60;
-  if (h > 0) return `${h}h ${m}m ${s}s`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+  const hours = Math.floor(totalSecs / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+  const seconds = totalSecs % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return 'Not available';
   return new Date(iso).toLocaleString();
 }
 
@@ -56,16 +97,35 @@ function HistoryStatusBadge({ entry }: { entry: KeyHistoryEntry }) {
   return <StatusBadge status="warning">Unused</StatusBadge>;
 }
 
+function LoadingScreen() {
+  return (
+    <div className="state-screen">
+      <Loader2 className="size-8 animate-spin text-[var(--brand-500)]" aria-label="Loading free key page" />
+    </div>
+  );
+}
+
+function EmptyPanel({ icon: Icon, title, description }: {
+  icon: typeof KeyRound;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="panel panel--flat">
+      <div className="empty-state flex flex-col items-center justify-center p-7 text-center">
+        <div className="empty-icon-ring"><Icon size={24} aria-hidden /></div>
+        <p className="empty-title">{title}</p>
+        <p className="empty-sub">{description}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function FreeKeyPage() {
   const { registrator } = useParams<{ registrator: string }>();
+
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-void)' }}>
-        <div className="relative z-10">
-          <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--teal-2)' }} />
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingScreen />}>
       <FreeKeyContent registrator={registrator} />
     </Suspense>
   );
@@ -73,438 +133,438 @@ export default function FreeKeyPage() {
 
 function FreeKeyContent({ registrator }: { registrator: string }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const [games, setGames] = useState<GameOption[]>([]);
+  const [gamesLoading, setGamesLoading] = useState(true);
   const [game, setGame] = useState(searchParams.get('game') || '');
+  const [tab, setTab] = useState<Tab>('key');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('key');
+  const [claiming, setClaiming] = useState(false);
 
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
   const [keyLoading, setKeyLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [countdown, setCountdown] = useState('');
-  const [claiming, setClaiming] = useState(false);
 
   const [history, setHistory] = useState<KeyHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [ipAddress, setIpAddress] = useState<string>('');
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [topUsersLoading, setTopUsersLoading] = useState(false);
-
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const keyRequestIdRef = useRef(0);
 
   const fetchMyKey = useCallback(async (selectedGame: string, silent = false) => {
     if (!selectedGame) return;
+    const requestId = ++keyRequestIdRef.current;
     if (!silent) setStatusLoading(true);
     setKeyLoading(true);
+
     try {
-      const res = await fetch(`/api/free-key/my-key?registrator=${encodeURIComponent(registrator)}&game=${encodeURIComponent(selectedGame)}`);
-      const data = await res.json();
-      setKeyStatus(res.ok ? data : null);
-    } catch { setKeyStatus(null); }
-    finally { setStatusLoading(false); setKeyLoading(false); }
+      const response = await fetch(
+        `/api/free-key/my-key?registrator=${encodeURIComponent(registrator)}&game=${encodeURIComponent(selectedGame)}`,
+      );
+      const data = await response.json();
+      if (requestId !== keyRequestIdRef.current) return;
+      const nextStatus = response.ok ? data as KeyStatus : null;
+      setKeyStatus(nextStatus);
+      setCountdown(formatCountdown(nextStatus?.expiredDate ?? null));
+    } catch {
+      if (requestId !== keyRequestIdRef.current) return;
+      setKeyStatus(null);
+      if (!silent) toast.error('Unable to refresh your key');
+    } finally {
+      if (requestId === keyRequestIdRef.current) {
+        setStatusLoading(false);
+        setKeyLoading(false);
+      }
+    }
   }, [registrator]);
 
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`/api/free-key/history?registrator=${encodeURIComponent(registrator)}`);
-      const data = await res.json();
+      const response = await fetch(`/api/free-key/history?registrator=${encodeURIComponent(registrator)}`);
+      const data = await response.json();
       setHistory(Array.isArray(data) ? data : []);
-    } catch { setHistory([]); }
-    finally { setHistoryLoading(false); }
+    } catch {
+      setHistory([]);
+      toast.error('Unable to load key history');
+    } finally {
+      setHistoryLoading(false);
+    }
   }, [registrator]);
 
   const fetchTopUsers = useCallback(async () => {
     setTopUsersLoading(true);
     try {
-      const res = await fetch('/api/free-key/top-users?limit=10');
-      const data = await res.json();
+      const response = await fetch(`/api/free-key/top-users?registrator=${encodeURIComponent(registrator)}&limit=10`);
+      const data = await response.json();
       setTopUsers(Array.isArray(data) ? data : []);
-    } catch { setTopUsers([]); }
-    finally { setTopUsersLoading(false); }
-  }, []);
+    } catch {
+      setTopUsers([]);
+      toast.error('Unable to load the leaderboard');
+    } finally {
+      setTopUsersLoading(false);
+    }
+  }, [registrator]);
 
   useEffect(() => {
     void (async () => {
+      setGamesLoading(true);
       try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setAuthUser(data.user);
+        const response = await fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`);
+        const data = await response.json();
+        const list: GameOption[] = Array.isArray(data) ? data : [];
+        setGames(list);
+
+        const requestedGame = searchParams.get('game');
+        const selectedGame = requestedGame && list.some(item => item.code === requestedGame)
+          ? requestedGame
+          : list.length === 1
+            ? list[0].code
+            : '';
+
+        if (selectedGame) {
+          setGame(selectedGame);
+          await fetchMyKey(selectedGame, true);
+        } else if (requestedGame) {
+          setGame('');
         }
-      } catch {}
-      finally { setAuthLoading(false); }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (tab === 'history') void fetchHistory();
-    if (tab === 'top-users') void fetchTopUsers();
-  }, [tab, fetchHistory, fetchTopUsers]);
-
-  useEffect(() => {
-    if (game) { setKeyStatus(null); void fetchMyKey(game, true); }
-  }, [game, fetchMyKey]);
-
-  useEffect(() => {
-    void (async () => {
-      try {
-        const r = await fetch('https://checkip.amazonaws.com');
-        const text = await r.text();
-        if (text) setIpAddress(text.trim());
       } catch {
-        try {
-          const r = await fetch('/api/ip');
-          const d = await r.json();
-          if (d.ip) setIpAddress(d.ip);
-        } catch {}
+        setGames([]);
+        toast.error('Unable to load available games');
+      } finally {
+        setGamesLoading(false);
       }
     })();
 
-    void (async () => {
-      try {
-        const res = await fetch(`/api/free-key/games?registrator=${encodeURIComponent(registrator)}`);
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
-        setGames(list);
-        if (list.length === 1) setGame(list[0].code);
-      } catch { setGames([]); }
-    })();
-
     const claimToken = searchParams.get('claimToken');
-    if (claimToken) {
-      void (async () => {
-        setClaiming(true);
-        try {
-          const res = await fetch('/api/free-key/claim', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: claimToken }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            toast.success('Key claimed successfully!');
-            setGame(data.game);
-            await fetchMyKey(data.game, true);
-            window.history.replaceState({}, '', window.location.pathname);
-          } else toast.error(data.error || 'Failed to claim key');
-        } catch { toast.error('Claim error'); }
-        finally { setClaiming(false); }
-      })();
-    }
+    if (!claimToken) return;
+
+    void (async () => {
+      setClaiming(true);
+      try {
+        const response = await fetch('/api/free-key/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: claimToken }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          toast.error(data.error || 'Failed to claim key');
+          return;
+        }
+
+        toast.success('Key claimed successfully');
+        setGame(data.game);
+        await fetchMyKey(data.game, true);
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch {
+        toast.error('Unable to claim the key');
+      } finally {
+        setClaiming(false);
+      }
+    })();
   }, [registrator, searchParams, fetchMyKey]);
 
   useEffect(() => {
-    if (!keyStatus?.expiredDate) { setCountdown(''); return; }
-    const tick = () => setCountdown(formatCountdown(keyStatus.expiredDate));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+    if (!keyStatus?.expiredDate) return;
+
+    const interval = window.setInterval(() => {
+      setCountdown(formatCountdown(keyStatus.expiredDate));
+    }, 1000);
+    return () => window.clearInterval(interval);
   }, [keyStatus?.expiredDate]);
 
   useEffect(() => {
     const container = document.getElementById('container-11549e9ed33a224ea077baba528d1381');
-    if (container && !container.hasChildNodes()) {
-      const script = document.createElement('script');
-      script.src = 'https://pl29635891.effectivecpmnetwork.com/11549e9ed33a224ea077baba528d1381/invoke.js';
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      container.appendChild(script);
-    }
+    if (!container || container.hasChildNodes()) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://pl29635891.effectivecpmnetwork.com/11549e9ed33a224ea077baba528d1381/invoke.js';
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    container.appendChild(script);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (siteKey && !turnstileToken) { toast.error('Complete captcha verification'); return; }
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!game) {
+      toast.error('Select a game first');
+      return;
+    }
+    if (siteKey && !turnstileToken) {
+      toast.error('Complete the security check');
+      return;
+    }
+
     setGenerating(true);
     try {
-      const res = await fetch('/api/free-key', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, turnstileToken: turnstileToken || undefined, registrator, duration: '3h' }),
+      const response = await fetch('/api/free-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game,
+          turnstileToken: turnstileToken || undefined,
+          registrator,
+        }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        if (data.adUrl) {
-          toast.success('Redirecting to ad link…');
-          setTimeout(() => { window.location.href = data.adUrl; }, 1500);
-        } else toast.error('Failed to generate ad link. Please try again later or contact support.');
-      } else toast.error(data.error || 'Failed to generate key');
-    } catch { toast.error('Network error'); }
-    finally { setGenerating(false); setTurnstileToken(''); }
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to generate key');
+        return;
+      }
+      if (!data.adUrl) {
+        toast.error('The sponsor link is unavailable. Please try again later.');
+        return;
+      }
+
+      toast.success('Sponsor link ready. Redirecting...');
+      window.setTimeout(() => { window.location.href = data.adUrl; }, 1200);
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setGenerating(false);
+      setTurnstileToken('');
+    }
   };
 
-  const handleCopy = (keyStr: string) => {
-    void navigator.clipboard.writeText(keyStr);
-    setCopied(keyStr);
-    toast.success('Copied to clipboard');
-    setTimeout(() => setCopied(null), 2000);
+  const handleCopy = async (keyValue: string) => {
+    try {
+      await navigator.clipboard.writeText(keyValue);
+      setCopied(keyValue);
+      toast.success('Key copied');
+      window.setTimeout(() => setCopied(null), 2000);
+    } catch {
+      toast.error('Unable to copy the key');
+    }
   };
 
   const handleResetDevices = async () => {
     if (!keyStatus?.key) return;
     setResetLoading(true);
     try {
-      const res = await fetch('/api/free-key/reset-devices', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const response = await fetch('/api/free-key/reset-devices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: keyStatus.key }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(`Devices reset! ${data.resetsRemaining} reset(s) remaining.`);
-        await fetchMyKey(game, true);
-      } else toast.error(data.error || 'Failed to reset devices');
-    } catch { toast.error('Network error'); }
-    finally { setResetLoading(false); }
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to reset devices');
+        return;
+      }
+
+      toast.success(`Devices reset. ${data.resetsRemaining} reset(s) remaining.`);
+      await fetchMyKey(game, true);
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
   };
 
-  const hasActiveKey = keyStatus && !keyStatus.isExpired && keyStatus.status === 1;
+  const handleGameChange = (nextGame: string | null) => {
+    const selectedGame = nextGame ?? '';
+    keyRequestIdRef.current += 1;
+    setGame(selectedGame);
+    setKeyStatus(null);
+    setCountdown('');
+    setKeyLoading(false);
+    setStatusLoading(false);
+    if (selectedGame) void fetchMyKey(selectedGame, true);
+  };
 
-  const tabs: { id: Tab; label: string; Icon: typeof KeyRound; count?: number }[] = [
-    { id: 'key',        label: 'My Key',    Icon: KeyRound },
-    { id: 'history',    label: 'History',   Icon: History, count: history.length || undefined },
-    { id: 'top-users',  label: 'Top Users', Icon: Trophy },
-    { id: 'downloads',  label: 'Downloads', Icon: Download },
-  ];
+  const handleTabChange = (nextTab: Tab) => {
+    setTab(nextTab);
+    if (nextTab === 'history') void fetchHistory();
+    if (nextTab === 'top-users') void fetchTopUsers();
+  };
+
+  const hasActiveKey = Boolean(keyStatus && !keyStatus.isExpired && keyStatus.status === 1);
+  const canGenerateKey = !keyStatus || keyStatus.isExpired;
+  const keyState = keyStatus?.status === 0
+    ? { label: 'Suspended', color: 'var(--red)', Icon: ShieldAlert }
+    : keyStatus?.isExpired
+      ? { label: 'Expired', color: 'var(--red)', Icon: AlertTriangle }
+      : keyStatus?.isActivated
+        ? { label: 'Active', color: 'var(--ecto-green)', Icon: Activity }
+        : { label: 'Unused', color: 'var(--gold)', Icon: AlertTriangle };
 
   return (
-    <div className="min-h-screen relative" style={{ background: 'var(--bg-void)' }}>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[120px]" 
-          style={{ background: 'radial-gradient(circle, rgba(234,88,12,0.03) 0%, transparent 70%)' }} 
-        />
+    <div className="relative min-h-screen bg-[var(--bg-void)]">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+        <div className="absolute left-1/2 top-20 size-[42rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(234,88,12,0.06)_0%,transparent_68%)] blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,.35)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.35)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]" />
       </div>
 
       {claiming && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4"
-          style={{ background: 'rgba(2, 6, 8, 0.85)', backdropFilter: 'blur(8px)' }}
-        >
-          <Loader2 className="h-12 w-12 animate-spin" style={{ color: 'var(--teal-2)' }} />
-          <p
-            className="font-display text-lg font-bold tracking-wide"
-            style={{ background: 'linear-gradient(135deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-          >
-            Claiming your 3-hour key…
-          </p>
-          <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Please wait while we verify your ad completion.</p>
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/80 px-6 text-center backdrop-blur-md" role="status" aria-live="polite">
+          <Loader2 className="size-11 animate-spin text-[var(--brand-500)]" aria-hidden />
+          <div>
+            <p className="font-display text-lg font-bold text-[var(--text-hi)]">Verifying your claim</p>
+            <p className="mt-1 text-sm text-[var(--text-mid)]">Please keep this page open.</p>
+          </div>
         </div>
       )}
 
-      <header
-        className="sticky top-0 z-20 backdrop-blur-md"
-        style={{ background: 'rgba(2, 6, 8, 0.7)', borderBottom: '1px solid var(--border)' }}
-      >
-        <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
-            <span className="font-display font-bold tracking-wide" style={{ color: 'var(--text-hi)' }}>Free Key</span>
+      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[rgba(7,8,10,0.82)] backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-8 place-items-center rounded-lg border border-orange-500/25 bg-orange-500/10">
+              <KeyRound className="size-4 text-[var(--brand-500)]" aria-hidden />
+            </span>
+            <div className="leading-tight">
+              <span className="block font-display text-sm font-bold text-[var(--text-hi)]">Free Key</span>
+              <span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--text-lo)]">{registrator}</span>
+            </div>
           </div>
+          <StatusBadge status="online" withDot>Service online</StatusBadge>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-lg mx-auto px-4 py-6 md:py-8 space-y-5">
-
-        <div className="text-center space-y-4">
-          <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl"
-               style={{ background: 'rgba(234, 88, 12, 0.1)', border: '1px solid rgba(234, 88, 12, 0.3)' }}>
-            <KeyRound className="h-10 w-10" style={{ color: 'var(--teal-2)' }} />
-            <span className="absolute -top-1 -right-1 size-3">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: 'var(--ecto-green)' }} />
-              <span className="relative inline-flex rounded-full size-3" style={{ background: 'var(--ecto-green)' }} />
-            </span>
+      <main className="relative z-10 mx-auto max-w-2xl space-y-5 px-4 py-6 md:py-9">
+        <section className="space-y-4 text-center" aria-labelledby="free-key-title">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl border border-orange-500/25 bg-orange-500/10 shadow-[0_0_32px_rgba(234,88,12,0.12)]">
+            <KeyRound className="size-8 text-[var(--brand-500)]" aria-hidden />
           </div>
-
-          <div className="space-y-2">
-            <h1
-              className="font-display text-4xl md:text-5xl font-black tracking-tight"
-              style={{ background: 'linear-gradient(135deg, var(--text-hi), var(--teal-2), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-            >
-              Free Key Generator
+          <div>
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--brand-300)]">3-hour trial access</p>
+            <h1 id="free-key-title" className="font-display text-3xl font-black tracking-tight text-[var(--text-hi)] sm:text-4xl">
+              Get your free key
             </h1>
-            <p className="text-sm" style={{ color: 'var(--text-mid)' }}>
-              Generate a free trial key from <span className="font-bold" style={{ color: 'var(--text-hi)' }}>{registrator}</span>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-mid)]">
+              Choose a game, complete the security check, then visit the sponsor page to unlock your key.
             </p>
           </div>
-
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="status-pill-active"><Sparkles className="h-3 w-3" /> Free Trial</span>
-            <span className="status-pill-warning"><Zap className="h-3 w-3" /> Instant Access</span>
-            <span className="status-pill-gold"><ShieldCheck className="h-3 w-3" /> No Virus</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="status-pill-active"><Sparkles className="size-3" aria-hidden /> Free trial</span>
+            <span className="status-pill-warning"><Timer className="size-3" aria-hidden /> 3 hours</span>
+            <span className="status-pill-gold"><ShieldCheck className="size-3" aria-hidden /> One device</span>
           </div>
+        </section>
 
-          {ipAddress && (
-            <div className="flex justify-center">
-              <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-                style={{ background: 'rgba(234, 88, 12, 0.04)', border: '1px solid var(--border)' }}
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: 'var(--ecto-green)' }} />
-                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: 'var(--ecto-green)' }} />
-                </span>
-                <span className="text-xs" style={{ color: 'var(--text-mid)' }}>
-                  <span className="font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)', fontSize: '0.65rem' }}>IP:</span>{' '}
-                  <span className="font-mono font-bold" style={{ color: 'var(--text-hi)' }}>{ipAddress}</span>
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div
-          className="flex rounded-xl p-1 gap-1"
-          style={{ background: 'rgba(2, 6, 8, 0.5)', border: '1px solid var(--border)' }}
-        >
-          {tabs.map(t => (
+        <nav className="grid grid-cols-3 gap-1 rounded-xl border border-[var(--border)] bg-black/25 p-1" aria-label="Free key sections" role="tablist">
+          {TABS.map(({ id, label, shortLabel, Icon }) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={tab === t.id ? 'tab-btn active' : 'tab-btn'}
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              aria-controls={`tabpanel-${id}`}
+              id={`tab-${id}`}
+              onClick={() => handleTabChange(id)}
+              className={tab === id ? 'tab-btn active focus-ring' : 'tab-btn focus-ring'}
             >
-              <t.Icon className="h-3.5 w-3.5" />
-              {t.label}
-              {t.count !== undefined && <span className="badge-count">{t.count}</span>}
+              <Icon className="size-3.5 shrink-0" aria-hidden />
+              <span className="sm:hidden">{shortLabel}</span>
+              <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
-        </div>
+        </nav>
 
         {tab === 'key' && (
-          <div className="space-y-4 fade-up d1">
-            {games.length === 0 ? (
-              <div className="panel">
-                <div className="empty-state p-6 flex flex-col items-center justify-center">
-                  <div className="empty-icon-ring"><Gamepad2 size={26} /></div>
-                  <div className="empty-title">No Free Keys Available</div>
-                  <div className="empty-sub">No free keys available from this reseller.</div>
-                </div>
+          <section id="tabpanel-key" role="tabpanel" aria-labelledby="tab-key" className="space-y-4 fade-up d1">
+            {gamesLoading ? (
+              <div className="flex justify-center py-12" role="status">
+                <Loader2 className="size-6 animate-spin text-[var(--text-lo)]" aria-label="Loading games" />
               </div>
+            ) : games.length === 0 ? (
+              <EmptyPanel icon={Gamepad2} title="Free keys unavailable" description="This operator has no free-key channels enabled right now." />
             ) : (
-              <div className="panel">
+              <div className="panel panel--flat">
                 <div className="panel-head">
-                  <div className="panel-title">
-                    <Gamepad2 className="h-3.5 w-3.5 ico" />
-                    Select Game
-                  </div>
+                  <div className="panel-title"><Gamepad2 className="ico size-3.5" aria-hidden /> Choose a game</div>
+                  <span className="panel-badge">Step 1</span>
                 </div>
                 <div className="p-4">
-                  <Select value={game} onValueChange={v => setGame(v ?? '')}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="// Choose a game" />
+                  <label htmlFor="free-key-game" className="field-label mb-2 block">Available game</label>
+                  <Select value={game} onValueChange={handleGameChange}>
+                    <SelectTrigger id="free-key-game" className="w-full">
+                      <SelectValue placeholder="Select a game" />
                     </SelectTrigger>
                     <SelectContent>
-                      {games.map(g => (
-                        <SelectItem key={g.code} value={g.code}>{g.name}</SelectItem>
-                      ))}
+                      {games.map(item => <SelectItem key={item.code} value={item.code}>{item.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             )}
 
-            {!game && games.length > 0 && (
-              <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
-                Select a game to see your key or generate a new one.
-              </p>
+            {!game && games.length > 0 && !gamesLoading && (
+              <div className="callout-info">
+                <Gamepad2 className="icon size-5 shrink-0" aria-hidden />
+                <span>Select a game above to view an existing key or generate a new one.</span>
+              </div>
             )}
 
             {game && keyLoading && (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
+              <div className="flex justify-center py-10" role="status">
+                <Loader2 className="size-6 animate-spin text-[var(--text-lo)]" aria-label="Checking for an existing key" />
               </div>
             )}
 
             {game && !keyLoading && keyStatus && (
-              <div className="panel">
+              <div className="panel panel--flat">
                 <div className="panel-head">
-                  <div className="panel-title">
-                    <KeyRound className="h-3.5 w-3.5 ico" />
-                    Your Free Key
-                  </div>
-                  <span className="panel-badge">{keyStatus.game}</span>
+                  <div className="panel-title"><KeyRound className="ico size-3.5" aria-hidden /> Current key</div>
+                  <StatusBadge status={keyStatus.status === 0 ? 'blocked' : keyStatus.isExpired ? 'expired' : keyStatus.isActivated ? 'active' : 'warning'} withDot>
+                    {keyState.label}
+                  </StatusBadge>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="key-display flex-1 min-w-0 text-xs">{keyStatus.key}</div>
-                    <Button variant="outline" size="icon-sm" onClick={() => handleCopy(keyStatus.key)} title="Copy key">
-                      {copied === keyStatus.key ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
-                    </Button>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <span className="field-label mb-2 block">License key</span>
+                    <div className="flex items-center gap-2">
+                      <code className="key-display min-w-0 flex-1 overflow-x-auto whitespace-nowrap">{keyStatus.key}</code>
+                      <Button variant="outline" size="icon" onClick={() => void handleCopy(keyStatus.key)} aria-label="Copy license key">
+                        {copied === keyStatus.key ? <Check className="text-[var(--ecto-green)]" aria-hidden /> : <Copy aria-hidden />}
+                      </Button>
+                    </div>
                   </div>
 
-                  {(() => {
-                    const dl = games.find(g => g.code === game)?.downloadLink;
-                    return dl ? (
-                      <a href={dl} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" className="w-full">
-                          <Download className="h-3.5 w-3.5 mr-1.5" /> Download Mod File
-                        </Button>
-                      </a>
-                    ) : null;
-                  })()}
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--teal-2)' }}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="metric-tile-label">Status</span>
-                        <button onClick={() => void fetchMyKey(game)} disabled={statusLoading} className="opacity-60 hover:opacity-100 transition-opacity">
-                          {statusLoading
-                            ? <Loader2 className="h-3 w-3 animate-spin" style={{ color: 'var(--teal-2)' }} />
-                            : <RefreshCw className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="metric-tile" style={{ ['--accent-color' as string]: keyState.color }}>
+                      <span className="metric-tile-label">Status</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-2 font-bold" style={{ color: keyState.color }}>
+                          <keyState.Icon className="size-3.5" aria-hidden /> {keyState.label}
+                        </span>
+                        <button type="button" onClick={() => void fetchMyKey(game)} disabled={statusLoading} className="focus-ring cursor-pointer rounded p-1 text-[var(--text-lo)] transition-colors hover:text-[var(--brand-500)]" aria-label="Refresh key status">
+                          <RefreshCw className={statusLoading ? 'size-3.5 animate-spin' : 'size-3.5'} aria-hidden />
                         </button>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {keyStatus.isExpired || keyStatus.status === 0 ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--red)' }} /> : keyStatus.isActivated ? <Activity className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <AlertTriangle className="h-3.5 w-3.5" style={{ color: 'var(--gold)' }} />}
-                        <span className="metric-tile-value font-bold" style={{ color: keyStatus.isExpired || keyStatus.status === 0 ? 'var(--red)' : keyStatus.isActivated ? 'var(--ecto-green)' : 'var(--gold)' }}>
-                          {keyStatus.isExpired ? 'Expired' : keyStatus.isActivated ? 'Active' : 'Unused'}
-                        </span>
-                      </div>
                     </div>
-
                     <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
-                      <span className="metric-tile-label block mb-1">Devices</span>
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="h-4 w-4" style={{ color: 'var(--text-lo)' }} />
-                        <span className="metric-tile-value font-bold" style={{ color: 'var(--text-hi)' }}>{keyStatus.deviceCount} / 1</span>
-                      </div>
+                      <span className="metric-tile-label">Devices</span>
+                      <span className="flex items-center gap-2 font-bold text-[var(--text-hi)]">
+                        <Smartphone className="size-4 text-[var(--text-lo)]" aria-hidden /> {keyStatus.deviceCount} / 1
+                      </span>
                     </div>
                   </div>
 
-                  <div className="metric-tile" style={{ ['--accent-color' as string]: keyStatus.isExpired ? 'var(--red)' : 'var(--teal-2)' }}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="metric-tile-label">
-                        {keyStatus.isActivated ? 'Time Remaining' : 'Grace Period Ends'}
-                      </span>
-                    </div>
-                    <p className="font-mono text-2xl font-black tracking-wider" style={{ color: keyStatus.isExpired ? 'var(--red)' : 'var(--text-hi)' }}>
-                      {keyStatus.isExpired ? 'Expired' : countdown}
-                    </p>
+                  <div className="metric-tile" style={{ ['--accent-color' as string]: keyStatus.isExpired ? 'var(--red)' : 'var(--brand-500)' }}>
+                    <span className="metric-tile-label">{keyStatus.isActivated ? 'Time remaining' : 'Activation window'}</span>
+                    <span className="font-mono text-2xl font-black tracking-wide text-[var(--text-hi)]">{keyStatus.isExpired ? 'Expired' : countdown}</span>
                     {keyStatus.expiredDate && (
-                      <p className="text-[10px] font-mono mt-1" style={{ color: 'var(--text-lo)' }}>
-                        <Calendar className="inline h-2.5 w-2.5 mr-0.5" /> {formatDate(keyStatus.expiredDate)}
-                      </p>
+                      <span className="font-mono text-[10px] text-[var(--text-lo)]"><Calendar className="mr-1 inline size-3" aria-hidden />{formatDate(keyStatus.expiredDate)}</span>
                     )}
                   </div>
 
                   <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert className="h-4 w-4" style={{ color: 'var(--gold)' }} />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <ShieldAlert className="size-4 shrink-0 text-[var(--gold)]" aria-hidden />
                         <div>
-                          <p className="text-xs font-bold" style={{ color: 'var(--text-hi)' }}>Device Resets</p>
-                          <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>{keyStatus.resetsRemaining} / 2 remaining</p>
+                          <p className="text-xs font-bold text-[var(--text-hi)]">Device reset</p>
+                          <p className="font-mono text-[10px] text-[var(--text-lo)]">{keyStatus.resetsRemaining} of 2 remaining</p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" disabled={resetLoading || keyStatus.resetsRemaining === 0 || keyStatus.isExpired} onClick={handleResetDevices}>
-                        {resetLoading
-                          ? <Loader2 className="h-3 w-3 animate-spin" />
-                          : <RefreshCw className="h-3 w-3" />}
-                        Reset
+                      <Button variant="outline" size="sm" disabled={resetLoading || keyStatus.status !== 1 || keyStatus.deviceCount === 0 || keyStatus.resetsRemaining === 0 || keyStatus.isExpired} onClick={handleResetDevices}>
+                        {resetLoading ? <Loader2 className="animate-spin" aria-hidden /> : <RefreshCw aria-hidden />} Reset
                       </Button>
                     </div>
                   </div>
@@ -512,241 +572,150 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
               </div>
             )}
 
-            {game && !keyLoading && !hasActiveKey && games.length > 0 && (
-              <div className="panel">
+            {game && !keyLoading && canGenerateKey && games.length > 0 && (
+              <div className="panel panel--flat">
                 <div className="panel-head">
-                  <div className="panel-title">
-                    <Zap className="h-3.5 w-3.5 ico" />
-                    Generate New Key
-                  </div>
+                  <div className="panel-title"><Zap className="ico size-3.5" aria-hidden /> Unlock a new key</div>
+                  <span className="panel-badge">Step 2</span>
                 </div>
-                <div className="p-4 space-y-4">
-                  <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
-                    {keyStatus?.isExpired ? 'Your key has expired. Generate a new one below.' : 'No active key found. Generate one below.'}
-                  </p>
-
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="duration-tile active">
-                        <div className="flex flex-col items-center gap-0.5 w-full py-1">
-                          <Timer className="h-5 w-5" style={{ color: 'var(--teal-2)' }} />
-                          <span className="text-sm font-extrabold" style={{ color: 'var(--teal-3)' }}>3 Hours</span>
-                          <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>With Ads</span>
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-4 p-4">
+                  <div className="rounded-lg border border-orange-500/25 bg-orange-500/[0.06] p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-orange-500/10 text-[var(--brand-500)]"><Timer className="size-5" aria-hidden /></span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-[var(--text-hi)]">3-hour free key</p>
+                        <p className="text-xs leading-5 text-[var(--text-mid)]">One device · Sponsor visit required</p>
                       </div>
+                      <StatusBadge status="info">Free</StatusBadge>
                     </div>
+                  </div>
 
-                    {siteKey && (
-                      <div className="flex justify-center">
+                  {siteKey && (
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="field-label">Security check</span>
+                      <div className="max-w-full overflow-hidden rounded-lg">
                         <Turnstile
                           siteKey={siteKey}
                           onSuccess={setTurnstileToken}
+                          onExpire={() => setTurnstileToken('')}
+                          onError={() => {
+                            setTurnstileToken('');
+                            toast.error('Security check failed. Please try again.');
+                          }}
                           options={{ theme: 'dark' }}
                         />
                       </div>
-                    )}
-
-                    <Button type="submit" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
-                      {generating
-                        ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Generating…</>
-                        : <><Zap className="h-3.5 w-3.5 mr-1.5" /> Unlock 3h Key (Watch Ads)</>
-                      }
-                    </Button>
-
-                    <div className="text-center pt-2 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
-                      <p className="text-[11px]" style={{ color: 'var(--text-mid)' }}>
-                        {'Support our servers by visiting our '}
-                        <a
-                          href="https://www.effectivecpmnetwork.com/af3m3ncy4?key=d3dfc16b1bccb6cf90bb7c5871ecb083"
-                          target="_blank" rel="noopener noreferrer"
-                          className="font-bold hover:underline" style={{ color: 'var(--teal-2)' }}
-                        >
-                          Sponsor Link
-                        </a>
-                      </p>
                     </div>
-                  </form>
-                </div>
+                  )}
+
+                  <Button type="submit" size="lg" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
+                    {generating ? <><Loader2 className="animate-spin" aria-hidden /> Preparing sponsor link...</> : <><Zap aria-hidden /> Continue to sponsor</>}
+                  </Button>
+                  <p className="text-center text-[11px] leading-5 text-[var(--text-lo)]">After completing the sponsor page, you will return here automatically to claim your key.</p>
+                </form>
               </div>
             )}
 
             {game && !keyLoading && hasActiveKey && (
-              <p className="text-xs text-center font-mono" style={{ color: 'var(--text-lo)' }}>
-                {'// come back after your key expires to generate a new one'}
-              </p>
+              <p className="text-center font-mono text-[11px] text-[var(--text-lo)]">You can generate another key after the current one expires.</p>
             )}
-          </div>
+
+            {game && !keyLoading && keyStatus?.status === 0 && !keyStatus.isExpired && (
+              <div className="callout-info border-red-500/20 bg-red-500/[0.06] text-[var(--red-soft)]">
+                <ShieldAlert className="icon size-5 shrink-0" aria-hidden />
+                <span>This key is suspended. Contact the operator before requesting another key.</span>
+              </div>
+            )}
+          </section>
         )}
 
         {tab === 'history' && (
-          <div className="space-y-4 fade-up d1">
-            <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'var(--text-mid)' }}>
-                <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>All keys generated from your IP/device
-              </p>
-              <Button variant="ghost" size="icon-sm" onClick={fetchHistory} disabled={historyLoading}>
-                {historyLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          <section id="tabpanel-history" role="tabpanel" aria-labelledby="tab-history" className="space-y-4 fade-up d1">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-base font-bold text-[var(--text-hi)]">Key history</h2>
+                <p className="text-xs text-[var(--text-mid)]">Keys previously claimed through this operator.</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={fetchHistory} disabled={historyLoading} aria-label="Refresh key history">
+                <RefreshCw className={historyLoading ? 'animate-spin' : ''} aria-hidden />
               </Button>
             </div>
 
-            {historyLoading && (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
-              </div>
-            )}
-
-            {!historyLoading && history.length === 0 && (
-              <div className="panel">
-                <div className="empty-state p-6 flex flex-col items-center justify-center">
-                  <div className="empty-icon-ring"><History size={26} /></div>
-                  <div className="empty-title">No Key History</div>
-                  <div className="empty-sub">No key history found.</div>
-                </div>
-              </div>
-            )}
-
-            {!historyLoading && history.length > 0 && (
-              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
-                {history.map((entry, i) => (
-                  <div key={entry.key} className="panel">
-                    <div className="p-4 space-y-3">
+            {historyLoading ? (
+              <div className="flex justify-center py-12" role="status"><Loader2 className="size-6 animate-spin text-[var(--text-lo)]" aria-label="Loading key history" /></div>
+            ) : history.length === 0 ? (
+              <EmptyPanel icon={History} title="No key history" description="Your claimed keys will appear here." />
+            ) : (
+              <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1">
+                {history.map((entry, index) => (
+                  <article key={entry.key} className="panel panel--flat">
+                    <div className="space-y-3 p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(234, 88, 12, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>
-                            #{history.length - i}
-                          </span>
-                          <span className="font-display font-bold text-sm truncate" style={{ color: 'var(--text-hi)' }}>{entry.game}</span>
+                        <div className="min-w-0">
+                          <p className="truncate font-display text-sm font-bold text-[var(--text-hi)]">{entry.game}</p>
+                          <p className="font-mono text-[10px] text-[var(--text-lo)]">Claim #{history.length - index}</p>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex shrink-0 items-center gap-1.5">
                           <HistoryStatusBadge entry={entry} />
-                          {entry.isAdClaim
-                            ? <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest" style={{ background: 'rgba(234, 88, 12, 0.08)', color: 'var(--teal-3)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>With Ads</span>
-                            : <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-widest" style={{ background: 'rgba(2, 6, 8, 0.5)', color: 'var(--text-lo)', border: '1px solid var(--border)' }}>No Ads</span>
-                          }
+                          {entry.isAdClaim && <StatusBadge status="info">Sponsor</StatusBadge>}
                         </div>
                       </div>
-
                       <div className="flex items-center gap-2">
-                        <div className="key-display flex-1 min-w-0 text-xs">{entry.key}</div>
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleCopy(entry.key)}>
-                          {copied === entry.key ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} /> : <Copy className="h-3.5 w-3.5" />}
+                        <code className="key-display min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-xs">{entry.key}</code>
+                        <Button variant="ghost" size="icon" onClick={() => void handleCopy(entry.key)} aria-label="Copy historical key">
+                          {copied === entry.key ? <Check className="text-[var(--ecto-green)]" aria-hidden /> : <Copy aria-hidden />}
                         </Button>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--teal-2)' }}>
-                          <span className="metric-tile-label"><Hash className="inline h-2.5 w-2.5 mr-0.5" /> Generated</span>
-                          <span className="font-bold" style={{ color: 'var(--text-hi)' }}>{formatDate(entry.generatedAt)}</span>
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+                        <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--brand-500)' }}>
+                          <span className="metric-tile-label"><Hash className="mr-1 inline size-3" aria-hidden />Generated</span>
+                          <span className="font-semibold text-[var(--text-hi)]">{formatDate(entry.generatedAt)}</span>
                         </div>
                         <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--gold)' }}>
-                          <span className="metric-tile-label"><Calendar className="inline h-2.5 w-2.5 mr-0.5" /> Expired</span>
-                          <span className="font-bold" style={{ color: 'var(--text-hi)' }}>{formatDate(entry.expiredDate)}</span>
+                          <span className="metric-tile-label"><Calendar className="mr-1 inline size-3" aria-hidden />Expires</span>
+                          <span className="font-semibold text-[var(--text-hi)]">{formatDate(entry.expiredDate)}</span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
-
-            {!historyLoading && history.length > 0 && (
-              <div className="metric-tile" style={{ ['--accent-color' as string]: 'var(--teal-2)' }}>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>Total keys generated:</span>
-                  <span className="font-display font-bold text-sm" style={{ color: 'var(--text-hi)' }}>{history.length}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {tab === 'downloads' && (
-          <div className="space-y-3 fade-up d1">
-            <p className="text-xs text-center" style={{ color: 'var(--text-mid)' }}>
-              <span className="font-mono" style={{ color: 'var(--text-lo)' }}>{'// '}</span>Download the official mod files for your selected games.
-            </p>
-
-            {games.filter(g => g.downloadLink).length === 0 ? (
-              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
-                  <div className="empty-icon-ring"><Download size={26} /></div>
-                  <div className="empty-title">No Downloads</div>
-                  <div className="empty-sub">No download links available.</div>
-                </div>\n              </div>
-            ) : (
-              <div className="space-y-2">
-                {games.filter(g => g.downloadLink).map(g => (
-                  <div key={g.code} className="panel">\n                    <div className="p-4 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-display font-bold text-sm truncate" style={{ color: 'var(--text-hi)' }}>{g.name}</p>
-                        <p className="font-mono text-[10px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-lo)' }}>{g.code}</p>
-                      </div>
-                      <a href={g.downloadLink} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm">
-                          <Download className="h-3.5 w-3.5 mr-1.5" /> Download
-                          <ExternalLink className="h-3 w-3 ml-1.5" />
-                        </Button>
-                      </a>
-                    </div>\n              </div>
-                ))}
-              </div>
-            )}
-
-            <div className="callout-info">
-              <ShieldAlert className="icon h-5 w-5" />
-              <span>
-                <strong>{'// '}</strong>Always download from these official links. We are not responsible for files downloaded from third-party sources.
-              </span>
-            </div>
-          </div>
+          </section>
         )}
 
         {tab === 'top-users' && (
-          <div className="space-y-3 fade-up d1">
-            <div className="flex items-center justify-between">
+          <section id="tabpanel-top-users" role="tabpanel" aria-labelledby="tab-top-users" className="space-y-4 fade-up d1">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-sm font-black flex items-center gap-2" style={{ color: 'var(--text-hi)' }}>
-                  <Trophy className="h-4 w-4" style={{ color: 'var(--gold)' }} /> Top Ad Supporters
-                </h3>
-                <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>{'// users claiming keys with ads'}</p>
+                <h2 className="flex items-center gap-2 font-display text-base font-bold text-[var(--text-hi)]"><Trophy className="size-4 text-[var(--gold)]" aria-hidden /> Top supporters</h2>
+                <p className="text-xs text-[var(--text-mid)]">Users with the most sponsor-backed claims.</p>
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={fetchTopUsers} disabled={topUsersLoading}>
-                {topUsersLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              <Button variant="ghost" size="icon" onClick={fetchTopUsers} disabled={topUsersLoading} aria-label="Refresh leaderboard">
+                <RefreshCw className={topUsersLoading ? 'animate-spin' : ''} aria-hidden />
               </Button>
             </div>
 
-            {topUsersLoading && (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--text-lo)' }} />
-              </div>
-            )}
-
-            {!topUsersLoading && topUsers.length === 0 && (
-              <div className="panel">\n                <div className="empty-state p-6 flex flex-col items-center justify-center">
-                  <div className="empty-icon-ring"><Zap size={26} /></div>
-                  <div className="empty-title">No Ad Claims</div>
-                  <div className="empty-sub">No ad claims recorded yet.</div>
-                </div>\n              </div>
-            )}
-
-            {!topUsersLoading && topUsers.length > 0 && (
+            {topUsersLoading ? (
+              <div className="flex justify-center py-12" role="status"><Loader2 className="size-6 animate-spin text-[var(--text-lo)]" aria-label="Loading leaderboard" /></div>
+            ) : topUsers.length === 0 ? (
+              <EmptyPanel icon={Trophy} title="No supporters yet" description="The leaderboard will update after the first sponsor-backed claim." />
+            ) : (
               <div className="space-y-2">
-                {topUsers.map((u, i) => (
-                  <div
-                    key={u.username}
-                    className={i === 0 ? 'leader-row rank-1' : i === 1 ? 'leader-row rank-2' : i === 2 ? 'leader-row rank-3' : 'leader-row'}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={i === 0 ? 'rank-badge r1' : i === 1 ? 'rank-badge r2' : i === 2 ? 'rank-badge r3' : 'rank-badge r0'}>
-                        {i === 0 ? <Trophy className="h-4 w-4" /> : `#${i + 1}`}
+                {topUsers.map((user, index) => (
+                  <div key={user.username} className={index === 0 ? 'leader-row rank-1' : index === 1 ? 'leader-row rank-2' : index === 2 ? 'leader-row rank-3' : 'leader-row'}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={index === 0 ? 'rank-badge r1' : index === 1 ? 'rank-badge r2' : index === 2 ? 'rank-badge r3' : 'rank-badge r0'}>
+                        {index === 0 ? <Trophy className="size-4" aria-hidden /> : `#${index + 1}`}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-mono text-xs font-extrabold" style={{ color: 'var(--text-hi)' }}>@{u.username}</p>
-                        <p className="text-[10px] font-mono" style={{ color: 'var(--text-lo)' }}>Last: {formatDate(u.lastClaim)}</p>
+                        <p className="truncate font-mono text-xs font-extrabold text-[var(--text-hi)]">@{user.username}</p>
+                        <p className="font-mono text-[10px] text-[var(--text-lo)]">Last claim: {formatDate(user.lastClaim)}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-base font-black" style={{ color: 'var(--teal-2)' }}>{u.count}</p>
-                      <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-lo)' }}>Claims</p>
+                      <p className="font-display text-base font-black text-[var(--brand-500)]">{user.count}</p>
+                      <p className="font-mono text-[9px] uppercase tracking-widest text-[var(--text-lo)]">Claims</p>
                     </div>
                   </div>
                 ))}
@@ -754,20 +723,17 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
             )}
 
             <div className="callout-info callout-ecto">
-              <Cpu className="icon h-5 w-5" />
-              <span>
-                Supporting us by claiming keys with ads helps keep the service free. Top users get our special appreciation!
-              </span>
+              <Cpu className="icon size-5 shrink-0" aria-hidden />
+              <span>Sponsor-backed claims help keep the free-key service online.</span>
             </div>
-          </div>
+          </section>
         )}
       </main>
 
       <Script src="https://pl29635888.effectivecpmnetwork.com/76/e9/92/76e9921dd32b21981772bb0a3f32976a.js" strategy="afterInteractive" />
       <Script src="https://pl29635890.effectivecpmnetwork.com/df/d6/32/dfd632caec23bf46fbb7d22a48bead7d.js" strategy="lazyOnload" />
-
-      <div className="max-w-lg mx-auto px-4 pb-6 flex flex-col items-center justify-center gap-2 relative z-10">
-        <div id="container-11549e9ed33a224ea077baba528d1381" className="w-full min-h-[50px] flex items-center justify-center" />
+      <div className="relative z-10 mx-auto flex max-w-2xl items-center justify-center px-4 pb-6">
+        <div id="container-11549e9ed33a224ea077baba528d1381" className="flex min-h-[50px] w-full items-center justify-center" />
       </div>
     </div>
   );

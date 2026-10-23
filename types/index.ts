@@ -37,6 +37,8 @@ export interface KeyDoc {
   status: KeyStatus;
   registrator: string;
   isFreeKey: boolean;
+  freeKeyClaimId?: string;
+  freeKeyActivatedAt?: Date | null;
   deviceResetCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -95,7 +97,6 @@ export interface LibDoc {
   _id: ObjectId;
   fileName: string;
   displayName: string;
-  type: 'free' | 'paid';
   ftpUrl: string;
   fileSize: string;
   fileSizeBytes: number;
@@ -127,6 +128,7 @@ export interface IpTrackerDoc {
   isBanned: boolean;
   banReason: string;
   isAdClaim: boolean;
+  freeKeyClaimId?: string;
 }
 
 export interface HistoryDoc {
@@ -161,4 +163,3 @@ export const KEY_INACTIVE: KeyStatus = 0;
 
 export const STATIC_WORDS = 'Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E';
 export const SERVER_CONFIG_ID = '000000000000000000000001';
-

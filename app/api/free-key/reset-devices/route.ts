@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { resetFreeKeyDevices } from '@/lib/services/free-key-service';
-import { getClientIp } from '@/lib/utils/ip';
 import { withPublicApi } from '@/lib/api/with-api';
 import { z } from 'zod/v4';
 
@@ -20,8 +19,7 @@ export const POST = withPublicApi(async (request) => {
     deviceId = crypto.randomUUID();
   }
 
-  const ip = getClientIp(request);
-  const result = await resetFreeKeyDevices(parsed.data.key, deviceId, ip);
+  const result = await resetFreeKeyDevices(parsed.data.key, deviceId);
 
   if ('error' in result) {
     return NextResponse.json({ error: result.error }, { status: 400 });

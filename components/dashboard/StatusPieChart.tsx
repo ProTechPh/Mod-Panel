@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PieChart as PieChartIcon } from 'lucide-react';
@@ -7,8 +7,8 @@ interface StatusEntry { status: string; count: number; }
 interface StatusPieChartProps { data: StatusEntry[]; }
 
 const COLORS = {
-  active: '#39ff14',
-  expired: '#f0c040',
+  active: '#22c55e',
+  expired: '#eab308',
   blocked: '#ef4444',
   unused: '#6b7280',
 };
@@ -56,14 +56,14 @@ export default function StatusPieChart({ data }: StatusPieChartProps) {
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgba(9, 19, 24, 0.98)',
-                  border: '1px solid rgba(20, 184, 184, 0.4)',
+                  border: '1px solid rgba(234, 88, 12, 0.4)',
                   borderRadius: '10px',
                   fontSize: 12,
-                  color: '#e8f8f8',
+                  color: '#f1f5f9',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 }}
-                labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }}
-                itemStyle={{ color: '#e8f8f8' }}
+                labelStyle={{ color: '#a3aebf', fontFamily: 'var(--ff-mono)', fontSize: 11 }}
+                itemStyle={{ color: '#f1f5f9' }}
               />
               <Legend
                 verticalAlign="bottom"

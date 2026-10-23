@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getMyFreeKey } from '@/lib/services/free-key-service';
-import { getClientIp } from '@/lib/utils/ip';
 import { withPublicApi } from '@/lib/api/with-api';
 
 export const GET = withPublicApi(async (request) => {
@@ -16,13 +15,8 @@ export const GET = withPublicApi(async (request) => {
     return NextResponse.json({ error: 'Missing registrator or game' }, { status: 400 });
   }
 
-  const ip = getClientIp(request);
-  const result = await getMyFreeKey(deviceId, ip, registrator, game);
-  if ('error' in result) {
-    return NextResponse.json(null);
-  }
-
-  const response = NextResponse.json(result);
+  const result = await getMyFreeKey(deviceId, registrator, game);
+  const response = NextResponse.json('error' in result ? null : result);
   response.cookies.set('free_key_device_id', deviceId, {
     maxAge: 365 * 24 * 60 * 60, // 1 year
     path: '/',

@@ -4,7 +4,6 @@ import type { LibDoc } from '@/types';
 const LibSchema = new Schema<LibDoc & Document>({
   fileName: { type: String, required: true, trim: true, unique: true },
   displayName: { type: String, required: true, trim: true },
-  type: { type: String, enum: ['free', 'paid'], default: 'free' },
   ftpUrl: { type: String, required: true },
   fileSize: { type: String, default: '' },
   fileSizeBytes: { type: Number, default: 0 },

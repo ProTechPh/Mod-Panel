@@ -13,11 +13,10 @@ type SanitizedLib = Omit<LibDoc, '_id' | 'ftpUrl' | 'uploadedAt'> & {
 
 function sanitize(lib: LibDoc): SanitizedLib {
   // Explicitly whitelist fields; ftpUrl is intentionally never exposed to API clients.
-  const { fileName, displayName, type, fileSize, fileSizeBytes, uploadedBy, uploadedAt } = lib;
+  const { fileName, displayName, fileSize, fileSizeBytes, uploadedBy, uploadedAt } = lib;
   return {
     fileName,
     displayName,
-    type,
     fileSize,
     fileSizeBytes,
     uploadedBy,
@@ -40,7 +39,7 @@ export async function getLib(id: string) {
   return sanitize(lib);
 }
 
-export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2, libType: string = 'free') {
+export async function uploadLib(fileName: string, fileSize: string, fileSizeBytes: number, stream: Readable, uploadedBy: string, uploaderLevel: number = 2) {
   await dbConnect();
 
   const existing = await Lib.findOne({ fileName }).lean();
@@ -66,7 +65,6 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
     {
       fileName,
       displayName: fileName,
-      type: libType === 'paid' ? 'paid' : 'free',
       ftpUrl,
       fileSize,
       fileSizeBytes,
@@ -80,11 +78,10 @@ export async function uploadLib(fileName: string, fileSize: string, fileSizeByte
 }
 
 
-export async function updateLib(id: string, updates: { displayName?: string; type?: string }) {
+export async function updateLib(id: string, updates: { displayName?: string }) {
   await dbConnect();
-  const setData: { displayName?: string; type?: 'free' | 'paid' } = {};
+  const setData: { displayName?: string } = {};
   if (updates.displayName !== undefined) setData.displayName = updates.displayName;
-  if (updates.type !== undefined) setData.type = updates.type === 'paid' ? 'paid' : 'free';
   if (Object.keys(setData).length === 0) return getLib(id);
   const lib = await Lib.findByIdAndUpdate(id, { $set: setData }, { returnDocument: 'after' }).lean();
   if (!lib) return null;

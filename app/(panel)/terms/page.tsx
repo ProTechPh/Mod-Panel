@@ -1,9 +1,10 @@
 'use client';
 
 import { useAuth } from '@/components/shared/AuthProvider';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Users, Sparkles } from 'lucide-react';
+import { Shield, Users } from 'lucide-react';
 
 const EFFECTIVE_DATE = 'May 1, 2026';
 
@@ -145,22 +146,16 @@ export default function TermsPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      {/* Header */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">Terms of Service</h2>
-          <Sparkles className="h-4 w-4 text-purple-400" />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Effective date: <span className="font-medium text-foreground">{EFFECTIVE_DATE}</span>
-        </p>
-      </div>
+      <PageHeader
+        eyebrow={`[ POLICY / EFFECTIVE ${EFFECTIVE_DATE.toUpperCase()} ]`}
+        title="Terms of"
+        highlight="Service"
+        sub={`Applies to every operator on the platform. Your current clearance is ${roleData.label}.`}
+      />
 
       {/* General Terms */}
-      <div className="relative group">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+      <div>
+        <Card>
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-base">
               <Shield className="h-4 w-4 text-primary" />
@@ -184,10 +179,8 @@ export default function TermsPage() {
       </div>
 
       {/* Role-Specific Terms */}
-      <div className="relative group">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+      <div>
+        <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <CardTitle className="flex items-center gap-2 text-base">

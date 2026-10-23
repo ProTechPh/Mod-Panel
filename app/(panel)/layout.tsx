@@ -19,8 +19,8 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
 
         <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="relative z-10 md:ml-56 p-4 md:p-6">
-          {children}
+        <main className="relative z-10 md:ml-[var(--sidebar-w)]">
+          <div className="mx-auto w-full max-w-[1600px] p-4 md:p-6 lg:p-7">{children}</div>
         </main>
       </div>
     </AuthProvider>

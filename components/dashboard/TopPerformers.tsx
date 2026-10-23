@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Trophy, Medal, Award } from 'lucide-react';
 
@@ -6,7 +6,7 @@ interface TopPerformer { username: string; fullname: string; keysUsed: number; t
 interface TopPerformersProps { data: TopPerformer[]; }
 
 const rankConfig = (rank: number) => {
-  if (rank === 1) return { icon: Trophy, color: 'var(--gold)',     glow: 'rgba(240, 192, 64, 0.15)',  border: 'rgba(240, 192, 64, 0.3)' };
+  if (rank === 1) return { icon: Trophy, color: 'var(--gold)',     glow: 'rgba(234, 179, 8, 0.15)',  border: 'rgba(234, 179, 8, 0.3)' };
   if (rank === 2) return { icon: Medal,  color: '#cbd5e1',          glow: 'rgba(203, 213, 225, 0.12)', border: 'rgba(203, 213, 225, 0.28)' };
   if (rank === 3) return { icon: Award,  color: '#fb923c',          glow: 'rgba(251, 146, 60, 0.12)',  border: 'rgba(251, 146, 60, 0.28)' };
   return { icon: null, color: 'var(--text-mid)', glow: 'transparent', border: 'var(--border)' } as const;
@@ -112,14 +112,14 @@ export default function TopPerformers({ data }: TopPerformersProps) {
                   </p>
                   <div
                     className="mt-1.5 h-1.5 w-full rounded-full overflow-hidden"
-                    style={{ background: 'rgba(20, 184, 184, 0.08)' }}
+                    style={{ background: 'rgba(234, 88, 12, 0.08)' }}
                   >
                     <div
                       className="h-full rounded-full transition-all duration-700"
                       style={{
                         width: `${usageRate}%`,
                         background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2))',
-                        boxShadow: '0 0 6px rgba(20, 184, 184, 0.4)',
+                        boxShadow: '0 0 6px rgba(234, 88, 12, 0.4)',
                       }}
                     />
                   </div>

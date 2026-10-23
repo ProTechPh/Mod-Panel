@@ -24,7 +24,6 @@ export const POST = withApi(async (request, user) => {
   const fileName = formData.get('fileName') as string | null;
   const chunkIndex = parseInt(formData.get('chunkIndex') as string, 10);
   const totalChunks = parseInt(formData.get('totalChunks') as string, 10);
-  const libType = (formData.get('type') as string) || 'free';
 
   if (!chunk || !fileName || isNaN(chunkIndex) || isNaN(totalChunks)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -70,7 +69,7 @@ export const POST = withApi(async (request, user) => {
     const stream = Readable.from(fullBuffer);
 
     try {
-      const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level, libType);
+      const lib = await uploadLib(fileName, `${sizeMB} MB`, fullBuffer.length, stream, user.username, user.level);
       await TempChunk.deleteMany({ sessionId });
       return NextResponse.json({ ...lib, replaced: true }, { status: 200 });
     } catch (error) {

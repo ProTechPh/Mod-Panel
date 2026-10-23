@@ -13,6 +13,7 @@ const IpTrackerSchema = new Schema<IpTrackerDoc & Document>({
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
   isAdClaim: { type: Boolean, default: false },
+  freeKeyClaimId: { type: String, default: undefined },
 }, { collection: 'ip_tracker' });
 
 IpTrackerSchema.index({ ipAddress: 1, createdAt: -1 });
@@ -21,6 +22,7 @@ IpTrackerSchema.index({ ipAddress: 1, isBanned: 1 });
 IpTrackerSchema.index({ username: 1 });
 IpTrackerSchema.index({ username: 1, createdAt: -1 });
 IpTrackerSchema.index({ isAdClaim: 1, username: 1 });
+IpTrackerSchema.index({ freeKeyClaimId: 1 }, { unique: true, sparse: true });
 // TTL index to automatically clean up old unbanned entries after 7 days
 IpTrackerSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60, partialFilterExpression: { isBanned: false } });
 

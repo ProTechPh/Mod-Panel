@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server';
 import { claimFreeKey } from '@/lib/services/free-key-service';
 import { getClientIp } from '@/lib/utils/ip';
 import { withPublicApi } from '@/lib/api/with-api';
+import { z } from 'zod/v4';
+
+const claimSchema = z.object({
+  token: z.string().min(1).max(4096),
+});
 
 export const POST = withPublicApi(async (request) => {
-  const { token } = await request.json();
-  if (!token) {
-    return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+  const parsed = claimSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid claim token' }, { status: 400 });
   }
 
   let deviceId = request.cookies.get('free_key_device_id')?.value;
@@ -15,7 +20,7 @@ export const POST = withPublicApi(async (request) => {
   }
 
   const ip = getClientIp(request);
-  const result = await claimFreeKey(token, ip, deviceId);
+  const result = await claimFreeKey(parsed.data.token, ip, deviceId);
 
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: 400 });

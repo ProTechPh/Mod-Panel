@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/shared/AuthProvider';
@@ -44,7 +44,7 @@ export default function FtpStats() {
         <div
           className="p-3 rounded-lg"
           style={{
-            background: 'rgba(20, 184, 184, 0.05)',
+            background: 'rgba(234, 88, 12, 0.05)',
             border: '1px solid var(--border)',
           }}
         >
@@ -65,14 +65,14 @@ export default function FtpStats() {
           </div>
           <div
             className="h-2.5 rounded-full overflow-hidden"
-            style={{ background: 'rgba(20, 184, 184, 0.08)' }}
+            style={{ background: 'rgba(234, 88, 12, 0.08)' }}
           >
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{
                 width: `${Math.min(disk.percent, 100)}%`,
                 background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2))',
-                boxShadow: '0 0 8px rgba(20, 184, 184, 0.4)',
+                boxShadow: '0 0 8px rgba(234, 88, 12, 0.4)',
               }}
             />
           </div>
@@ -87,8 +87,8 @@ export default function FtpStats() {
         <div
           className="p-3 rounded-lg"
           style={{
-            background: 'rgba(240, 192, 64, 0.05)',
-            border: '1px solid rgba(240, 192, 64, 0.18)',
+            background: 'rgba(234, 179, 8, 0.05)',
+            border: '1px solid rgba(234, 179, 8, 0.18)',
           }}
         >
           <div className="flex justify-between text-sm mb-2">
@@ -108,14 +108,14 @@ export default function FtpStats() {
           </div>
           <div
             className="h-2.5 rounded-full overflow-hidden"
-            style={{ background: 'rgba(240, 192, 64, 0.08)' }}
+            style={{ background: 'rgba(234, 179, 8, 0.08)' }}
           >
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{
                 width: `${Math.min(inodes.percent, 100)}%`,
-                background: 'linear-gradient(90deg, var(--gold), #d4a02a)',
-                boxShadow: '0 0 8px rgba(240, 192, 64, 0.4)',
+                background: 'linear-gradient(90deg, var(--gold), #ca8a04)',
+                boxShadow: '0 0 8px rgba(234, 179, 8, 0.4)',
               }}
             />
           </div>

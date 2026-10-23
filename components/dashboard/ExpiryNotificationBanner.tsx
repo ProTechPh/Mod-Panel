@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -43,8 +43,8 @@ export default function ExpiryNotificationBanner() {
     <div
       className="relative overflow-hidden fade-up"
       style={{
-        background: 'linear-gradient(135deg, rgba(240, 192, 64, 0.08), rgba(239, 68, 68, 0.06))',
-        border: '1px solid rgba(240, 192, 64, 0.3)',
+        background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08), rgba(239, 68, 68, 0.06))',
+        border: '1px solid rgba(234, 179, 8, 0.3)',
         borderRadius: '14px',
         padding: '1rem 1.25rem',
         marginBottom: '1.25rem',
@@ -99,9 +99,9 @@ export default function ExpiryNotificationBanner() {
                   >
                     {key.game}
                   </span>
-                  <span style={{ color: 'var(--text-lo)' }}>•</span>
-                  <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{key.userKey.slice(0, 6)}…</span>
-                  <span style={{ color: 'var(--text-lo)' }}>•</span>
+                  <span style={{ color: 'var(--text-lo)' }}>â€¢</span>
+                  <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{key.userKey.slice(0, 6)}â€¦</span>
+                  <span style={{ color: 'var(--text-lo)' }}>â€¢</span>
                   <span
                     className="font-mono"
                     style={{
@@ -127,7 +127,7 @@ export default function ExpiryNotificationBanner() {
             style={{
               padding: '0.4rem 0.85rem',
               fontSize: '0.62rem',
-              borderColor: 'rgba(240, 192, 64, 0.3)',
+              borderColor: 'rgba(234, 179, 8, 0.3)',
               color: 'var(--gold)',
             }}
           >

@@ -4,189 +4,131 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/shared/AuthProvider';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard, Key, Users, Gamepad2, Server, HardDrive,
   History, Shield, BookOpen, ScrollText,
-  BarChart3, Megaphone, ClipboardList,
+  BarChart3, Megaphone, ClipboardList, X,
 } from 'lucide-react';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
-  { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
-  { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
-  { href: '/history', label: 'History', icon: History, minLevel: 3 },
-  { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
-  { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
-  { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },
-  { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
-  { href: '/admin/audit', label: 'Audit Log', icon: ClipboardList, minLevel: 1 },
-  { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
-  { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
-  { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },
-  { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 3 },
-];
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  minLevel: 1 | 2 | 3;
+};
 
-const sectionTitle = (label: string) => (
-  <div
-    style={{
-      fontFamily: 'var(--ff-mono)',
-      fontSize: '0.55rem',
-      letterSpacing: '0.22em',
-      textTransform: 'uppercase',
-      color: 'var(--text-lo)',
-      padding: '0.5rem 0.75rem 0.4rem',
-      marginTop: '0.5rem',
-    }}
-  >
-    {label}
-  </div>
-);
+const SECTIONS: { id: string; title: string; items: NavItem[] }[] = [
+  {
+    id: 'workspace',
+    title: 'Workspace',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, minLevel: 3 },
+      { href: '/keys', label: 'Keys', icon: Key, minLevel: 3 },
+      { href: '/history', label: 'History', icon: History, minLevel: 3 },
+      { href: '/settings', label: 'Settings', icon: Shield, minLevel: 3 },
+      { href: '/lib', label: 'Library', icon: HardDrive, minLevel: 2 },
+      { href: '/docs', label: 'API Docs', icon: BookOpen, minLevel: 2 },
+      { href: '/terms', label: 'Terms of Service', icon: ScrollText, minLevel: 3 },
+    ],
+  },
+  {
+    id: 'admin',
+    title: 'Administration',
+    items: [
+      { href: '/admin/users', label: 'Users', icon: Users, minLevel: 1 },
+      { href: '/admin/ads-analytics', label: 'Ads Analytics', icon: BarChart3, minLevel: 1 },
+      { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, minLevel: 1 },
+      { href: '/admin/game-settings', label: 'Game Settings', icon: Gamepad2, minLevel: 3 },
+      { href: '/admin/audit', label: 'Audit Log', icon: ClipboardList, minLevel: 1 },
+      { href: '/server', label: 'Server Config', icon: Server, minLevel: 1 },
+    ],
+  },
+];
 
 export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
   const level = user?.level ?? 3;
 
-  const filteredItems = navItems.filter(item => level <= item.minLevel);
-
-  // Group items
-  const userItems = filteredItems.filter(i =>
-    ['/dashboard', '/keys', '/history', '/settings', '/terms', '/lib', '/docs'].includes(i.href)
-  );
-  const adminItems = filteredItems.filter(i => i.href.startsWith('/admin/') || i.href === '/server');
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <>
       {open && (
         <div
-          className="fixed inset-0 z-30 md:hidden"
-          style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+          className="fixed inset-0 z-30 bg-black/70 backdrop-blur-sm md:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
+
       <aside
         className={cn(
-          'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] w-56 transition-transform duration-200 md:translate-x-0',
+          'fixed left-0 top-[var(--nav-h)] z-40 flex h-[calc(100dvh-var(--nav-h))] w-[var(--sidebar-w)] flex-col border-r border-border transition-transform duration-200 ease-out md:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
-        style={{
-          background: 'rgba(10, 11, 17, 0.6)',
-          backdropFilter: 'blur(24px) saturate(1.4)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.06)',
-          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.25), inset -1px 0 0 rgba(124, 58, 237, 0.04)',
-        }}
+        style={{ background: 'rgba(11, 12, 16, 0.86)', backdropFilter: 'blur(24px) saturate(1.3)' }}
+        aria-label="Main navigation"
       >
-        <nav
-          className="relative flex flex-col gap-0.5 p-3 overflow-y-auto h-full"
-          style={{ scrollbarWidth: 'thin' }}
-        >
-          {userItems.length > 0 && sectionTitle('Workspace')}
-          {userItems.map(item => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 overflow-hidden'
-                )}
-                style={{
-                  fontFamily: 'var(--ff-body)',
-                  color: isActive ? '#fff' : 'var(--text-mid)',
-                  background: isActive ? 'transparent' : 'transparent',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {isActive && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(90deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.01))',
-                      border: '1px solid rgba(234, 88, 12, 0.2)',
-                      borderRadius: '8px',
-                      boxShadow: 'inset 0 1px 0 rgba(234, 88, 12, 0.08)',
-                    }}
-                  />
-                )}
-                <item.icon
-                  className={cn(
-                    'relative h-4 w-4 transition-transform duration-200',
-                    !isActive && 'group-hover:scale-110'
-                  )}
-                  style={{ color: isActive ? 'var(--teal-3)' : 'currentColor' }}
-                />
-                <span className="relative">{item.label}</span>
-                {isActive && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      right: '0.6rem',
-                      width: '3px',
-                      height: '14px',
-                      borderRadius: '2px',
-                      background: 'var(--teal-neon)',
-                    }}
-                  />
-                )}
-              </Link>
-            );
-          })}
+        <div className="flex items-center justify-between px-3 pt-3 md:hidden">
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--text-lo)]">
+            Navigation
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-md text-[var(--text-mid)] transition-colors hover:bg-white/5 hover:text-[var(--text-hi)]"
+            aria-label="Close navigation"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
-          {adminItems.length > 0 && sectionTitle('Admin')}
-          {adminItems.map(item => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-3" style={{ scrollbarWidth: 'thin' }}>
+          {SECTIONS.map((section) => {
+            const items = section.items.filter((item) => level <= item.minLevel);
+            if (items.length === 0) return null;
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 overflow-hidden'
-                )}
-                style={{
-                  fontFamily: 'var(--ff-body)',
-                  color: isActive ? '#fff' : 'var(--text-mid)',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {isActive && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(90deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.01))',
-                      border: '1px solid rgba(234, 88, 12, 0.2)',
-                      borderRadius: '8px',
-                      boxShadow: 'inset 0 1px 0 rgba(234, 88, 12, 0.08)',
-                    }}
-                  />
-                )}
-                <item.icon
-                  className={cn(
-                    'relative h-4 w-4 transition-transform duration-200',
-                    !isActive && 'group-hover:scale-110'
-                  )}
-                  style={{ color: isActive ? 'var(--teal-3)' : 'currentColor' }}
-                />
-                <span className="relative">{item.label}</span>
-                {isActive && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      right: '0.6rem',
-                      width: '3px',
-                      height: '14px',
-                      borderRadius: '2px',
-                      background: 'var(--teal-neon)',
-                    }}
-                  />
-                )}
-              </Link>
+              <div key={section.id}>
+                <p className="nav-section-label">{section.title}</p>
+                <ul className="flex flex-col gap-0.5">
+                  {items.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={onClose}
+                          aria-current={active ? 'page' : undefined}
+                          className={cn('nav-link', active && 'nav-link--active')}
+                        >
+                          <item.icon className="nav-link-icon" aria-hidden="true" />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             );
           })}
         </nav>
+
+        <div className="border-t border-border px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span
+              className="size-1.5 rounded-full bg-[var(--ecto-green)]"
+              style={{ boxShadow: '0 0 6px var(--ecto-green)' }}
+              aria-hidden="true"
+            />
+            <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--text-lo)]">
+              Console online
+            </span>
+          </div>
+        </div>
       </aside>
     </>
   );

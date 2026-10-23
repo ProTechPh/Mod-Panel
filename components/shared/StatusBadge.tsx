@@ -1,25 +1,52 @@
-type StatusKey = 'active' | 'expired' | 'blocked' | 'unused' | 'pending' | 'online' | 'offline' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+type StatusKey =
+  | 'active'
+  | 'expired'
+  | 'blocked'
+  | 'unused'
+  | 'pending'
+  | 'online'
+  | 'offline'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'neutral';
 
+/**
+ * Single source of truth for status colour. Every value resolves through a
+ * design token so the badge can never drift from the palette again — the old
+ * map hard-coded a neon green and left `info` with a teal background behind
+ * orange text.
+ */
 const STATUS_STYLES: Record<StatusKey, { bg: string; color: string; border: string }> = {
-  active:    { bg: 'rgba(57, 255, 20, 0.1)',   color: '#86efac', border: 'rgba(57, 255, 20, 0.3)' },
-  success:   { bg: 'rgba(57, 255, 20, 0.1)',   color: '#86efac', border: 'rgba(57, 255, 20, 0.3)' },
-  online:    { bg: 'rgba(57, 255, 20, 0.1)',   color: '#86efac', border: 'rgba(57, 255, 20, 0.3)' },
-  expired:   { bg: 'rgba(240, 192, 64, 0.1)',  color: '#fcd34d', border: 'rgba(240, 192, 64, 0.3)' },
-  warning:   { bg: 'rgba(240, 192, 64, 0.1)',  color: '#fcd34d', border: 'rgba(240, 192, 64, 0.3)' },
-  pending:   { bg: 'rgba(240, 192, 64, 0.1)',  color: '#fcd34d', border: 'rgba(240, 192, 64, 0.3)' },
-  blocked:   { bg: 'rgba(239, 68, 68, 0.12)',  color: '#fca5a5', border: 'rgba(239, 68, 68, 0.3)' },
-  danger:    { bg: 'rgba(239, 68, 68, 0.12)',  color: '#fca5a5', border: 'rgba(239, 68, 68, 0.3)' },
-  offline:   { bg: 'rgba(239, 68, 68, 0.12)',  color: '#fca5a5', border: 'rgba(239, 68, 68, 0.3)' },
-  unused:    { bg: 'rgba(20, 184, 184, 0.08)', color: 'var(--text-mid)', border: 'var(--border)' },
-  info:      { bg: 'rgba(20, 184, 184, 0.1)',  color: 'var(--teal-3)', border: 'rgba(20, 184, 184, 0.3)' },
-  neutral:   { bg: 'rgba(20, 184, 184, 0.08)', color: 'var(--text-mid)', border: 'var(--border)' },
+  active:   { bg: 'rgba(34, 197, 94, 0.12)',  color: 'var(--green-soft)', border: 'rgba(34, 197, 94, 0.28)' },
+  success:  { bg: 'rgba(34, 197, 94, 0.12)',  color: 'var(--green-soft)', border: 'rgba(34, 197, 94, 0.28)' },
+  online:   { bg: 'rgba(34, 197, 94, 0.12)',  color: 'var(--green-soft)', border: 'rgba(34, 197, 94, 0.28)' },
+  expired:  { bg: 'rgba(234, 179, 8, 0.12)',  color: 'var(--gold-soft)',  border: 'rgba(234, 179, 8, 0.28)' },
+  warning:  { bg: 'rgba(234, 179, 8, 0.12)',  color: 'var(--gold-soft)',  border: 'rgba(234, 179, 8, 0.28)' },
+  pending:  { bg: 'rgba(234, 179, 8, 0.12)',  color: 'var(--gold-soft)',  border: 'rgba(234, 179, 8, 0.28)' },
+  blocked:  { bg: 'rgba(239, 68, 68, 0.12)',  color: 'var(--red-soft)',   border: 'rgba(239, 68, 68, 0.3)' },
+  danger:   { bg: 'rgba(239, 68, 68, 0.12)',  color: 'var(--red-soft)',   border: 'rgba(239, 68, 68, 0.3)' },
+  offline:  { bg: 'rgba(239, 68, 68, 0.12)',  color: 'var(--red-soft)',   border: 'rgba(239, 68, 68, 0.3)' },
+  info:     { bg: 'rgba(249, 115, 22, 0.12)', color: 'var(--brand-300)',  border: 'rgba(249, 115, 22, 0.3)' },
+  unused:   { bg: 'rgba(255, 255, 255, 0.04)', color: 'var(--text-mid)',   border: 'var(--border-hi)' },
+  neutral:  { bg: 'rgba(255, 255, 255, 0.04)', color: 'var(--text-mid)',   border: 'var(--border-hi)' },
 };
 
-export function StatusBadge({ status, children, withDot = false }: { status: StatusKey; children: React.ReactNode; withDot?: boolean }) {
+export function StatusBadge({
+  status,
+  children,
+  withDot = false,
+}: {
+  status: StatusKey;
+  children: React.ReactNode;
+  withDot?: boolean;
+}) {
   const s = STATUS_STYLES[status];
+
   return (
     <span
-      className="inline-flex items-center gap-1.5 font-mono font-semibold"
+      className="inline-flex items-center gap-1.5 font-mono font-semibold whitespace-nowrap"
       style={{
         background: s.bg,
         color: s.color,
@@ -29,10 +56,12 @@ export function StatusBadge({ status, children, withDot = false }: { status: Sta
         textTransform: 'uppercase',
         padding: '0.2rem 0.55rem',
         borderRadius: '50px',
+        lineHeight: 1.5,
       }}
     >
       {withDot && (
         <span
+          aria-hidden="true"
           style={{
             display: 'inline-block',
             width: 5,

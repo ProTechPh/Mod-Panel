@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { Megaphone, Sparkles } from 'lucide-react';
@@ -24,7 +24,7 @@ export default function Announcements() {
           key={a._id}
           className={`panel panel-corner fade-up d${i + 1}`}
           style={{
-            background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.07), rgba(20, 184, 184, 0.04))',
+            background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.07), rgba(234, 88, 12, 0.04))',
             borderColor: 'rgba(167, 139, 250, 0.25)',
           }}
         >

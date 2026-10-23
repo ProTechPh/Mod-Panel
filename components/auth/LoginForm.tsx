@@ -8,8 +8,8 @@ import { loginSchema, type LoginInput } from '@/lib/validators/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -21,7 +21,6 @@ export default function LoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginInput>({
@@ -56,115 +55,133 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="relative group">
-      {/* Animated border glow — teal cyberpunk */}
-      <div className="absolute -inset-[2px] rounded-2xl opacity-40 blur-sm group-hover:opacity-70 transition-all duration-1000 animate-pulse" style={{ background: 'linear-gradient(90deg, var(--teal-1), var(--teal-2), var(--teal-neon), var(--ecto-green))', animationDuration: '4s' }} />
+    <Card className="w-full">
+      <CardHeader className="items-center gap-3 px-6 pb-2 pt-4 text-center">
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 rounded-full blur-xl"
+            style={{ background: 'radial-gradient(circle, rgba(234,88,12,0.55), transparent 70%)' }}
+          />
+          <Image
+            src="/logo.jpg"
+            alt=""
+            width={64}
+            height={64}
+            priority
+            unoptimized
+            className="relative size-16 rounded-full object-contain"
+            style={{ border: '1px solid rgba(234, 88, 12, 0.5)', boxShadow: '0 0 20px rgba(234, 88, 12, 0.25)' }}
+          />
+        </div>
 
-      <Card className="relative border-0 backdrop-blur-xl shadow-2xl overflow-hidden" style={{ background: 'rgba(9, 19, 24, 0.85)', boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 184, 0.08)' }}>
-        {/* Decorative gradient lines */}
-        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--teal-2), transparent)' }} />
-        <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--ecto-green), transparent)' }} />
+        <div className="flex flex-col gap-1">
+          <h1
+            className="text-xl font-extrabold uppercase"
+            style={{
+              fontFamily: 'var(--ff-display)',
+              letterSpacing: '0.1em',
+              background: 'linear-gradient(90deg, var(--brand-300), var(--brand-glow))',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {APP_NAME}
+          </h1>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--text-lo)]">
+            Operator sign in
+          </p>
+        </div>
+      </CardHeader>
 
-        <CardHeader className="text-center relative">
-          <div className="flex flex-col items-center gap-3 mb-2 pt-2">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', animationDuration: '3s' }} />
-              <Image src="/logo.jpg" alt="Mod Panel Logo" width={72} height={72} priority unoptimized className="relative w-18 h-18 object-contain rounded-full" style={{ border: '2px solid rgba(20, 184, 184, 0.3)', boxShadow: 'var(--glow-sm)' }} />
-            </div>
-            <CardTitle className="text-2xl font-bold" style={{ fontFamily: 'var(--ff-display)', background: 'linear-gradient(90deg, var(--teal-3), var(--teal-neon))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.06em' }}>
-              {APP_NAME}
-            </CardTitle>
-          </div>
-          <CardDescription className="flex items-center justify-center gap-2" style={{ color: 'var(--text-mid)' }}>
-            <Sparkles className="h-3 w-3" style={{ color: 'var(--teal-2)' }} />
-            Sign in to your account
-            <Sparkles className="h-3 w-3" style={{ color: 'var(--ecto-green)' }} />
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="relative">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="identifier" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Username or Email</Label>
-              <div className={`relative transition-all duration-300 ${focusedField === 'identifier' ? 'scale-[1.02]' : ''}`}>
-                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'identifier' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
-                <Input
-                  id="identifier"
-                  {...register('identifier')}
-                  placeholder="Enter username or email"
-                  onFocus={() => setFocusedField('identifier')}
-                  onBlur={() => setFocusedField(null)}
-                  className="relative placeholder:text-muted-foreground/40 transition-all"
-                  style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
-                />
-              </div>
-              {errors.identifier && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.identifier.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Password</Label>
-                <Link href="/forgot-password" className="text-xs transition-colors" style={{ color: 'var(--teal-2)' }}>
-                  Forgot password?
-                </Link>
-              </div>
-              <div className={`relative transition-all duration-300 ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
-                <div className={`absolute -inset-[1px] rounded-lg opacity-0 transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-100' : ''}`} style={{ background: 'linear-gradient(90deg, rgba(20,184,184,0.5), rgba(0,255,247,0.5))' }} />
-                <div className="relative flex">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password')}
-                    placeholder="Enter password"
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    className="flex-1 placeholder:text-muted-foreground/40 transition-all pr-10"
-                    style={{ background: 'rgba(2, 6, 8, 0.6)', borderColor: 'rgba(20, 184, 184, 0.2)' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              {errors.password && <p className="text-sm text-red-400 flex items-center gap-1"><span className="inline-block w-1 h-1 rounded-full bg-red-400" />{errors.password.message}</p>}
-            </div>
-
-            {siteKey && (
-              <div className="flex justify-center my-4">
-                <Turnstile
-                  siteKey={siteKey}
-                  onSuccess={(token) => setValue('turnstileToken', token)}
-                  options={{ theme: 'dark' }}
-                />
-              </div>
+      <CardContent className="px-6 pb-6 pt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+          <div className="field">
+            <Label htmlFor="identifier" className="field-label">
+              Username or email
+            </Label>
+            <Input
+              id="identifier"
+              autoComplete="username"
+              placeholder="operator@domain.com"
+              aria-invalid={!!errors.identifier}
+              {...register('identifier')}
+            />
+            {errors.identifier && (
+              <p className="field-error" role="alert">{errors.identifier.message}</p>
             )}
+          </div>
 
-            <Button type="submit" className="w-full h-11 font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-white" style={{ background: 'linear-gradient(135deg, var(--teal-1), var(--teal-2))', boxShadow: '0 4px 20px rgba(20, 184, 184, 0.3)' }} disabled={loading}>
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Signing in...
-                </span>
-              ) : 'Sign In'}
-            </Button>
-
-            <p className="text-center text-sm" style={{ color: 'var(--text-mid)' }}>
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="font-medium transition-colors relative group/link" style={{ color: 'var(--teal-2)' }}>
-                Register
-                <span className="absolute bottom-0 left-0 w-full h-[1px] scale-x-0 group-hover/link:scale-x-100 transition-transform origin-left" style={{ background: 'linear-gradient(90deg, var(--teal-2), var(--ecto-green))' }} />
+          <div className="field">
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="password" className="field-label">
+                Password
+              </Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-[var(--brand-400)] underline-offset-4 transition-colors hover:text-[var(--brand-300)] hover:underline"
+              >
+                Forgot password?
               </Link>
-            </p>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="pr-10"
+                aria-invalid={!!errors.password}
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-1.5 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-white/5 hover:text-[var(--text-hi)]"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="field-error" role="alert">{errors.password.message}</p>
+            )}
+          </div>
+
+          {siteKey && (
+            <div className="flex justify-center py-1">
+              <Turnstile
+                siteKey={siteKey}
+                onSuccess={(token) => setValue('turnstileToken', token)}
+                options={{ theme: 'dark' }}
+              />
+            </div>
+          )}
+
+          <Button type="submit" size="lg" className="mt-1 w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              'Sign in'
+            )}
+          </Button>
+
+          <p className="text-center text-xs text-[var(--text-mid)]">
+            No account yet?{' '}
+            <Link
+              href="/register"
+              className="font-semibold text-[var(--brand-400)] underline-offset-4 transition-colors hover:text-[var(--brand-300)] hover:underline"
+            >
+              Request access
+            </Link>
+          </p>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

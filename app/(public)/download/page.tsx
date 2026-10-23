@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download } from 'lucide-react';
+import { Download, PackageOpen } from 'lucide-react';
 
 interface AppLink {
   _id: string;
@@ -30,76 +30,108 @@ export default function DownloadPage() {
 
   useEffect(() => {
     fetch('/api/download')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setLinks)
       .catch(() => setLinks([]));
   }, []);
 
   return (
-    <div className="min-h-screen p-4 md:p-8" style={{ background: 'var(--bg-void)' }}>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Downloads</h1>
-          <p style={{ color: 'var(--text-mid)' }}>Available games and apps</p>
-        </div>
+    <div className="min-h-screen bg-background px-4 py-10 md:px-8">
+      <div className="mx-auto max-w-5xl space-y-10">
+        <header className="space-y-2 text-center">
+          <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--brand-400)]">
+            [ CLIENT DISTRIBUTION ]
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Downloads<span className="highlight">/all</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Available games and companion apps for the injector.
+          </p>
+        </header>
 
-        {/* Virtual Apps Section */}
-        <div className="space-y-4">
-          <div className="text-center space-y-1">
-            <h2 className="text-xl font-semibold">Virtual Apps</h2>
-            <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Required virtual space apps for injector</p>
+        <section className="space-y-4" aria-labelledby="virtual-apps">
+          <div className="space-y-1">
+            <h2 id="virtual-apps" className="text-lg font-semibold">
+              Virtual Apps
+            </h2>
+            <p className="text-sm text-muted-foreground">Required virtual space apps for injector.</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {VIRTUAL_APPS.map(app => (
-              <Card key={app.name} className={`border-border/50 ${app.recommended ? 'ring-2 ring-green-600/50' : ''}`}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{app.name}</CardTitle>
-                    <div className="flex items-center gap-1.5">
-                      {app.recommended && <Badge className="bg-green-600 hover:bg-green-700 text-white">Recommended</Badge>}
-                      <Badge variant="secondary">Virtual</Badge>
-                    </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {VIRTUAL_APPS.map((app) => (
+              <Card key={app.name} className="flex flex-col">
+                <CardHeader className="gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base leading-snug">{app.name}</CardTitle>
+                    {app.recommended && <Badge variant="success">Recommended</Badge>}
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <a href={app.url} target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
+                <CardContent className="mt-auto">
+                  <a
+                    href={app.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({ size: 'sm', className: 'w-full' })}
+                  >
+                    <Download aria-hidden />
+                    Download
+                    <span className="sr-only"> {app.name}</span>
                   </a>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {links.map(link => (
-            <Card key={link._id} className="border-border/50">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{link.appName}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    {link.isGame && <Badge variant="outline">Game</Badge>}
-                    {link.registrator && <span className="text-xs" style={{ color: 'var(--text-lo)' }}>by {link.registrator}</span>}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <a href={link.downloadUrl} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                </a>
-              </CardContent>
-            </Card>
-          ))}
-          {links.length === 0 && (
-            <p className="col-span-full text-center py-8" style={{ color: 'var(--text-mid)' }}>No download links available</p>
+        <section className="space-y-4" aria-labelledby="game-builds">
+          <div className="space-y-1">
+            <h2 id="game-builds" className="text-lg font-semibold">
+              Game Builds
+            </h2>
+            <p className="text-sm text-muted-foreground">Published by verified registrators.</p>
+          </div>
+
+          {links.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon-ring">
+                <PackageOpen aria-hidden className="size-5" />
+              </div>
+              <p className="empty-title">No download links available</p>
+              <p className="empty-sub">Published game builds will appear here.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {links.map((link) => (
+                <Card key={link._id} className="flex flex-col">
+                  <CardHeader className="gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-base leading-snug">{link.appName}</CardTitle>
+                      {link.isGame && <Badge variant="outline">Game</Badge>}
+                    </div>
+                    {link.registrator && (
+                      <p className="font-mono text-[0.65rem] uppercase tracking-wider text-muted-foreground">
+                        by {link.registrator}
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="mt-auto">
+                    <a
+                      href={link.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({ size: 'sm', className: 'w-full' })}
+                    >
+                      <Download aria-hidden />
+                      Download
+                      <span className="sr-only"> {link.appName}</span>
+                    </a>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

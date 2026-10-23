@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/shared/AuthProvider';
@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
           <div className="loading-spinner" style={{ width: 40, height: 40, borderWidth: 3 }} />
           <p style={{ fontFamily: 'var(--ff-mono)', fontSize: '0.78rem', letterSpacing: '0.06em', color: 'var(--text-lo)' }}>
-            Loading dashboard…
+            Loading dashboardâ€¦
           </p>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function DashboardPage() {
       <ExpiryNotificationBanner />
       <Announcements />
 
-      {/* Welcome Banner — Tactical HUD */}
+      {/* Welcome Banner â€” Tactical HUD */}
       <section className="cmd-banner fade-up">
         <div className="cmd-glow cmd-glow-1" />
         <div className="cmd-glow cmd-glow-2" />
@@ -134,13 +134,13 @@ export default function DashboardPage() {
           <div className="cmd-status-left">
             <span className="cmd-pulse" />
             <span className="cmd-status-text">ALL SYSTEMS NOMINAL</span>
-            <span className="cmd-status-sep">·</span>
+            <span className="cmd-status-sep">Â·</span>
             <span className="cmd-status-text dim">{levelLabel.toUpperCase()} ACCESS</span>
           </div>
           <div className="cmd-status-right">
             <Terminal size={11} className="cmd-status-icon" />
             <span className="cmd-clock">
-              {now.toLocaleTimeString('en-GB')} <span className="cmd-clock-sep">·</span> {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+              {now.toLocaleTimeString('en-GB')} <span className="cmd-clock-sep">Â·</span> {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
             </span>
             <span className="cmd-live-tag">
               <span className="cmd-live-dot" />
@@ -150,7 +150,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="cmd-body">
-          {/* Left — welcome */}
+          {/* Left â€” welcome */}
           <div className="cmd-main">
             <div className="cmd-eyebrow">
               <span className="cmd-bracket">[</span>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right — telemetry */}
+          {/* Right â€” telemetry */}
           <div className="cmd-telemetry">
             <div className="cmd-telemetry-head">
               <Pulse size={11} />
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                     <Cell key={entry.status} fill={PIE_COLORS[entry.status] || '#6b7280'} style={{ filter: 'drop-shadow(0 0 4px currentColor)' }} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: '#8ab8be', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#e8f8f8' }} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: '#a3aebf', fontFamily: 'var(--ff-mono)', fontSize: 11 }} itemStyle={{ color: '#f1f5f9' }} />
                 <Legend verticalAlign="bottom" height={36} formatter={(value: string) => (
                   <span style={{ color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--ff-mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     {value}

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getMyFreeKeyHistory } from '@/lib/services/free-key-service';
-import { getClientIp } from '@/lib/utils/ip';
 import { withPublicApi } from '@/lib/api/with-api';
 
 export const GET = withPublicApi(async (request) => {
@@ -14,8 +13,7 @@ export const GET = withPublicApi(async (request) => {
     deviceId = crypto.randomUUID();
   }
 
-  const ip = getClientIp(request);
-  const history = await getMyFreeKeyHistory(deviceId, ip, registrator);
+  const history = await getMyFreeKeyHistory(deviceId, registrator);
 
   const response = NextResponse.json(history);
   response.cookies.set('free_key_device_id', deviceId, {

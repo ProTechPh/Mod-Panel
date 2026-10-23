@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { History, Globe, Monitor } from 'lucide-react';
@@ -47,8 +47,8 @@ export default function LibDownloadLogs() {
         <span
           className="panel-badge"
           style={{
-            background: 'rgba(57, 255, 20, 0.08)',
-            borderColor: 'rgba(57, 255, 20, 0.25)',
+            background: 'rgba(34, 197, 94, 0.08)',
+            borderColor: 'rgba(34, 197, 94, 0.25)',
             color: '#86efac',
           }}
         >
@@ -90,13 +90,13 @@ export default function LibDownloadLogs() {
               className="flex items-start gap-3 rounded-lg px-3 py-2.5 text-xs transition-colors"
               style={{
                 border: '1px solid var(--border)',
-                background: 'rgba(20, 184, 184, 0.04)',
+                background: 'rgba(234, 88, 12, 0.04)',
               }}
             >
               <div
                 className="shrink-0 mt-0.5 size-7 rounded-md flex items-center justify-center"
                 style={{
-                  background: 'rgba(20, 184, 184, 0.1)',
+                  background: 'rgba(234, 88, 12, 0.1)',
                   color: 'var(--teal-2)',
                 }}
               >

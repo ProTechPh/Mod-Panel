@@ -1,30 +1,42 @@
 'use client';
 
 import { useAuth } from '@/components/shared/AuthProvider';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 export default function DocsPage() {
   const { user } = useAuth();
   if (user?.level !== 1 && user?.level !== 2) {
-    return <p className="text-muted-foreground">Access denied</p>;
+    return (
+      <div className="state-screen">
+        <div className="state-card">
+          <div className="state-icon state-icon--danger">
+            <ShieldAlert aria-hidden className="size-6" />
+          </div>
+          <p className="state-eyebrow">Restricted</p>
+          <h1 className="state-title">Access denied</h1>
+          <p className="state-sub">API documentation is available to admins and owners only.</p>
+        </div>
+      </div>
+    );
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">API Documentation</h2>
-        <Sparkles className="h-4 w-4 text-purple-400" />
-      </div>
+      <PageHeader
+        eyebrow="[ INTEGRATION REFERENCE ]"
+        title="API"
+        highlight="Documentation"
+        sub="Endpoints, request shapes, and error codes for the mod client and integrations."
+      />
 
       {/* Connect API */}
-      <div className="relative group">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+      <div>
+        <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <CardTitle className="text-lg">POST /api/connect</CardTitle>
@@ -173,10 +185,8 @@ export default function DocsPage() {
         </div>
 
       {/* Connect GET */}
-      <div className="relative group">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+      <div>
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <CardTitle className="text-lg">GET /api/connect</CardTitle>
@@ -215,10 +225,8 @@ export default function DocsPage() {
         </div>
 
       {/* Library APIs */}
-      <div className="relative group">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-600/30 via-fuchsia-500/20 to-cyan-500/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-        <Card className="relative border-0 bg-background/60 backdrop-blur-sm shadow-lg shadow-purple-500/5 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30" />
+      <div>
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <CardTitle className="text-lg">Library APIs</CardTitle>

@@ -6,7 +6,15 @@ import { listLibs, getLib, uploadLib, updateLib, deleteLib } from '@/lib/service
 
 export const GET = withApi(async (request, user) => {
   const libs = await listLibs(user.level === 1 ? undefined : user.username);
-  return NextResponse.json(libs);
+  // The lib list must never be cached: uploads/renames/deletes are expected to
+  // be visible on the very next request.
+  return NextResponse.json(libs, {
+    headers: {
+      'Cache-Control': 'no-store, max-age=0',
+      'CDN-Cache-Control': 'no-store',
+      'Vercel-CDN-Cache-Control': 'no-store',
+    },
+  });
 });
 
 export const POST = withApi(async (request, user) => {
@@ -19,11 +27,10 @@ export const POST = withApi(async (request, user) => {
   }
 
   const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-  const libType = formData.get('type') as string || 'free';
   const stream = Readable.fromWeb(file.stream() as unknown as NodeReadableStream);
 
   try {
-    const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level, libType);
+    const lib = await uploadLib(file.name, `${sizeMB} MB`, file.size, stream, user.username, user.level);
     return NextResponse.json({ ...lib, replaced: true }, { status: 200 });
   } catch (error) {
     if (error instanceof Error && (error as Error & { code?: string }).code === 'FORBIDDEN_REPLACE') {
@@ -34,7 +41,7 @@ export const POST = withApi(async (request, user) => {
 });
 
 export const PATCH = withApi(async (request, user) => {
-  const { id, displayName, type } = await request.json();
+  const { id, displayName } = await request.json();
   if (!id) return NextResponse.json({ error: 'Lib ID required' }, { status: 400 });
 
   const lib = await getLib(id);
@@ -43,9 +50,8 @@ export const PATCH = withApi(async (request, user) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const updates: { displayName?: string; type?: 'free' | 'paid' } = {};
+  const updates: { displayName?: string } = {};
   if (displayName && typeof displayName === 'string') updates.displayName = displayName.trim();
-  if (type && (type === 'free' || type === 'paid')) updates.type = type;
   const updated = await updateLib(id, updates);
   return NextResponse.json(updated);
 }, { level: [1, 2] });

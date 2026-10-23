@@ -9,13 +9,11 @@ import { useAuth } from '@/components/shared/AuthProvider';
 import { Upload, Trash2, Download, Link as LinkIcon, Code, X, Copy, Check, Pencil, Save, History, Library, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 
 interface Lib {
   _id: string;
   fileName: string;
   displayName: string;
-  type: string;
   fileSize: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -27,6 +25,14 @@ interface LibLog {
   userAgent: string;
   device: string;
   downloadedAt: string;
+}
+
+// Append the upload timestamp so a re-uploaded file gets a brand-new URL.
+// This also bypasses any stale browser/CDN entry cached before the
+// `no-store` headers were added to /api/libs/serve.
+function libServeUrl(lib: Lib): string {
+  const version = lib.uploadedAt ? new Date(lib.uploadedAt).getTime().toString(36) : '0';
+  return `/api/libs/serve/${encodeURIComponent(lib.fileName)}?v=${version}`;
 }
 
 function generateSnippet(lib: Lib, origin: string): string {
@@ -210,18 +216,16 @@ export default function LibPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFileName, setUploadFileName] = useState('');
-  const [uploadType, setUploadType] = useState<'free' | 'paid'>('free');
   const [snippetLib, setSnippetLib] = useState<Lib | null>(null);
   const [logsLib, setLogsLib] = useState<Lib | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [editType, setEditType] = useState<'free' | 'paid'>('free');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch('/api/libs');
+        const res = await fetch('/api/libs', { cache: 'no-store' });
         const data = await res.json();
         setLibs(Array.isArray(data) ? data : []);
       } catch {
@@ -255,7 +259,6 @@ export default function LibPage() {
         formData.append('chunkIndex', String(i));
         formData.append('totalChunks', String(totalChunks));
         formData.append('totalSize', String(file.size));
-        formData.append('type', uploadType);
 
         const res = await fetch('/api/libs/upload', { method: 'POST', body: formData });
         if (!res.ok) {
@@ -268,7 +271,7 @@ export default function LibPage() {
       }
       setUploadProgress(100);
       toast.success('File uploaded successfully');
-      const r = await fetch('/api/libs');
+      const r = await fetch('/api/libs', { cache: 'no-store' });
       const d = await r.json();
       setLibs(Array.isArray(d) ? d : []);
     } catch {
@@ -281,19 +284,17 @@ export default function LibPage() {
     }
   };
 
-  const handleUpdate = async (id: string, displayName: string, type?: string) => {
+  const handleUpdate = async (id: string, displayName: string) => {
     try {
-      const body: Record<string, string> = { id, displayName };
-      if (type) body.type = type;
       const res = await fetch('/api/libs', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ id, displayName }),
       });
       if (!res.ok) { toast.error('Update failed'); return; }
       toast.success('Library updated');
       setEditingId(null);
-      const r = await fetch('/api/libs');
+      const r = await fetch('/api/libs', { cache: 'no-store' });
       const d = await r.json();
       setLibs(Array.isArray(d) ? d : []);
     } catch {
@@ -306,7 +307,7 @@ export default function LibPage() {
     const res = await fetch(`/api/libs?id=${id}`, { method: 'DELETE' });
     if (res.ok) {
       toast.success('File deleted');
-      const r = await fetch('/api/libs');
+      const r = await fetch('/api/libs', { cache: 'no-store' });
       const d = await r.json();
       setLibs(Array.isArray(d) ? d : []);
     } else {
@@ -340,27 +341,6 @@ export default function LibPage() {
               </div>
 
               <div className="p-5 space-y-4 font-sans text-xs">
-                {/* Type Selection Tiles */}
-                <div className="space-y-1.5">
-                  <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest block">Clearance Access Type</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setUploadType('free')}
-                      className={`tab-btn ${uploadType === 'free' ? 'active' : ''}`}
-                    >
-                      FREE
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUploadType('paid')}
-                      className={`tab-btn ${uploadType === 'paid' ? 'active' : ''}`}
-                    >
-                      PAID
-                    </button>
-                  </div>
-                </div>
-
                 {/* Drag Drop zone styled file selector */}
                 <div className="rounded-lg border-2 border-dashed border-white/10 bg-black/20 hover:bg-black/35 hover:border-orange-500/30 p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer">
                   <input type="file" accept=".so" onChange={handleUpload} disabled={uploading} ref={fileInputRef} className="hidden" id="lib-upload-grid" />
@@ -399,7 +379,6 @@ export default function LibPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>File Name</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead>Uploaded By</TableHead>
                     <TableHead>Uploaded</TableHead>
@@ -409,7 +388,7 @@ export default function LibPage() {
                 <TableBody>
                   {libs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                         <Library className="h-6 w-6 mx-auto mb-2 opacity-40" />
                         <div className="font-mono text-xs uppercase tracking-widest">No libraries in archive</div>
                       </TableCell>
@@ -427,20 +406,11 @@ export default function LibPage() {
                               style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
                               autoFocus
                               onKeyDown={e => {
-                                if (e.key === 'Enter') void handleUpdate(lib._id, editValue, editType);
+                                if (e.key === 'Enter') void handleUpdate(lib._id, editValue);
                                 if (e.key === 'Escape') setEditingId(null);
                               }}
                             />
-                            <select
-                              value={editType}
-                              onChange={e => setEditType(e.target.value as 'free' | 'paid')}
-                              className="h-7 rounded border bg-transparent px-1 text-xs outline-none font-mono"
-                              style={{ borderColor: 'var(--border)', color: 'var(--text-hi)' }}
-                            >
-                              <option value="free">FREE</option>
-                              <option value="paid">PAID</option>
-                            </select>
-                            <Button variant="ghost" size="icon-sm" onClick={() => void handleUpdate(lib._id, editValue, editType)}>
+                            <Button variant="ghost" size="icon-sm" onClick={() => void handleUpdate(lib._id, editValue)}>
                               <Save className="h-3.5 w-3.5" style={{ color: 'var(--ecto-green)' }} />
                             </Button>
                           </div>
@@ -450,11 +420,6 @@ export default function LibPage() {
                             <span className="font-mono">{lib.displayName || lib.fileName}</span>
                           </div>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {lib.type === 'paid'
-                          ? <StatusBadge status="warning">Paid</StatusBadge>
-                          : <StatusBadge status="success">Free</StatusBadge>}
                       </TableCell>
                       <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.fileSize}</TableCell>
                       <TableCell className="font-mono text-xs" style={{ color: 'var(--text-mid)' }}>{lib.uploadedBy}</TableCell>
@@ -468,7 +433,7 @@ export default function LibPage() {
                           </Button>
                           <Button
                             variant="ghost" size="icon-sm"
-                            onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); setEditType((lib.type || 'free') as 'free' | 'paid'); }}
+                            onClick={() => { setEditingId(lib._id); setEditValue(lib.displayName || lib.fileName); }}
                             title="Edit"
                           >
                             <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-mid)' }} />
@@ -478,12 +443,12 @@ export default function LibPage() {
                           </Button>
                           <Button
                             variant="ghost" size="icon-sm"
-                            onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/api/libs/serve/${lib.fileName}`); toast.success('Link copied'); }}
+                            onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}${libServeUrl(lib)}`); toast.success('Link copied'); }}
                             title="Copy link"
                           >
                             <LinkIcon className="h-3.5 w-3.5" />
                           </Button>
-                          <a href={`/api/libs/serve/${lib.fileName}`} target="_blank" rel="noopener noreferrer">
+                          <a href={libServeUrl(lib)} target="_blank" rel="noopener noreferrer">
                             <Button variant="ghost" size="icon-sm" title="Download">
                               <Download className="h-3.5 w-3.5" />
                             </Button>

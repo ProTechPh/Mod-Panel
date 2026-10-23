@@ -144,12 +144,22 @@ export async function validateKey(game: string, userKey: string, serial: string)
   let finalExpiredDate = key.expiredDate;
 
   if (key.isFreeKey) {
-    const isFirstUse = !key.devices || key.devices.length === 0;
+    // Device resets intentionally clear `devices`; activation state must remain
+    // separate so a reset cannot restart the free-key duration.
+    const isFirstUse = !key.freeKeyActivatedAt
+      && (key.deviceResetCount ?? 0) === 0
+      && (!key.devices || key.devices.length === 0);
     if (isFirstUse) {
+      // A free key must be activated before its claim window expires. Without
+      // this check, an unused key could be revived indefinitely on first use.
+      if (key.expiredDate && new Date(key.expiredDate) <= now) {
+        return { status: false, reason: 'Expired Key' };
+      }
       let durationMs = 60 * 60 * 1000;
       if (key.duration === '3h') durationMs = 3 * 60 * 60 * 1000;
       finalExpiredDate = new Date(now.getTime() + durationMs);
       update.expiredDate = finalExpiredDate;
+      update.freeKeyActivatedAt = now;
     }
   } else if (!key.expiredDate) {
     if (key.duration === '1h') {
@@ -164,7 +174,7 @@ export async function validateKey(game: string, userKey: string, serial: string)
     update.expiredDate = finalExpiredDate;
   }
 
-  if (finalExpiredDate && new Date(finalExpiredDate) < now) {
+  if (finalExpiredDate && new Date(finalExpiredDate) <= now) {
     return { status: false, reason: 'Expired Key' };
   }
 
@@ -176,8 +186,31 @@ export async function validateKey(game: string, userKey: string, serial: string)
     update.$push = { devices: serial };
   }
 
-  // Execute all updates in a single call to minimize latency
-  if (Object.keys(update).length > 0) {
+  // Device slot acquisition must be atomic. Two simultaneous first-use
+  // requests must never attach different devices to a one-device key.
+  if (shouldAdd) {
+    const result = await Key.updateOne(
+      {
+        _id: key._id,
+        devices: { $ne: serial },
+        $expr: {
+          $lt: [
+            { $size: { $ifNull: ['$devices', []] } },
+            '$maxDevices',
+          ],
+        },
+      },
+      update,
+    );
+
+    if (result.matchedCount === 0) {
+      const latestKey = await Key.findById(key._id).lean() as KeyDoc | null;
+      if (!latestKey?.devices?.includes(serial)) {
+        return { status: false, reason: 'Max Device Reached' };
+      }
+      finalExpiredDate = latestKey.expiredDate;
+    }
+  } else if (Object.keys(update).length > 0) {
     await Key.updateOne({ _id: key._id }, update);
   }
 

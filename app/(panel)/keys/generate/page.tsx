@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
@@ -208,7 +208,7 @@ export default function KeyGeneratePage() {
                       className="flex items-center gap-3 p-2 rounded cursor-pointer transition-all hover:bg-white/5"
                       style={{
                         border: selectedGames.includes(g.gameCode) ? '1px solid var(--teal-2)' : '1px solid transparent',
-                        background: selectedGames.includes(g.gameCode) ? 'rgba(0, 255, 128, 0.05)' : undefined,
+                        background: selectedGames.includes(g.gameCode) ? 'rgba(34, 197, 94, 0.05)' : undefined,
                       }}
                     >
                       <input
@@ -236,7 +236,7 @@ export default function KeyGeneratePage() {
                   <Gamepad2 className="h-3 w-3" style={{ color: 'var(--teal-2)' }} /> Game
                 </Label>
                 <Select value={gameValue} onValueChange={v => setValue('game', v ?? '')}>
-                  <SelectTrigger><SelectValue placeholder="// select game…" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="// select gameâ€¦" /></SelectTrigger>
                   <SelectContent>
                     {games.map(g => (
                       <SelectItem key={`${g.gameCode}-${g.registrator}`} value={g.gameCode}>
@@ -300,15 +300,15 @@ export default function KeyGeneratePage() {
               <div
                 className="flex items-center justify-between p-3 rounded-lg"
                 style={{
-                  background: 'rgba(0, 255, 128, 0.05)',
-                  border: '1px solid rgba(0, 255, 128, 0.2)',
+                  background: 'rgba(34, 197, 94, 0.05)',
+                  border: '1px solid rgba(34, 197, 94, 0.2)',
                 }}
               >
                 <span className="text-xs font-mono uppercase tracking-wider" style={{ color: 'var(--text-mid)' }}>
                   Total Keys
                 </span>
                 <span className="text-sm font-mono font-bold" style={{ color: 'var(--teal-2)' }}>
-                  {totalBatchKeys} keys ({selectedGames.length} games × {keysPerGame} per game)
+                  {totalBatchKeys} keys ({selectedGames.length} games Ã— {keysPerGame} per game)
                 </span>
               </div>
             )}
@@ -342,7 +342,7 @@ export default function KeyGeneratePage() {
               ) : (
                 <KeyRound className="h-3.5 w-3.5 mr-1.5" />
               )}
-              {loading ? 'Generating…' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
+              {loading ? 'Generatingâ€¦' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
             </Button>
           </form>
         </div>

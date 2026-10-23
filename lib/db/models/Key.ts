@@ -18,6 +18,8 @@ const KeySchema = new Schema<KeyDoc & Document>({
   status: { type: Number, required: true, enum: [0, 1] as KeyStatus[], default: 1 },
   registrator: { type: String, required: true, trim: true },
   isFreeKey: { type: Boolean, default: false },
+  freeKeyClaimId: { type: String, default: undefined },
+  freeKeyActivatedAt: { type: Date, default: null },
   deviceResetCount: { type: Number, default: 0 },
 }, { timestamps: true, collection: 'keys' });
 
@@ -30,5 +32,6 @@ KeySchema.index({ devices: 1 });
 KeySchema.index({ registrator: 1, status: 1 });
 KeySchema.index({ game: 1, status: 1 });
 KeySchema.index({ isFreeKey: 1 });
+KeySchema.index({ freeKeyClaimId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.models.Key || mongoose.model<KeyDoc & Document>('Key', KeySchema);
