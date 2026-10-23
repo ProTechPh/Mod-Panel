@@ -1,5 +1,5 @@
 ﻿/* ==========================================================================
-   GAME HUB â€” Option 2: Tactical Console Design System
+   GAME HUB — Option 2: Tactical Console Design System
    Sleek Dark Metallic Charcoal base with Warning Orange & Ember Red Accents
    Imported by globals.css
    ========================================================================== */
@@ -22,11 +22,11 @@
   --brand-500:  #f97316;  /* Hover / bright accent                     */
   --brand-400:  #fb923c;
   --brand-300:  #fdba74;
-  --brand-glow: #facc15;  /* Warning yellow â€” eyebrows, active rails   */
+  --brand-glow: #facc15;  /* Warning yellow — eyebrows, active rails   */
 
   /* Legacy aliases. Names say "teal" but have always held orange values;
      kept so the ~140 existing declarations keep resolving. Do not add new
-     uses â€” prefer --brand-* in new code. */
+     uses — prefer --brand-* in new code. */
   --teal-1:     var(--brand-700);
   --teal-2:     var(--brand-600);
   --teal-3:     var(--brand-500);
@@ -1342,7 +1342,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Rendered by PageHeader but never had a rule â€” actions wrapped inconsistently. */
+/* Rendered by PageHeader but never had a rule — actions wrapped inconsistently. */
 .page-header-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1566,7 +1566,7 @@
 }
 
 /* ==========================================================================
-   TACTICAL CONSOLE v2 â€” SHARED PRIMITIVES & A11Y LAYER
+   TACTICAL CONSOLE v2 — SHARED PRIMITIVES & A11Y LAYER
    Appended so the rest of the legacy sheet keeps working untouched.
    ========================================================================== */
 
@@ -2058,7 +2058,7 @@
 }
 
 /* ==========================================================================
-   CHROME â€” top bar + sidebar navigation
+   CHROME — top bar + sidebar navigation
    ========================================================================== */
 .nav-section-label {
   padding: 0.85rem 0.7rem 0.35rem;

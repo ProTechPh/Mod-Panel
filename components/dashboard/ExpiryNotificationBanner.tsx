@@ -99,9 +99,9 @@ export default function ExpiryNotificationBanner() {
                   >
                     {key.game}
                   </span>
-                  <span style={{ color: 'var(--text-lo)' }}>â€¢</span>
-                  <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{key.userKey.slice(0, 6)}â€¦</span>
-                  <span style={{ color: 'var(--text-lo)' }}>â€¢</span>
+                  <span style={{ color: 'var(--text-lo)' }}>•</span>
+                  <span className="font-mono" style={{ color: 'var(--text-hi)' }}>{key.userKey.slice(0, 6)}…</span>
+                  <span style={{ color: 'var(--text-lo)' }}>•</span>
                   <span
                     className="font-mono"
                     style={{

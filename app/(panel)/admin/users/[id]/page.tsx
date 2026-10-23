@@ -91,7 +91,7 @@ export default function EditUserPage() {
         eyebrow="[ OPERATOR RECORD ]"
         title="Edit"
         highlight={userData.username}
-        sub="Update credentials, clearance level, saldo, and account status."
+        sub="Update credentials, clearance level, budget, and account status."
       />
 
       <Card>
@@ -138,7 +138,7 @@ export default function EditUserPage() {
 
           <div className="field">
             <Label className="field-label" htmlFor="user-saldo">
-              Saldo
+              Budget
             </Label>
             <Input
               id="user-saldo"

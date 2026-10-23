@@ -139,7 +139,7 @@ export default function UsersPage() {
                     <TableHead>Username</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Level</TableHead>
-                    <TableHead>Saldo</TableHead>
+                    <TableHead>Budget</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -163,7 +163,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell><StatusBadge status={levelKind(u.level)}>{levelLabel(u.level)}</StatusBadge></TableCell>
-                      <TableCell className="font-mono" style={{ color: 'var(--ecto-green)' }}>${u.saldo?.toFixed(2)}</TableCell>
+                      <TableCell className="font-mono" style={{ color: 'var(--ecto-green)' }}>₱{u.saldo?.toFixed(2)}</TableCell>
                       <TableCell><StatusBadge status={statusKind(u.status)} withDot>{statusLabel(u.status)}</StatusBadge></TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-mid)' }}>

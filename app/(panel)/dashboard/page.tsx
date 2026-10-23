@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
           <div className="loading-spinner" style={{ width: 40, height: 40, borderWidth: 3 }} />
           <p style={{ fontFamily: 'var(--ff-mono)', fontSize: '0.78rem', letterSpacing: '0.06em', color: 'var(--text-lo)' }}>
-            Loading dashboardâ€¦
+            Loading dashboard…
           </p>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function DashboardPage() {
       <ExpiryNotificationBanner />
       <Announcements />
 
-      {/* Welcome Banner â€” Tactical HUD */}
+      {/* Welcome Banner — Tactical HUD */}
       <section className="cmd-banner fade-up">
         <div className="cmd-glow cmd-glow-1" />
         <div className="cmd-glow cmd-glow-2" />
@@ -134,13 +134,13 @@ export default function DashboardPage() {
           <div className="cmd-status-left">
             <span className="cmd-pulse" />
             <span className="cmd-status-text">ALL SYSTEMS NOMINAL</span>
-            <span className="cmd-status-sep">Â·</span>
+            <span className="cmd-status-sep">·</span>
             <span className="cmd-status-text dim">{levelLabel.toUpperCase()} ACCESS</span>
           </div>
           <div className="cmd-status-right">
             <Terminal size={11} className="cmd-status-icon" />
             <span className="cmd-clock">
-              {now.toLocaleTimeString('en-GB')} <span className="cmd-clock-sep">Â·</span> {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+              {now.toLocaleTimeString('en-GB')} <span className="cmd-clock-sep">·</span> {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
             </span>
             <span className="cmd-live-tag">
               <span className="cmd-live-dot" />
@@ -150,7 +150,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="cmd-body">
-          {/* Left â€” welcome */}
+          {/* Left — welcome */}
           <div className="cmd-main">
             <div className="cmd-eyebrow">
               <span className="cmd-bracket">[</span>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right â€” telemetry */}
+          {/* Right — telemetry */}
           <div className="cmd-telemetry">
             <div className="cmd-telemetry-head">
               <Pulse size={11} />

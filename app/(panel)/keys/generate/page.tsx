@@ -236,7 +236,7 @@ export default function KeyGeneratePage() {
                   <Gamepad2 className="h-3 w-3" style={{ color: 'var(--teal-2)' }} /> Game
                 </Label>
                 <Select value={gameValue} onValueChange={v => setValue('game', v ?? '')}>
-                  <SelectTrigger><SelectValue placeholder="// select gameâ€¦" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="// select game…" /></SelectTrigger>
                   <SelectContent>
                     {games.map(g => (
                       <SelectItem key={`${g.gameCode}-${g.registrator}`} value={g.gameCode}>
@@ -308,7 +308,7 @@ export default function KeyGeneratePage() {
                   Total Keys
                 </span>
                 <span className="text-sm font-mono font-bold" style={{ color: 'var(--teal-2)' }}>
-                  {totalBatchKeys} keys ({selectedGames.length} games Ã— {keysPerGame} per game)
+                  {totalBatchKeys} keys ({selectedGames.length} games × {keysPerGame} per game)
                 </span>
               </div>
             )}
@@ -342,7 +342,7 @@ export default function KeyGeneratePage() {
               ) : (
                 <KeyRound className="h-3.5 w-3.5 mr-1.5" />
               )}
-              {loading ? 'Generatingâ€¦' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
+              {loading ? 'Generating…' : batchMode ? `Generate ${totalBatchKeys} Keys` : 'Generate Keys'}
             </Button>
           </form>
         </div>
