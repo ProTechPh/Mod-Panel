@@ -118,6 +118,10 @@ export async function listUsers(params: {
     { status: 1, expirationDate: { $lte: new Date() } },
     { $set: { status: 3 } }
   );
+  await User.updateMany(
+    { status: 3, expirationDate: { $gt: new Date() } },
+    { $set: { status: 1 } }
+  );
 
   const result = await paginate<UserDoc>(User, {
     draw: params.draw,

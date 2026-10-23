@@ -39,9 +39,11 @@ export default function UsersPage() {
     const fetchedUsers: User[] = data.data || [];
     setUsers(fetchedUsers.map(account => ({
       ...account,
-      status: account.status !== 2 && account.expirationDate && new Date(account.expirationDate).getTime() <= fetchedAt
-        ? 3
-        : account.status,
+      status: account.status === 2
+        ? 2
+        : account.expirationDate && new Date(account.expirationDate).getTime() <= fetchedAt
+          ? 3
+          : 1,
     })));
     setTotalFiltered(data.recordsFiltered ?? 0);
   };

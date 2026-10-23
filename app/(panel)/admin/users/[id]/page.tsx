@@ -178,7 +178,15 @@ export default function EditUserPage() {
                   ? new Date(userData.expirationDate).toISOString().slice(0, 16)
                   : ''
               }
-              onChange={(e) => setUserData({ ...userData, expirationDate: e.target.value })}
+              onChange={(e) => {
+                const expirationDate = e.target.value;
+                const isFutureDate = new Date(expirationDate).getTime() > Date.now();
+                setUserData({
+                  ...userData,
+                  expirationDate,
+                  status: userData.status === 3 && isFutureDate ? 1 : userData.status,
+                });
+              }}
             />
           </div>
 
