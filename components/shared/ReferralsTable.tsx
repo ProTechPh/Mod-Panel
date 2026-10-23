@@ -82,7 +82,7 @@ export default function ReferralsTable({ referrals, onRefresh }: { referrals: Re
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Set Saldo</Label>
+                <Label>Set Budget</Label>
                 <Input type="number" value={form.setSaldo} onChange={e => setForm({ ...form, setSaldo: e.target.value })} />
               </div>
               <div className="space-y-2">
@@ -103,7 +103,7 @@ export default function ReferralsTable({ referrals, onRefresh }: { referrals: Re
               <TableRow>
                 <TableHead>Code</TableHead>
                 <TableHead>Level</TableHead>
-                <TableHead>Saldo</TableHead>
+                <TableHead>Budget</TableHead>
                 <TableHead>Used By</TableHead>
                 <TableHead>Created By</TableHead>
                 <TableHead>Expires</TableHead>
@@ -117,7 +117,7 @@ export default function ReferralsTable({ referrals, onRefresh }: { referrals: Re
                 <TableRow key={r._id}>
                   <TableCell className="font-mono font-bold">{r.code}</TableCell>
                   <TableCell><Badge variant="outline">{levelLabel(r.level)}</Badge></TableCell>
-                  <TableCell className="font-mono">${r.setSaldo}</TableCell>
+                  <TableCell className="font-mono">₱{r.setSaldo}</TableCell>
                   <TableCell>{r.usedBy || <span className="text-muted-foreground">Unused</span>}</TableCell>
                   <TableCell>{r.createdBy}</TableCell>
                   <TableCell className="text-xs">{r.accExpiration ? new Date(r.accExpiration).toLocaleDateString() : ''}</TableCell>
