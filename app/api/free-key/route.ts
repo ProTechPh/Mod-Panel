@@ -35,7 +35,7 @@ export const POST = withPublicApi(async (request) => {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
-  const response = NextResponse.json({ success: true, adUrl: result.adUrl });
+  const response = NextResponse.json({ success: true, sponsorUrl: result.sponsorUrl });
   response.cookies.set('free_key_device_id', deviceId, {
     maxAge: 365 * 24 * 60 * 60, // 1 year
     path: '/',

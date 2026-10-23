@@ -12,6 +12,12 @@ import { Footer } from './Footer';
 import { TopNav } from './TopNav';
 import { QuickActions } from './QuickActions';
 import { ActivityFeed } from './ActivityFeed';
+import {
+  AdsterraBanner,
+  AdsterraNativeBanner,
+  AdsterraPageScripts,
+  AdsterraSmartlink,
+} from '@/components/ads/AdsterraAds';
 
 interface StatusData {
   status: string;
@@ -68,6 +74,14 @@ export default function LandingPage() {
           maintenanceOn={status.maintenance === 'on'}
         />
 
+        <AdsterraBanner
+          placementKey="4e1da0ced89b07aa5637ad0458f7ec7f"
+          width={728}
+          height={90}
+          title="Leaderboard advertisement"
+          className="ad-leaderboard"
+        />
+
         <div className="landing-content">
           <div className="landing-primary">
             <Features />
@@ -77,12 +91,22 @@ export default function LandingPage() {
 
           <div className="landing-sidebar">
             <QuickActions />
+            <AdsterraBanner
+              placementKey="007a11a9ae6a1bad6dbf766f5b10b1e4"
+              width={300}
+              height={250}
+              title="Sidebar advertisement"
+              className="ad-rectangle"
+            />
+            <AdsterraSmartlink />
             <ServerStatus />
             <ActivityFeed version={status.version} />
           </div>
         </div>
 
+        <AdsterraNativeBanner />
         <Footer />
+        <AdsterraPageScripts />
       </main>
     </>
   );

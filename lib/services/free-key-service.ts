@@ -8,6 +8,9 @@ import { SignJWT, jwtVerify } from 'jose';
 import { shortenUrl } from './reshortfly-service';
 import type { KeyDoc } from '@/types';
 
+const SPONSOR_STAGE_COUNT = 2;
+const SPONSOR_STAGE_MIN_SECONDS = 8;
+
 async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) {
@@ -63,6 +66,33 @@ async function verifyClaimToken(token: string) {
   } catch {
     return null;
   }
+}
+
+async function createSponsorToken(payload: Record<string, unknown>) {
+  return await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer('mod-panel-free-key')
+    .setAudience('free-key-sponsor')
+    .setJti(crypto.randomUUID())
+    .setIssuedAt()
+    .setExpirationTime('15m')
+    .sign(getClaimSecret());
+}
+
+async function verifySponsorToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, getClaimSecret(), {
+      issuer: 'mod-panel-free-key',
+      audience: 'free-key-sponsor',
+    });
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+function createSponsorPageUrl(registrator: string, stage: number, token: string): string {
+  return `/${encodeURIComponent(registrator)}/free-key?sponsorStage=${stage}&sponsorToken=${encodeURIComponent(token)}`;
 }
 
 /**
@@ -167,13 +197,72 @@ export async function generateFreeKey(game: string, turnstileToken: string | und
     return { error: 'An active free key already exists for this game on your current network.' };
   }
 
-  const claimToken = await createClaimToken({ game: game.toUpperCase(), registrator, deviceId });
+  const sponsorToken = await createSponsorToken({
+    game: game.toUpperCase(),
+    registrator,
+    deviceId,
+    stage: 1,
+  });
+
+  return { sponsorUrl: createSponsorPageUrl(registrator, 1, sponsorToken) };
+}
+
+export async function advanceFreeKeySponsorStage(
+  token: string,
+  currentDeviceId: string,
+) {
+  if (!currentDeviceId) return { error: 'Device ID is required' };
+
+  const payload = await verifySponsorToken(token);
+  if (!payload || typeof payload !== 'object') {
+    return { error: 'Invalid or expired sponsor stage' };
+  }
+
+  const { game, registrator, deviceId, stage, iat } = payload;
+  if (
+    typeof game !== 'string' || !game ||
+    typeof registrator !== 'string' || !registrator ||
+    typeof deviceId !== 'string' || !deviceId ||
+    typeof stage !== 'number' || !Number.isInteger(stage) ||
+    typeof iat !== 'number'
+  ) {
+    return { error: 'Invalid sponsor stage' };
+  }
+
+  if (deviceId !== currentDeviceId) {
+    return { error: 'Device mismatch. Complete all sponsor stages on the same browser/device.' };
+  }
+
+  if (stage < 1 || stage > SPONSOR_STAGE_COUNT) {
+    return { error: 'Invalid sponsor stage' };
+  }
+
+  const elapsedSeconds = Math.floor(Date.now() / 1000) - iat;
+  if (elapsedSeconds < SPONSOR_STAGE_MIN_SECONDS) {
+    return {
+      error: `Please remain on the sponsor stage for ${SPONSOR_STAGE_MIN_SECONDS - elapsedSeconds} more second(s).`,
+    };
+  }
+
+  if (stage < SPONSOR_STAGE_COUNT) {
+    const nextStage = stage + 1;
+    const nextToken = await createSponsorToken({
+      game,
+      registrator,
+      deviceId,
+      stage: nextStage,
+    });
+    return { nextUrl: createSponsorPageUrl(registrator, nextStage, nextToken) };
+  }
+
+  const claimToken = await createClaimToken({ game, registrator, deviceId });
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const targetUrl = `${baseUrl}/${encodeURIComponent(registrator)}/free-key?claimToken=${encodeURIComponent(claimToken)}`;
   const adUrl = await shortenUrl(targetUrl);
   if (!adUrl) {
-    return { error: 'Sponsor link is temporarily unavailable. Please try again later.' };
+    return { error: 'ReShortFly is temporarily unavailable. Please try again later.' };
   }
+
   return { adUrl };
 }
 

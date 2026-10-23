@@ -1,16 +1,28 @@
 import type { NextConfig } from "next";
 
+const insecureAdDevSources = process.env.NODE_ENV === 'development'
+  ? ' http://cdn.cloudpiko.com http://cdn.cloudvideosa.com http://cdn.show-sb.com'
+  : '';
+const insecureImageDevSources = process.env.NODE_ENV === 'development' ? ' http:' : '';
+const insecureGoogleStylesDevSource = process.env.NODE_ENV === 'development'
+  ? ' http://fonts.googleapis.com'
+  : '';
+const insecureGoogleFontsDevSource = process.env.NODE_ENV === 'development'
+  ? ' http://fonts.gstatic.com'
+  : '';
+
 const ContentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://challenges.cloudflare.com",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self'",
-  "connect-src 'self' https://challenges.cloudflare.com https://checkip.amazonaws.com",
-  "frame-src https://challenges.cloudflare.com",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://challenges.cloudflare.com https://va.vercel-scripts.com https://bauval.org https://abscloud.org https://araplhn.org https://cdn.show-sb.com https://cdn.cloudpiko.com https://cdn.cloudvideosa.com https://static.nresystems.com${insecureAdDevSources}`,
+  `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com${insecureGoogleStylesDevSource}`,
+  `img-src 'self' data: blob: https:${insecureImageDevSources}`,
+  `font-src 'self' data: https://fonts.gstatic.com${insecureGoogleFontsDevSource}`,
+  `connect-src 'self' https://challenges.cloudflare.com https://checkip.amazonaws.com https://bauval.org https://abscloud.org https://araplhn.org https://cdn.show-sb.com https://cdn.cloudpiko.com https://cdn.cloudvideosa.com https://mamshirt.com https://portalfluently.com https://static.nresystems.com${insecureAdDevSources}`,
+  `frame-src 'self' https://challenges.cloudflare.com https://bauval.org https://abscloud.org https://araplhn.org https://cdn.show-sb.com https://cdn.cloudpiko.com https://cdn.cloudvideosa.com https://mamshirt.com https://portalfluently.com https://static.nresystems.com${insecureAdDevSources}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
+  ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
 ].join("; ");
 
 const nextConfig: NextConfig = {

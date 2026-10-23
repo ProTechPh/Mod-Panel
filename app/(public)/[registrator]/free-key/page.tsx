@@ -11,6 +11,7 @@ import {
   Check,
   Copy,
   Cpu,
+  ExternalLink,
   Gamepad2,
   Hash,
   History,
@@ -29,6 +30,12 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import {
+  ADSTERRA_SMARTLINK_URL,
+  AdsterraBanner,
+  AdsterraNativeBanner,
+  AdsterraPageScripts,
+} from '@/components/ads/AdsterraAds';
 
 interface GameOption {
   code: string;
@@ -143,6 +150,13 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const sponsorToken = searchParams.get('sponsorToken');
+  const sponsorStageParam = Number(searchParams.get('sponsorStage'));
+  const sponsorStage = sponsorStageParam === 1 || sponsorStageParam === 2 ? sponsorStageParam : null;
+  const [sponsorVisited, setSponsorVisited] = useState(false);
+  const [sponsorCountdown, setSponsorCountdown] = useState(8);
+  const [advancingSponsor, setAdvancingSponsor] = useState(false);
+  const [showLeaderboardAd, setShowLeaderboardAd] = useState(false);
 
   const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null);
   const [keyLoading, setKeyLoading] = useState(false);
@@ -280,6 +294,22 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
   }, [keyStatus?.expiredDate]);
 
   useEffect(() => {
+    if (!sponsorVisited || sponsorCountdown <= 0) return;
+    const timeout = window.setTimeout(() => {
+      setSponsorCountdown(current => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearTimeout(timeout);
+  }, [sponsorVisited, sponsorCountdown]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const updateLeaderboardVisibility = () => setShowLeaderboardAd(mediaQuery.matches);
+    updateLeaderboardVisibility();
+    mediaQuery.addEventListener('change', updateLeaderboardVisibility);
+    return () => mediaQuery.removeEventListener('change', updateLeaderboardVisibility);
+  }, []);
+
+  useEffect(() => {
     const container = document.getElementById('container-11549e9ed33a224ea077baba528d1381');
     if (!container || container.hasChildNodes()) return;
 
@@ -317,18 +347,46 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
         toast.error(data.error || 'Failed to generate key');
         return;
       }
-      if (!data.adUrl) {
-        toast.error('The sponsor link is unavailable. Please try again later.');
+      if (!data.sponsorUrl) {
+        toast.error('The sponsor stages are unavailable. Please try again later.');
         return;
       }
 
-      toast.success('Sponsor link ready. Redirecting...');
-      window.setTimeout(() => { window.location.href = data.adUrl; }, 1200);
+      toast.success('Sponsor stages ready. Redirecting...');
+      window.setTimeout(() => { window.location.href = data.sponsorUrl; }, 800);
     } catch {
       toast.error('Network error. Please try again.');
     } finally {
       setGenerating(false);
       setTurnstileToken('');
+    }
+  };
+
+  const handleSponsorContinue = async () => {
+    if (!sponsorToken || !sponsorStage || !sponsorVisited || sponsorCountdown > 0) return;
+    setAdvancingSponsor(true);
+    try {
+      const response = await fetch('/api/free-key/sponsor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: sponsorToken }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Unable to complete sponsor stage');
+        return;
+      }
+
+      const destination = data.nextUrl || data.adUrl;
+      if (!destination) {
+        toast.error('The next sponsor stage is unavailable. Please try again.');
+        return;
+      }
+      window.location.href = destination;
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setAdvancingSponsor(false);
     }
   };
 
@@ -393,6 +451,84 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
       : keyStatus?.isActivated
         ? { label: 'Active', color: 'var(--ecto-green)', Icon: Activity }
         : { label: 'Unused', color: 'var(--gold)', Icon: AlertTriangle };
+
+  if (sponsorToken && sponsorStage) {
+    return (
+      <div className="relative min-h-screen bg-[var(--bg-void)]">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+          <div className="absolute left-1/2 top-20 size-[42rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(234,88,12,0.08)_0%,transparent_68%)] blur-3xl" />
+        </div>
+        <main className="relative z-10 mx-auto flex min-h-screen max-w-4xl flex-col justify-center gap-5 px-4 py-8">
+          <div className="text-center">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--brand-300)]">Adsterra sponsor</p>
+            <h1 className="mt-2 font-display text-3xl font-black text-[var(--text-hi)]">Sponsor stage {sponsorStage} of 2</h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-mid)]">Visit the sponsor in a new tab, then return here to continue.</p>
+          </div>
+
+          <div className="panel panel--flat overflow-hidden">
+            <div className="panel-head">
+              <div className="panel-title"><Zap className="ico size-3.5" aria-hidden /> Required sponsor visit</div>
+              <span className="panel-badge">{sponsorStage}/2</span>
+            </div>
+            <div className="space-y-4 p-4">
+              {showLeaderboardAd && (
+                <AdsterraBanner
+                  placementKey="4e1da0ced89b07aa5637ad0458f7ec7f"
+                  width={728}
+                  height={90}
+                  title={`Sponsor stage ${sponsorStage} leaderboard advertisement`}
+                  className="mx-auto flex w-[728px] max-w-full justify-center overflow-hidden"
+                />
+              )}
+
+              <AdsterraBanner
+                placementKey="007a11a9ae6a1bad6dbf766f5b10b1e4"
+                width={300}
+                height={250}
+                title={`Sponsor stage ${sponsorStage} advertisement`}
+                className="mx-auto flex w-[300px] max-w-full justify-center overflow-hidden"
+              />
+
+              <a
+                href={ADSTERRA_SMARTLINK_URL}
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                onClick={() => setSponsorVisited(true)}
+                className="focus-ring flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand-600)] px-4 py-3 font-display text-sm font-bold text-white transition-colors hover:bg-[var(--brand-500)]"
+              >
+                Visit Adsterra sponsor <ExternalLink className="size-4" aria-hidden />
+              </a>
+
+              <AdsterraNativeBanner />
+
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="w-full"
+                disabled={!sponsorVisited || sponsorCountdown > 0 || advancingSponsor}
+                onClick={handleSponsorContinue}
+              >
+                {advancingSponsor ? (
+                  <><Loader2 className="animate-spin" aria-hidden /> Verifying stage...</>
+                ) : !sponsorVisited ? (
+                  'Visit sponsor to continue'
+                ) : sponsorCountdown > 0 ? (
+                  `Continue in ${sponsorCountdown}s`
+                ) : sponsorStage === 1 ? (
+                  'Continue to Stage 2'
+                ) : (
+                  'Continue to ReShortFly'
+                )}
+              </Button>
+              <p className="text-center font-mono text-[10px] leading-5 text-[var(--text-lo)]">Do not close this tab. The final ReShortFly step returns you here to claim the key.</p>
+            </div>
+          </div>
+        </main>
+        <AdsterraPageScripts />
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-[var(--bg-void)]">
@@ -584,7 +720,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                       <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-orange-500/10 text-[var(--brand-500)]"><Timer className="size-5" aria-hidden /></span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-bold text-[var(--text-hi)]">3-hour free key</p>
-                        <p className="text-xs leading-5 text-[var(--text-mid)]">One device · Sponsor visit required</p>
+                        <p className="text-xs leading-5 text-[var(--text-mid)]">One device · 2 Adsterra stages + 1 ReShortFly</p>
                       </div>
                       <StatusBadge status="info">Free</StatusBadge>
                     </div>
@@ -611,7 +747,7 @@ function FreeKeyContent({ registrator }: { registrator: string }) {
                   <Button type="submit" size="lg" className="w-full" disabled={generating || (!!siteKey && !turnstileToken)}>
                     {generating ? <><Loader2 className="animate-spin" aria-hidden /> Preparing sponsor link...</> : <><Zap aria-hidden /> Continue to sponsor</>}
                   </Button>
-                  <p className="text-center text-[11px] leading-5 text-[var(--text-lo)]">After completing the sponsor page, you will return here automatically to claim your key.</p>
+                  <p className="text-center text-[11px] leading-5 text-[var(--text-lo)]">Complete 2 Adsterra stages and 1 ReShortFly step. ReShortFly will return you here automatically to claim your key.</p>
                 </form>
               </div>
             )}
